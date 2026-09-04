@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Chimes — Experiment</title>
+<meta name="description" content="A music box seeded by today's date. Seven notes, sixteen steps, four voices — press play, then rewrite it.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  /* page-local styling for the sequencer grid */
+  #chimes{
+    display:block;
+    width:100%;
+    height:auto;
+    aspect-ratio:880/440;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background:linear-gradient(160deg,rgba(100,240,200,.04),rgba(122,162,255,.03)),#07090d;
+    cursor:pointer;
+    touch-action:none;
+  }
+  .rack-row .rack-label b{white-space:nowrap}
+  .rack-row .controls{margin-left:auto}
+  @media (max-width:640px){
+    .rack-row .controls{margin-left:0}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>experiment</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html" class="on">Chimes</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page three</p>
+    <h1>The Chimes</h1>
+    <p class="lede">
+      The Garden was something to look at. This is something to listen to. Today's
+      date was folded into a number, the number was turned into a rhythm, and the
+      rhythm was hung on seven notes. Press play to hear what the date sounds like,
+      then drag across the grid to argue with it.
+    </p>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="wrap">
+
+      <canvas id="chimes" width="880" height="440" aria-label="Step sequencer grid. Click or drag cells to toggle notes."></canvas>
+      <p class="hint canvas-hint">Click or drag to toggle notes. Space bar plays and stops. Sound starts muted until you press play.</p>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Scale</span>
+          <div class="chips" id="scales"></div>
+        </div>
+
+        <div class="rack-row">
+          <span class="rack-label">Voice</span>
+          <div class="chips" id="voices"></div>
+        </div>
+
+        <div class="rack-row sliders">
+          <label>
+            <span class="rack-label">Tempo <b id="bpmVal">—</b></span>
+            <input type="range" id="bpm" min="50" max="180" step="1" value="96">
+          </label>
+          <label>
+            <span class="rack-label">Volume <b id="volVal">—</b></span>
+            <input type="range" id="vol" min="0" max="100" step="1" value="55">
+          </label>
+        </div>
+
+        <div class="rack-row">
+          <span class="rack-label">Seed <b id="seedOut">—</b></span>
+          <span class="rack-label">Playing <b id="nowScale">—</b></span>
+          <div class="controls">
+            <button class="btn small" id="btnPlay">Play</button>
+            <button class="btn small ghost" id="btnReseed">New seed</button>
+            <button class="btn small ghost" id="btnToday">Today's tune</button>
+            <button class="btn small ghost" id="btnClear">Empty the grid</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>How the date becomes a tune</h2>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>A number</h3>
+          <p>The year, month and day are packed into one integer and fed to a small
+             deterministic generator. Same day, same music, anywhere in the world.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>A rhythm</h3>
+          <p>Each of the seven rows gets a count of hits, spread as evenly as possible
+             across sixteen steps and then rotated. Low rows stay sparse so the bass
+             does not trip over itself.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>A sound</h3>
+          <p>Notes are synthesised live in the browser — oscillators, filters and a
+             pair of feedback delays for the tail. No audio files are downloaded,
+             because there are none.</p>
+        </li>
+      </ol>
+      <p class="sub afterword">
+        Nothing here is recorded and nothing is saved. Change the scale mid-phrase and
+        the notes already ringing keep their old pitch while the next ones arrive in the
+        new one, which is the most interesting way to switch. If you want a stranger
+        result, try Hirajoshi at a slow tempo with the Reed voice and only three or four
+        notes on the whole grid.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="chimes.js"></script>
+</body>
+</html>
