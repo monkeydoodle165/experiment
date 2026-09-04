@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Atlas — Drift</title>
+<meta name="description" content="A whole world drawn from today's date: coastlines, rivers, weather, biomes, regions, towns and the roads between them.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  #atlasCanvas{
+    display:block;width:100%;height:auto;aspect-ratio:3/2;
+    border-radius:14px;border:1px solid var(--line);
+    background:#07090d;cursor:crosshair;touch-action:none;
+  }
+  .atlas-head{
+    display:flex;flex-wrap:wrap;align-items:baseline;gap:14px;
+    margin:0 0 18px;
+  }
+  .atlas-head h2{margin:0}
+  .atlas-head .seedline{
+    font:600 11px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--dim);
+  }
+  .atlas-head .seedline b{color:var(--accent);letter-spacing:.06em}
+  .readout{
+    margin-top:18px;
+    display:grid;gap:14px;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    border:1px solid var(--line);border-radius:14px;
+    padding:18px 20px;background:rgba(11,15,22,.6);
+  }
+  .readout dt{
+    font:600 10px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:6px;
+  }
+  .readout dd{margin:0;font-size:.95rem;font-weight:600}
+  .place-card{
+    margin-top:18px;border:1px solid var(--accent);border-radius:14px;
+    padding:20px 22px;background:linear-gradient(160deg,rgba(100,240,200,.08),rgba(122,162,255,.04));
+  }
+  .place-card h3{margin:0 0 4px;font-size:1.35rem;letter-spacing:-.01em}
+  .place-card .pc-meta{
+    font:600 11px/1.5 ui-monospace,Menlo,monospace;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--accent2);margin:0 0 12px;
+  }
+  .place-card p{margin:0;color:#c3ccdb;font-size:.95rem;max-width:62ch}
+  .legend{
+    display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:16px;
+    font-size:.82rem;color:var(--dim);
+  }
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .legend i{width:16px;height:3px;border-radius:2px;display:inline-block}
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html" class="on">Atlas</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page seven</p>
+    <h1>The Atlas</h1>
+    <p class="lede">
+      Today's date has been unfolded into a country. The ground was raised out of
+      noise, the sea was poured in until the coast looked right, rain was blown across
+      it from one direction, rivers were let go downhill until they found the sea,
+      and wherever the water met workable land somebody built a town. Nobody has
+      surveyed this place before and nobody will survey it again.
+    </p>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="wrap">
+
+      <div class="atlas-head">
+        <h2 id="worldName">—</h2>
+        <span class="seedline">surveyed from seed <b id="atlasSeed">----------</b></span>
+      </div>
+
+      <canvas id="atlasCanvas" aria-label="A generated map. Move the pointer to survey it, click a town to read about it."></canvas>
+      <p class="hint canvas-hint">Move across the map to survey the ground. Click a town to read its entry.</p>
+
+      <div class="legend">
+        <span><i style="background:#78bee8"></i>rivers and lakes</span>
+        <span><i style="background:#ffd6a5"></i>roads</span>
+        <span><i style="background:#64f0c8"></i>settlements</span>
+        <span><i style="background:#9aa7bb"></i>contours in the ink view</span>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">View</span>
+          <div class="chips" id="views"></div>
+        </div>
+
+        <div class="rack-row sliders">
+          <label>
+            <span class="rack-label">Sea level <b id="seaVal">0 m</b></span>
+            <input type="range" id="seaSlider" min="-240" max="240" step="20" value="0">
+          </label>
+        </div>
+
+        <div class="rack-row">
+          <span class="rack-label">Survey</span>
+          <div class="controls">
+            <button class="btn small" id="btnTodayWorld">Today's world</button>
+            <button class="btn small ghost" id="btnRoll">Sail somewhere else</button>
+            <button class="btn small ghost" id="btnLabels">Hide names</button>
+            <button class="btn small ghost" id="btnRoads">Hide roads</button>
+          </div>
+        </div>
+      </div>
+
+      <dl class="readout">
+        <div><dt>Grid</dt><dd id="rdCoord">—</dd></div>
+        <div><dt>Elevation</dt><dd id="rdElev">—</dd></div>
+        <div><dt>Ground</dt><dd id="rdBiome">—</dd></div>
+        <div><dt>Country</dt><dd id="rdRegion">—</dd></div>
+        <div><dt>Nearest town</dt><dd id="rdNear">—</dd></div>
+      </dl>
+
+      <div class="place-card" id="placeCard" hidden>
+        <h3 id="pcName">—</h3>
+        <p class="pc-meta"><span id="pcKind">—</span> · <span id="pcPop">—</span> · <span id="pcRegion">—</span></p>
+        <p id="pcBody">—</p>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>The survey</h2>
+      <p class="sub">Six passes over the same number, in this order.</p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Ground</h3>
+          <p>Layered value noise, warped by more noise so the coast never comes out
+             circular, multiplied by one large landmass and a couple of smaller ones.
+             Ridged noise is mixed in to give the interior mountains a spine.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Sea</h3>
+          <p>Rather than picking a height and hoping, the water is poured to whatever
+             level leaves the intended fraction of the map dry. Every world therefore
+             has a coastline worth looking at. The slider moves that level.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Weather</h3>
+          <p>A wind direction is drawn, and any ground sheltered behind higher ground
+             upwind gets less rain. Temperature falls with latitude and with altitude.
+             Rain and heat together decide whether a hillside is forest or desert.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>Water</h3>
+          <p>Every cell drains to its lowest neighbour. Sorting the map from high to
+             low and passing water down the chain gives each cell the size of the
+             catchment above it — where that total gets large enough, a river is drawn.
+             Where the water arrives somewhere with nowhere lower to go, a lake.</p>
+        </li>
+        <li>
+          <span class="step-n">05</span>
+          <h3>People</h3>
+          <p>Every land cell is scored for how much anyone would want to live on it:
+             flat, fed by a river, on the coast, not frozen, not sand. The best sites
+             are taken in turn, kept apart from each other, and named.</p>
+        </li>
+        <li>
+          <span class="step-n">06</span>
+          <h3>Roads</h3>
+          <p>The towns are joined into one network by shortest total distance, and
+             each link is then routed cell by cell across the terrain by Dijkstra's
+             algorithm, paying heavily for climbing and for getting wet. The roads
+             find the passes on their own.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="wrap">
+      <h2>The register</h2>
+      <p class="sub">What today's survey came back with.</p>
+      <div class="seed-card">
+        <dl class="seed-grid">
+          <div><dt>Dry land</dt><dd id="statLand">—</dd></div>
+          <div><dt>Highest ground</dt><dd id="statPeak">—</dd></div>
+          <div><dt>Settlements</dt><dd id="statTowns">—</dd></div>
+          <div><dt>Countries</dt><dd id="statRegions">—</dd></div>
+          <div><dt>Population</dt><dd id="statPeople">—</dd></div>
+          <div><dt>The water</dt><dd id="statSea">—</dd></div>
+        </dl>
+      </div>
+      <p class="sub afterword">
+        The number that drew this map is the same one running everything else here.
+        It stirs the field on <a href="./">the front page</a>, sets the opening state
+        of <a href="garden.html">the Garden</a>, writes the tune in
+        <a href="chimes.html">the Chimes</a>, deals the board in
+        <a href="lattice.html">the Lattice</a>, files the day's news in
+        <a href="almanac.html">the Almanac</a> and hangs the stars in
+        <a href="observatory.html">the Observatory</a>. Tomorrow this coastline sinks
+        and a different one comes up somewhere else.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="atlas.js"></script>
+</body>
+</html>
