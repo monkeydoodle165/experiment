@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Almanac — Experiment</title>
+<meta name="description" content="A daily dispatch from a place that does not exist. Every date in history and every date to come has exactly one page, and this is today's.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  /* page-local styling: the dispatch is set like a printed sheet */
+  .sheet{
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:34px;
+    background:linear-gradient(160deg,rgba(100,240,200,.05),rgba(122,162,255,.03)),rgba(11,15,22,.6);
+    font-family:Iowan Old Style,Palatino,"Palatino Linotype",Georgia,"Times New Roman",serif;
+  }
+  @media (max-width:600px){ .sheet{padding:22px} }
+
+  .sheet-head{
+    display:flex;
+    gap:22px;
+    align-items:flex-start;
+    padding-bottom:22px;
+    border-bottom:1px solid var(--line);
+  }
+  .sigil{
+    flex:0 0 92px;
+    width:92px;height:92px;
+    color:var(--accent);
+    opacity:.9;
+  }
+  .sigil svg{width:100%;height:100%;display:block}
+  .sheet-title{flex:1 1 auto;min-width:0}
+  .sheet-title h2{
+    margin:0 0 4px;
+    font-size:clamp(1.7rem,5vw,2.6rem);
+    letter-spacing:-.01em;
+    line-height:1.1;
+    overflow-wrap:anywhere;
+  }
+  .sheet-sub{
+    margin:0;
+    color:var(--dim);
+    font-style:italic;
+    font-size:1rem;
+  }
+  .sheet-meta{
+    margin:12px 0 0;
+    font:600 11px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;
+    letter-spacing:.13em;
+    text-transform:uppercase;
+    color:var(--dim);
+  }
+  .sheet-meta b{color:var(--accent);font-weight:700}
+  @media (max-width:520px){
+    .sheet-head{flex-direction:column;align-items:center;text-align:center}
+    .sigil{flex:0 0 78px;width:78px;height:78px}
+  }
+
+  .sheet h3{
+    margin:32px 0 14px;
+    font:700 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--accent2);
+  }
+
+  .kv{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+    gap:16px 24px;
+    margin:0;
+  }
+  .kv dt{
+    font:600 10px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--dim);
+    margin-bottom:5px;
+  }
+  .kv dd{margin:0;font-size:1.02rem;color:var(--ink)}
+  .kv.tight{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+  .kv.tight dd{font-variant-numeric:tabular-nums;font-weight:600}
+
+  .notes{list-style:none;padding:0;margin:0}
+  .notes li{
+    position:relative;
+    padding:0 0 15px 20px;
+    color:#cbd4e2;
+    font-size:1.04rem;
+    line-height:1.6;
+  }
+  .notes li::before{
+    content:"—";
+    position:absolute;left:0;top:0;color:var(--accent);
+  }
+  .notes em{color:var(--accent);font-style:italic}
+
+  .lex{padding:0 0 16px}
+  .lex b{font-size:1.1rem;color:var(--ink)}
+  .lex .say{
+    font:600 10px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.12em;color:var(--dim);margin-left:8px;
+  }
+  .lex i{color:var(--accent2);font-size:.9rem;margin-left:8px}
+  .lex p{margin:5px 0 0;color:var(--dim);font-size:1rem;line-height:1.55}
+
+  .song{
+    margin:0;
+    padding:18px 22px;
+    border-left:2px solid var(--accent);
+    background:rgba(255,255,255,.025);
+    border-radius:0 10px 10px 0;
+    font-size:1.06rem;
+    line-height:1.85;
+    color:#d6dde9;
+  }
+
+  .dial{
+    display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  }
+  .dial input[type=date]{
+    background:transparent;
+    color:var(--ink);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:6px 13px;
+    font:inherit;font-size:.82rem;
+    color-scheme:dark;
+  }
+  .btn:disabled{opacity:.4;cursor:default;transform:none}
+  .btn:disabled:hover{transform:none}
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>experiment</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html" class="on">Almanac</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page five</p>
+    <h1>The Almanac</h1>
+    <p class="lede">
+      Somewhere there is a town that only exists on one day. Today it has a name, a
+      wind speed, four things worth reporting and four words that English does not
+      have. Tomorrow it will be a different town with different words, and today's
+      will not come back. Every date has exactly one page. There are about three
+      million of them and nobody has read most of them.
+    </p>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="wrap">
+
+      <article class="sheet" id="alSheet">
+        <div class="sheet-head">
+          <div class="sigil" id="alSigil" aria-hidden="true"></div>
+          <div class="sheet-title">
+            <h2 id="alPlace">—</h2>
+            <p class="sheet-sub"><span id="alRegion">—</span> · <span id="alMotto">—</span></p>
+            <p class="sheet-meta">
+              <span id="alDate">—</span> &nbsp;·&nbsp;
+              pop. <b id="alPop">—</b> &nbsp;·&nbsp;
+              seed <b id="alSeed">—</b>
+            </p>
+          </div>
+        </div>
+
+        <h3>Conditions</h3>
+        <dl class="kv" id="alConditions"></dl>
+
+        <h3>Field notes</h3>
+        <ul class="notes" id="alNotes"></ul>
+
+        <h3>Lexicon</h3>
+        <div id="alLexicon"></div>
+
+        <h3>Song fragment</h3>
+        <p class="song" id="alSong">—</p>
+
+        <h3>The ledger</h3>
+        <dl class="kv tight" id="alLedger"></dl>
+      </article>
+
+      <p class="hint canvas-hint">Left and right arrow keys walk through the days.</p>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">The week</span>
+          <div class="chips dial" id="alStrip"></div>
+        </div>
+        <div class="rack-row">
+          <span class="rack-label">Any date</span>
+          <div class="dial">
+            <input type="date" id="alDatePick" aria-label="Choose a date">
+            <button class="btn small ghost" id="alPrev">‹ Previous day</button>
+            <button class="btn small ghost" id="alNext">Next day ›</button>
+          </div>
+        </div>
+        <div class="rack-row">
+          <div class="controls">
+            <button class="btn small" id="alToday">Back to today</button>
+            <button class="btn small ghost" id="alFar">Somewhere in the next century</button>
+            <button class="btn small ghost" id="alCopy">Copy this page</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>Where the town comes from</h2>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>A name</h3>
+          <p>Syllables are assembled under rules about what may follow what — a
+             cluster can open a syllable only if the one before it ended on a vowel —
+             so the results can be said out loud. Then a suffix off a list of English
+             landscape words is bolted on and it sounds like somewhere.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>A day</h3>
+          <p>Weather, tide, advice and four field notes are drawn from templates with
+             slots. The notes never repeat within a page, so the town always has four
+             separate things on its mind.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>A vocabulary</h3>
+          <p>Four invented words, each glued to a definition for a feeling English
+             has not bothered to name. The part of speech travels with the definition
+             rather than being rolled, so a noun is never defined as a verb.</p>
+        </li>
+      </ol>
+      <p class="sub afterword">
+        Nothing is fetched and nothing is stored. The page is rebuilt from the date
+        every time you load it, which means two people opening this on the same day in
+        different countries read exactly the same dispatch, and that neither of them
+        can keep it. The seal at the top is drawn from the same number.
+        The <a href="./">front page</a> turns it into a flow field,
+        <a href="garden.html">the Garden</a> into chemistry,
+        <a href="chimes.html">the Chimes</a> into a tune and
+        <a href="lattice.html">the Lattice</a> into a puzzle. This room turns it into
+        sentences. Five rooms, one integer.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="almanac.js"></script>
+</body>
+</html>
