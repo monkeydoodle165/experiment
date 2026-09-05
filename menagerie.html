@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Menagerie — Drift</title>
+<meta name="description" content="A one-day ecosystem seeded by today's date. Animals eat, breed, mutate and go extinct while you watch — and you can change the weather.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  #menagerie{
+    display:block;
+    width:100%;
+    height:auto;
+    aspect-ratio:880/540;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background:#07090d;
+    cursor:crosshair;
+    touch-action:none;
+  }
+  .split{
+    display:grid;
+    gap:18px;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    margin-top:26px;
+  }
+  .box{
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:20px 22px;
+    background:rgba(11,15,22,.6);
+  }
+  .box h3{
+    margin:0 0 14px;
+    font:600 10px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--dim);
+  }
+  .stat-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(84px,1fr));gap:14px;margin:0;
+  }
+  .stat-grid div{margin:0}
+  .stat-grid dt{
+    font:600 9px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:5px;
+  }
+  .stat-grid dd{margin:0;font:600 1.05rem/1.2 ui-monospace,Menlo,monospace;color:var(--ink)}
+  .stat-grid dd.herb{color:var(--accent)}
+  .stat-grid dd.carn{color:#ff7a7a}
+  .stat-grid dd.omni{color:#e0d27a}
+  #chart{
+    display:block;width:100%;height:auto;aspect-ratio:420/110;
+    border-radius:10px;border:1px solid var(--line);margin-top:16px;
+  }
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin:10px 0 0;font-size:.76rem;color:var(--dim)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:10px;height:3px;border-radius:2px;display:inline-block}
+  table.sp{width:100%;border-collapse:collapse;font-size:.88rem}
+  table.sp th{
+    text-align:left;font:600 9px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
+    padding-bottom:8px;font-weight:600;
+  }
+  table.sp td{padding:5px 0;border-top:1px solid var(--line);color:var(--dim)}
+  table.sp td:first-child{color:var(--ink)}
+  table.sp td:not(:first-child){text-align:right;font-family:ui-monospace,Menlo,monospace}
+  .card-head{display:flex;gap:12px;align-items:center;margin-bottom:16px}
+  .card-head h3{margin:0;font:600 1.05rem/1.2 inherit;letter-spacing:0;text-transform:none;color:var(--ink)}
+  .card-head p{margin:4px 0 0;font-size:.8rem;color:var(--dim)}
+  .blob{width:22px;height:22px;border-radius:50%;flex:none;box-shadow:0 0 14px rgba(255,255,255,.14)}
+  .trait{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:.8rem;color:var(--dim)}
+  .trait span{min-width:96px}
+  .trait i{flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}
+  .trait i b{display:block;height:100%;background:var(--accent)}
+  .trait em{font-style:normal;font-family:ui-monospace,Menlo,monospace;min-width:44px;text-align:right;color:var(--ink)}
+  ul.notes{list-style:none;margin:0;padding:0;font-size:.86rem;color:var(--dim)}
+  ul.notes li{padding:6px 0;border-top:1px solid var(--line)}
+  ul.notes li:first-child{border-top:0}
+  ul.notes time{
+    font:600 10px/1 ui-monospace,Menlo,monospace;color:var(--accent2);
+    margin-right:8px;letter-spacing:.08em;
+  }
+  #extinct{
+    margin:16px 0 0;padding:12px 16px;border-radius:12px;
+    border:1px solid rgba(255,122,122,.4);color:#ff9d9d;font-size:.88rem;
+  }
+  .rack-row .controls{margin-left:auto}
+  @media (max-width:640px){ .rack-row .controls{margin-left:0} .trait span{min-width:78px} }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html" class="on">Menagerie</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page eight</p>
+    <h1>The Menagerie</h1>
+    <p class="lede">
+      The Atlas drew a country and left it empty. This puts animals in it. Today's
+      date decides the founding stock — twenty-six grazers and three things that
+      have worked out grazers are edible — and then nobody is in charge. They eat,
+      they breed, their children come out slightly wrong, and after a few thousand
+      ticks the wrong ones are the only ones left.
+    </p>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="wrap">
+
+      <canvas id="menagerie" width="880" height="540" aria-label="A live ecosystem simulation. Click an animal to inspect it, or click empty ground to scatter food."></canvas>
+      <p class="hint canvas-hint">Click an animal to read its card. Click bare ground to scatter food there. Space bar pauses.</p>
+
+      <p id="extinct" hidden>Everything is dead. That happens. Press <b>Today's world</b> to start it again, or try a gentler climate first.</p>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Climate</span>
+          <div class="chips" id="climates"></div>
+        </div>
+        <div class="rack-row">
+          <span class="rack-label" style="min-width:0"><b id="climateNote">—</b></span>
+        </div>
+
+        <div class="rack-row sliders">
+          <label>
+            <span class="rack-label">Time <b id="spdVal">—</b></span>
+            <input type="range" id="spd" min="0.25" max="4" step="0.25" value="1">
+          </label>
+          <label>
+            <span class="rack-label">Mutation <b id="mutVal">—</b></span>
+            <input type="range" id="mut" min="0" max="3" step="0.05" value="1">
+          </label>
+        </div>
+
+        <div class="rack-row">
+          <span class="rack-label">Seed <b id="seedOut">—</b></span>
+          <span class="rack-label">Ticks <b id="statTick">—</b></span>
+          <div class="controls">
+            <button class="btn small" id="btnPause">Pause</button>
+            <button class="btn small ghost" id="btnFeed">Rain of food</button>
+            <button class="btn small ghost" id="btnCull">Hard season</button>
+            <button class="btn small ghost" id="btnToday">Today's world</button>
+            <button class="btn small ghost" id="btnReseed">A different world</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="split">
+        <div class="box">
+          <h3>Census</h3>
+          <dl class="stat-grid">
+            <div><dt>Alive</dt><dd id="statPop">—</dd></div>
+            <div><dt>Grazers</dt><dd class="herb" id="statHerb">—</dd></div>
+            <div><dt>Omnivores</dt><dd class="omni" id="statOmni">—</dd></div>
+            <div><dt>Hunters</dt><dd class="carn" id="statCarn">—</dd></div>
+            <div><dt>Plants</dt><dd id="statPlants">—</dd></div>
+            <div><dt>Generation</dt><dd id="statGen">—</dd></div>
+            <div><dt>Mean size</dt><dd id="statSize">—</dd></div>
+            <div><dt>Mean speed</dt><dd id="statSpeed">—</dd></div>
+            <div><dt>Mean sense</dt><dd id="statSense">—</dd></div>
+          </dl>
+          <canvas id="chart" width="420" height="110" aria-label="Population over time"></canvas>
+          <p class="legend">
+            <span><i style="background:#64f0c8"></i>grazers</span>
+            <span><i style="background:#e0d27a"></i>omnivores</span>
+            <span><i style="background:#ff7a7a"></i>hunters</span>
+            <span><i style="background:rgba(120,220,150,.5)"></i>plants</span>
+          </p>
+        </div>
+
+        <div class="box" id="card">
+          <p class="sub" style="margin:0">Click any animal to read its card.</p>
+        </div>
+
+        <div class="box">
+          <h3>Living species</h3>
+          <table class="sp">
+            <thead><tr><th>Name</th><th>Now</th><th>Peak</th></tr></thead>
+            <tbody id="speciesBody"><tr><td colspan="3">—</td></tr></tbody>
+          </table>
+          <h3 style="margin-top:22px">Field notes</h3>
+          <ul class="notes" id="noteList"></ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What you are actually looking at</h2>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Four numbers</h3>
+          <p>Every animal carries a genome of four values: body size, top speed, how
+             far it can sense, and how much of its diet is meat. Everything else —
+             its colour, its shape, what it costs to stay alive, how much energy it
+             needs before it can breed — falls out of those four.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>No rules about who wins</h3>
+          <p>Nothing is scored and nothing is selected for. Animals that run out of
+             energy stop. Animals that gather more than they burn split in two, and
+             the copy is nudged in a random direction. Selection is just what is left
+             over after that.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Names after the fact</h3>
+          <p>Species are not designed. When enough drift accumulates that a lineage
+             falls into a different corner of trait space, it gets binned as something
+             new, handed a binomial name, and written into the field notes. The names
+             are invented from the same date seed, so today's fauna is today's only.</p>
+        </li>
+      </ol>
+      <p class="sub afterword">
+        Watch for the usual shapes: grazers overrun the pasture, strip it, and crash;
+        hunters lag one wave behind them; body size creeps up in a lush climate until
+        something faster and hungrier arrives. Push mutation to zero and evolution
+        stops dead — the population still rises and falls, but nothing new is ever
+        tried. Push it past two and lineages tear themselves apart before they can
+        settle. Elsewhere on the site the same date seed
+        <a href="atlas.html">raises the land</a> these creatures never get to see,
+        <a href="observatory.html">hangs a sky</a> over it,
+        <a href="almanac.html">files a report</a> from a town,
+        <a href="lattice.html">deals a puzzle</a> and
+        <a href="chimes.html">writes a tune</a>.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="menagerie.js"></script>
+</body>
+</html>
