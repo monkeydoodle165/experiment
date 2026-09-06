@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Orrery — Drift</title>
+<meta name="description" content="A star system dealt by today's date: four to nine worlds on real Kepler orbits, with moons, rings, atmospheres and a dossier for each.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  #orrery{
+    display:block;
+    width:100%;
+    height:auto;
+    aspect-ratio:960/620;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background:#05070b;
+    touch-action:pan-y;
+  }
+  .card-lead{color:#c3ccdb;margin:0 0 22px;max-width:62ch;font-size:.98rem}
+  .card-note{color:var(--dim);margin:18px 0 0;font-size:.92rem;max-width:66ch}
+  .card-note b{color:var(--ink);font-weight:650}
+  .bio{color:var(--accent);font-weight:600}
+  .seed-card .seed-num{font-size:clamp(1.7rem,6vw,2.8rem);margin-bottom:14px}
+  .dossier{margin-top:26px;overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+  .dossier table{border-collapse:collapse;width:100%;min-width:660px;font-size:.88rem}
+  .dossier th{
+    text-align:left;padding:12px 14px;
+    font:600 10px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--dim);
+    border-bottom:1px solid var(--line);
+  }
+  .dossier td{padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.05);color:var(--dim)}
+  .dossier td b{color:var(--ink);font-weight:650}
+  .dossier tr[data-i]{cursor:pointer;transition:background .15s ease}
+  .dossier tr[data-i]:hover{background:rgba(122,162,255,.07)}
+  .dossier tr.alive td:first-child{box-shadow:inset 2px 0 0 var(--accent)}
+  .desig{display:block;font:10px/1.6 ui-monospace,Menlo,monospace;color:var(--dim);letter-spacing:.08em}
+  .rack-row .controls{margin-left:auto}
+  @media (max-width:640px){ .rack-row .controls{margin-left:0} }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html" class="on">Orrery</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page nine</p>
+    <h1>The Orrery</h1>
+    <p class="lede">
+      The Observatory hangs stars at a distance and leaves them there. This one
+      picks a single star out of today's number, lights it, and puts a family of
+      worlds around it that actually move. Every orbit is an ellipse with the star
+      at a focus and a period Kepler would recognise. Click anything and it hands
+      you the file on it.
+    </p>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="wrap">
+
+      <canvas id="orrery" width="960" height="620" aria-label="An animated map of a generated star system. Click a planet for details."></canvas>
+      <p class="hint canvas-hint">Click a world for its dossier, or the star for the star's. Scroll on the map to zoom. Space bar starts and stops time.</p>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Clock</span>
+          <div class="chips" id="speeds"></div>
+        </div>
+
+        <div class="rack-row">
+          <span class="rack-label">Spacing</span>
+          <div class="chips" id="layouts"></div>
+        </div>
+
+        <div class="rack-row sliders">
+          <label>
+            <span class="rack-label">Zoom</span>
+            <input type="range" id="zoom" min="35" max="600" step="1" value="100">
+          </label>
+        </div>
+
+        <div class="rack-row">
+          <span class="rack-label">Seed <b id="seedOut">—</b></span>
+          <span class="rack-label">Star <b id="starOut">—</b></span>
+          <span class="rack-label">Life <b id="lifeOut">—</b></span>
+        </div>
+
+        <div class="rack-row">
+          <div class="chips">
+            <button class="chip on" type="button" id="btnLabels">Hide names</button>
+            <button class="chip on" type="button" id="btnOrbits">Hide orbits</button>
+            <button class="chip on" type="button" id="btnHz">Hide habitable zone</button>
+          </div>
+          <div class="controls">
+            <button class="btn small" id="btnNew">Another star</button>
+            <button class="btn small ghost" id="btnToday">Today's system</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="seed-card" id="card" style="margin-top:26px"></div>
+
+      <div class="dossier" id="dossier"></div>
+      <p class="hint">Worlds marked with a green edge have something in the atmosphere that chemistry alone does not explain.</p>
+
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>How the date becomes a solar system</h2>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Light a star</h3>
+          <p>The seed draws a stellar mass, and everything else follows from it:
+             luminosity goes as mass to the three-and-a-half, which fixes the surface
+             temperature, the colour, the spectral class, how long the star will last,
+             where water freezes and where the habitable zone sits.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Fill the gaps</h3>
+          <p>Orbits are laid down from the inside out, each one between 1.4 and 2.2
+             times the last, the way real systems tend to space themselves. Inside the
+             frost line you mostly get rock; outside it, gas and ice. Mass sets radius,
+             radius and mass set gravity, gravity decides what atmosphere survives.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Work out the weather</h3>
+          <p>Equilibrium temperature comes from the star's output, the orbital distance
+             and how much light the surface throws back. A thick atmosphere adds a
+             greenhouse on top. A world that lands between roughly 250 and 340 kelvin,
+             with air and enough gravity to keep it, is allowed to be interesting.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>Set it running</h3>
+          <p>Positions come from Kepler's equation, solved by Newton's method every
+             frame, so the planets slow down at the far end of their ellipses and hurry
+             through the near end. Moons run on their own clocks. Nothing is animated
+             on a timer — it is all one number, integrated forward.</p>
+        </li>
+      </ol>
+      <p class="sub afterword">
+        Nothing here is stored and nothing is real. Tomorrow the star goes out and a
+        different one takes its place, with different worlds and different names, and
+        this system will not exist anywhere again. If you want the same number doing
+        other work: <a href="observatory.html">the Observatory</a> scatters it into a
+        night sky, <a href="atlas.html">the Atlas</a> raises a coastline out of it,
+        <a href="menagerie.html">the Menagerie</a> breeds animals from it,
+        <a href="almanac.html">the Almanac</a> writes the day's news with it and
+        <a href="chimes.html">the Chimes</a> play it.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="orrery.js"></script>
+</body>
+</html>
