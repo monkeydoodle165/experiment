@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Codex — Drift</title>
+<meta name="description" content="A writing system and a small language invented by today's date. Type anything and watch it carved into the day's script.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  #slab{
+    display:block;width:100%;
+    border-radius:16px;
+    border:1px solid var(--line);
+    background:linear-gradient(160deg,rgba(100,240,200,.05),rgba(122,162,255,.03)),#080b11;
+  }
+  #chart{
+    display:block;width:100%;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background:rgba(11,15,22,.55);
+  }
+  textarea#src{
+    width:100%;
+    min-height:96px;
+    resize:vertical;
+    margin-top:6px;
+    padding:14px 16px;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background:rgba(11,15,22,.7);
+    color:var(--ink);
+    font:inherit;
+    font-size:.98rem;
+  }
+  textarea#src:focus{outline:none;border-color:var(--accent)}
+  .roman{
+    margin:14px 0 0;
+    padding:12px 15px;
+    border-radius:12px;
+    border:1px dashed var(--line);
+    color:var(--accent2);
+    font:.9rem/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;
+    word-break:break-word;
+  }
+  .facts{
+    display:grid;gap:18px;
+    grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+    margin:0;
+  }
+  .facts dt{
+    font:600 10px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--dim);
+    margin-bottom:7px;
+  }
+  .facts dd{margin:0;font-size:.98rem;color:var(--ink)}
+  .lex{
+    display:grid;gap:14px;
+    grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  }
+  .lex-cell{
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:10px 12px 12px;
+    background:rgba(11,15,22,.5);
+  }
+  .lex-canvas{display:block;width:100%}
+  .lex-meta{display:flex;flex-direction:column;gap:2px;margin-top:4px}
+  .lex-meta b{
+    font:600 .86rem/1.4 ui-monospace,Menlo,monospace;
+    color:var(--accent);letter-spacing:.04em;
+  }
+  .lex-meta span{font-size:.82rem;color:var(--dim)}
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html" class="on">Codex</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page ten</p>
+    <h1>The Codex</h1>
+    <p class="lede">
+      Today's number has invented a language and a way of writing it down.
+      A handful of consonants, a handful of vowels, a rule about what a syllable
+      is allowed to look like, and a glyph for every sound — all grown on the same
+      little lattice of strokes, so the whole alphabet looks like one hand made it.
+      Type English into the slab and it comes back out carved. Tomorrow none of
+      these letters will mean anything.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <h2>The slab</h2>
+      <p class="sub">
+        Every English word is coined into the day's language by hashing the word
+        itself, so the same word always comes out the same — and a plural is built
+        from its own singular.
+      </p>
+
+      <label class="rack-label" for="src">Say something</label>
+      <textarea id="src" spellcheck="false">The river remembers every road it has ever taken, and the stones remember nothing at all.</textarea>
+
+      <p class="hint canvas-hint" style="text-align:left">Punctuation carries over: a comma becomes a point, a full stop becomes a double bar.</p>
+
+      <canvas id="slab" aria-label="Your text written in today's invented script"></canvas>
+      <p class="roman" id="romanOut">—</p>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Ink</span>
+          <div class="chips" id="inks"></div>
+        </div>
+        <div class="rack-row">
+          <span class="rack-label">Hand</span>
+          <div class="chips" id="hands"></div>
+        </div>
+        <div class="sliders">
+          <label>Letter size <b id="sizeOut">34px</b>
+            <input type="range" id="sizeRange" min="18" max="64" step="1" value="34">
+          </label>
+        </div>
+        <div class="rack-row">
+          <div class="controls">
+            <button class="btn small" id="btnNew">Invent another language</button>
+            <button class="btn small ghost" id="btnToday">Today's language</button>
+            <button class="btn small ghost" id="btnRoman">Copy romanisation</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>The alphabet</h2>
+      <p class="sub">
+        Consonants are labelled in grey, vowels in blue. Each glyph is two to four
+        strokes drawn between points on a three-by-four lattice, every stroke
+        starting somewhere an earlier stroke already touched — which is why they
+        hang together instead of looking like scribbles.
+      </p>
+      <canvas id="chart" aria-label="Chart of every glyph in today's script with its romanisation"></canvas>
+
+      <dl class="facts" style="margin-top:34px">
+        <div><dt>Language</dt><dd id="nameOut">—</dd></div>
+        <div><dt>Script</dt><dd id="scriptOut">—</dd></div>
+        <div><dt>Seed</dt><dd id="seedOut">—</dd></div>
+        <div><dt>Inventory</dt><dd id="soundsOut">—</dd></div>
+        <div><dt>Kind</dt><dd id="typeOut">—</dd></div>
+        <div><dt>Reads</dt><dd id="dirOut">—</dd></div>
+        <div><dt>Syllable</dt><dd id="sylOut">—</dd></div>
+        <div><dt>Plurals</dt><dd id="pluralOut">—</dd></div>
+        <div><dt>Word order</dt><dd id="orderOut">—</dd></div>
+        <div><dt>Letterform</dt><dd id="shapeOut">—</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="wrap">
+      <h2>A starter lexicon</h2>
+      <p class="sub">
+        Twenty-four words the day happens to have. Nothing is looked up in a table:
+        each one is the same coining function the slab uses, handed an English gloss.
+      </p>
+      <div class="lex" id="lex"></div>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>How a language gets dealt</h2>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Choose the sounds</h3>
+          <p>Ten to seventeen consonants and five to seven vowels are drawn from a
+             larger pool, then a smaller set is picked out as the only sounds allowed
+             to close a syllable. Some days nothing may, and every word comes out
+             open and vowel-ended.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Grow the letters</h3>
+          <p>The script gets one set of habits — how curved its strokes are, how far
+             they lean, whether they carry serifs, whether every letter hangs off a
+             shared stem or headline. Each glyph is then grown under those habits, so
+             they are siblings rather than strangers.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Coin on demand</h3>
+          <p>There is no dictionary. An English word is hashed together with the day's
+             seed and that number builds a pronounceable word out of the day's sounds.
+             Ask twice, get the same answer; ask tomorrow, get a stranger.</p>
+        </li>
+      </ol>
+      <p class="sub afterword">
+        The same date integer that drifts the field on the <a href="./">front page</a>,
+        seeds <a href="garden.html">the Garden</a>, writes <a href="chimes.html">the
+        Chimes</a>, deals <a href="lattice.html">the Lattice</a>, names the town in
+        <a href="almanac.html">the Almanac</a>, scatters
+        <a href="observatory.html">the Observatory</a>, raises the coast in
+        <a href="atlas.html">the Atlas</a>, chooses the founding animal of
+        <a href="menagerie.html">the Menagerie</a> and lights the star in
+        <a href="orrery.html">the Orrery</a> also decided every letter on this page.
+        Ten rooms, one number. The Almanac has been filing reports in English from a
+        town that does not exist; this is the alphabet it should have been using.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="codex.js"></script>
+</body>
+</html>
