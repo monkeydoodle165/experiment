@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Chronicle — Drift</title>
+<meta name="description" content="Eight hundred years of invented history, dealt by today's date: countries that rise, borders that move, wars, plagues, faiths and inventions, all running live in the page.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  #chronicle{
+    display:block;
+    width:100%;
+    height:auto;
+    aspect-ratio:960/576;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background:#05070b;
+    touch-action:pan-y;
+  }
+  #tide{
+    display:block;
+    width:100%;
+    height:74px;
+    margin-top:12px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    background:#080b11;
+    cursor:col-resize;
+  }
+  .year-row{
+    display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:14px;
+  }
+  #yearOut{
+    font:700 clamp(1.2rem,3.4vw,1.7rem)/1 ui-monospace,SFMono-Regular,Menlo,monospace;
+    color:var(--accent);letter-spacing:.04em;min-width:150px;
+  }
+  #scrub{flex:1 1 260px;accent-color:var(--accent)}
+  #tip{
+    font:600 11px/1.6 ui-monospace,Menlo,monospace;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--dim);
+    opacity:.35;transition:opacity .2s ease;min-height:18px;margin:10px 0 0;
+  }
+
+  .card-lead{color:#c3ccdb;margin:0 0 22px;max-width:64ch;font-size:.98rem}
+  .card-note{color:var(--dim);margin:16px 0 0;font-size:.92rem;max-width:66ch}
+  .card-note b{color:var(--ink);font-weight:650}
+  .card-title{margin:0 0 20px;font-size:1.25rem;display:flex;align-items:center;gap:11px}
+  .desig{display:block;font:10px/1.6 ui-monospace,Menlo,monospace;color:var(--dim);letter-spacing:.08em}
+  .sw{width:11px;height:11px;border-radius:3px;display:inline-block;margin-right:8px;
+      border:1px solid rgba(255,255,255,.2);vertical-align:middle}
+  .sw.big{width:16px;height:16px;border-radius:4px;margin:0}
+
+  .split{display:grid;gap:22px;grid-template-columns:1fr;margin-top:26px}
+  @media (min-width:900px){ .split{grid-template-columns:1.05fr .95fr} }
+
+  .feed-box{
+    border:1px solid var(--line);border-radius:16px;
+    background:rgba(11,15,22,.6);padding:6px 6px 6px 0;
+    max-height:520px;overflow-y:auto;
+  }
+  .feed{list-style:none;margin:0;padding:0}
+  .feed .ev{
+    padding:12px 16px 12px 18px;border-bottom:1px solid rgba(255,255,255,.05);
+    position:relative;cursor:pointer;
+  }
+  .feed .ev:last-child{border-bottom:0}
+  .feed .ev:hover{background:rgba(122,162,255,.06)}
+  .feed .ev::before{
+    content:"";position:absolute;left:6px;top:16px;width:5px;height:5px;border-radius:50%;
+    background:var(--dim);
+  }
+  .ev-y{
+    font:700 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;color:var(--accent2);
+    margin-right:10px;
+  }
+  .ev-k{
+    font:600 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--dim);
+  }
+  .feed .ev p{margin:6px 0 0;font-size:.93rem;color:#c3ccdb}
+  .k-war::before{background:#ff6b6b}
+  .k-peace::before{background:#8fd694}
+  .k-idea::before{background:#7aa2ff}
+  .k-plague::before{background:#b388ff}
+  .k-faith::before{background:#ffd166}
+  .k-found::before,.k-era::before{background:var(--accent)}
+  .k-end::before{background:#5b6272}
+  .k-break::before{background:#ff8a5b}
+  .k-wonder::before{background:#9bf6ff}
+  .k-famine::before{background:#d98e73}
+
+  .mini-log{list-style:none;margin:18px 0 0;padding:16px 0 0;border-top:1px solid var(--line)}
+  .mini-log li{margin-bottom:11px}
+  .mini-log p{margin:4px 0 0;font-size:.9rem;color:var(--dim)}
+
+  .powers{overflow-x:auto;border:1px solid var(--line);border-radius:14px;margin-top:26px}
+  .powers table{border-collapse:collapse;width:100%;min-width:680px;font-size:.88rem}
+  .powers th{
+    text-align:left;padding:12px 14px;
+    font:600 10px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--dim);
+    border-bottom:1px solid var(--line);
+  }
+  .powers td{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.05);color:var(--dim);white-space:nowrap}
+  .powers td b{color:var(--ink);font-weight:650}
+  .powers tr[data-p]{cursor:pointer;transition:background .15s ease}
+  .powers tr[data-p]:hover{background:rgba(122,162,255,.07)}
+  .powers tr.on td{background:rgba(100,240,200,.09)}
+  .powers td i{color:var(--accent);font-style:normal}
+  .rack-row .controls{margin-left:auto}
+  @media (max-width:640px){ .rack-row .controls{margin-left:0} }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html" class="on">Chronicle</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page eleven</p>
+    <h1>The Chronicle</h1>
+    <p class="lede">
+      The Atlas draws a country and leaves it empty. This one puts people on the
+      ground and lets go of them for eight centuries. Kingdoms are founded, borders
+      creep, wars are declared over grazing rights, a sickness comes up out of a
+      port and takes a third of everyone, someone writes down the mechanical clock,
+      an empire gets too big for its own roads and comes apart in a single bad
+      succession. Nobody is steering. Press play and read what happened.
+    </p>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="wrap">
+
+      <canvas id="chronicle" width="960" height="576" aria-label="An animated map of invented countries changing hands over eight hundred years. Click a country for its file."></canvas>
+      <canvas id="tide" width="960" height="74" aria-label="A stacked chart of how much land each country holds across the whole eight hundred years. Click to jump to a year."></canvas>
+      <p id="tip">open water, or ground nobody has claimed</p>
+
+      <div class="year-row">
+        <span id="yearOut">Year 0</span>
+        <input type="range" id="scrub" min="0" max="800" step="1" value="0" aria-label="Year">
+        <div class="controls">
+          <button class="btn small" id="btnPlay">Run the centuries</button>
+          <button class="btn small ghost" id="btnRestart">Back to year 0</button>
+          <button class="btn small ghost" id="btnEnd">Skip to the end</button>
+        </div>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Speed</span>
+          <div class="chips" id="speeds"></div>
+        </div>
+        <div class="rack-row">
+          <span class="rack-label">Seed <b id="seedOut">—</b></span>
+          <span class="rack-label">Reckoning <b id="eraOut">—</b></span>
+          <div class="controls">
+            <button class="btn small" id="btnNew">Another history</button>
+            <button class="btn small ghost" id="btnToday">Today's history</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="split">
+        <div class="feed-box"><ul class="feed" id="feed"></ul></div>
+        <div class="seed-card" id="card"></div>
+      </div>
+
+      <div class="powers" id="powers"></div>
+      <p class="hint">Click a country on the map, a line in the chronicle, or a row in the table.
+        Space bar runs and stops the clock; the arrow keys step a year at a time, or twenty-five
+        with shift held.</p>
+
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>How the date becomes eight hundred years</h2>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Raise the ground</h3>
+          <p>The seed folds noise into a landmass and pours a sea over it, then works
+             out how good every district is to farm from its climate band, its
+             roughness, its height and whether it touches the coast. Nothing later in
+             the run ever asks where the good land is again — it just goes there.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Hand out the crowns</h3>
+          <p>Five to eight peoples are founded on the best ground, far enough apart to
+             ignore each other at first. Each gets a name, a ruling house, and four
+             leanings — how quick it is to fight, how much it trades, how devout it is,
+             how much it writes down. Those four numbers decide everything it does for
+             the rest of its life, including what it ends up being called.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Let the years run</h3>
+          <p>Every year, populations grow into whatever their land will carry, crowded
+             realms push into the next valley, scholars accumulate until something gets
+             written down for the first time, rulers die and are replaced well or
+             badly, and borders move by force. Wars are settled by weighing people,
+             learning, temper and luck, and they are settled in districts, not points.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>Let it go wrong</h3>
+          <p>A realm bigger than its administration can reach gets less stable every
+             year, and a disputed succession can be the shove that turns the outer
+             provinces into somebody else's country. Plagues walk from border to
+             border. A faith is preached, spreads by trade, and eventually splits —
+             after which the wars between the two halves of it are worse.</p>
+        </li>
+      </ol>
+      <p class="sub afterword">
+        The whole run is computed the moment the page loads and then played back, so the
+        slider is scrubbing real recorded history rather than guessing at it — nothing
+        you do changes what happened. Tomorrow the seed changes, the coast is somewhere
+        else, and none of these countries were ever founded. If you want the same number
+        doing other work: <a href="atlas.html">the Atlas</a> maps a world in far more
+        detail, <a href="codex.html">the Codex</a> invents the alphabet such a place
+        might write in, <a href="menagerie.html">the Menagerie</a> evolves what lives
+        there, <a href="almanac.html">the Almanac</a> files a report from one of its
+        towns and <a href="orrery.html">the Orrery</a> hangs a solar system over
+        the lot of it.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="chronicle.js"></script>
+</body>
+</html>
