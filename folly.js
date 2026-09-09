@@ -312,6 +312,7 @@
       case 'pagoda':
         D.plan = 'tier';
         D.W = rr(r, 9, 13);
+        D.Dp = D.W;                     /* square by definition */
         D.tiers = ri(r, 3, 5);
         D.storeys = D.tiers;
         D.storeyH = rr(r, 3.2, 4.1);
@@ -750,7 +751,7 @@
         var over = wCur * 0.34;
         addPrism(B, polyRect(wCur + over * 2, wCur + over * 2), eaveY, eaveY + 0.28,
           shiftc(roofC, 0.88), { cap: false });
-        addHip(B, 0, 0, wCur + over * 1.9, wCur + over * 1.9, eaveY + 0.28, wCur * 0.26, roofC, 0);
+        addHip(B, 0, 0, wCur + over * 2, wCur + over * 2, eaveY + 0.28, wCur * 0.26, roofC, 0);
         cy = eaveY + 0.28 + wCur * 0.18;
         wCur *= 0.82;
       }
@@ -891,7 +892,7 @@
     if (!MODEL) return;
     cam.f = W * 1.5;
     /* keep the whole thing on the canvas: width and height both have to fit */
-    var need = Math.max(MODEL.bbox.r * 3.5, MODEL.bbox.top * 3.4, 34);
+    var need = Math.max(MODEL.bbox.r * 4.2, MODEL.bbox.top * 3.4, 34);
     cam.dist = need / cam.zoom;
     cam.ty = MODEL.bbox.top * 0.42;
   }
@@ -1075,7 +1076,7 @@
     ctx.restore();
   }
 
-  function paint(list, rig, cull) {
+  function paint(list, rig, cull, keepOrder) {
     var out = [];
     for (var i = 0; i < list.length; i++) {
       var f = list[i];
@@ -1090,7 +1091,7 @@
       pr.f = f;
       out.push(pr);
     }
-    out.sort(function (a, b) { return b.z - a.z; });
+    if (!keepOrder) out.sort(function (a, b) { return b.z - a.z; });
     for (var j = 0; j < out.length; j++) {
       var it = out[j], fc = it.f, col;
       if (finish === 'blue') {
@@ -1123,7 +1124,9 @@
     setCam();
     var rig = lightRig(hour);
     drawSky(rig);
-    paint(MODEL.ground, rig, false);
+    /* the ground is two flat layers: draw them in the order they were laid,
+       not by depth, or the turf paints over the plaza it sits under */
+    paint(MODEL.ground, rig, false, true);
     drawShadows(rig);
     paint(MODEL.faces, rig, true);
   }
@@ -1201,7 +1204,7 @@
       ['Height', metres(model.height) + '  (' + feet(model.height) + ')'],
       ['Footprint', d.plan === 'round'
         ? 'circle, ' + metres(d.R * 2) + ' across'
-        : metres(d.W) + ' × ' + metres(d.Dp)],
+        : metres(d.W) + ' × ' + metres(d.Dp || d.W)],
       ['Walling', d.wall.name],
       ['Roof', d.roofMat.name + ', ' + (ROOFNAMES[d.roofType] || 'gabled')],
       ['Openings', String(model.stats.openings)],
