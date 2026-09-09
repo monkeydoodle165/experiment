@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Folly — Drift</title>
+<meta name="description" content="A building dealt by today's date and drawn in three dimensions with no libraries: plan, walls, openings, roof, ornament, shadow, and a plaque explaining why it was built.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+  #folly{
+    display:block;
+    width:100%;
+    height:auto;
+    aspect-ratio:960/620;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background:#0b1018;
+    cursor:grab;
+    touch-action:pan-y;
+  }
+  #folly:active{cursor:grabbing}
+  .card-lead{color:#c3ccdb;margin:0 0 16px;max-width:64ch;font-size:.98rem}
+  .card-note{color:var(--dim);margin:16px 0 0;font-size:.92rem;max-width:66ch}
+  .card-note b{color:var(--ink);font-weight:650}
+  .seed-card .seed-num{
+    font-size:clamp(1.4rem,4.4vw,2.2rem);
+    margin-bottom:18px;
+    letter-spacing:0;
+    word-break:normal;
+  }
+  .spec{margin-top:26px;overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+  .spec table{border-collapse:collapse;width:100%;font-size:.9rem}
+  .spec th{
+    text-align:left;padding:11px 16px;width:170px;
+    font:600 10px/1.6 ui-monospace,Menlo,monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--dim);
+    border-bottom:1px solid rgba(255,255,255,.05);
+    vertical-align:top;
+  }
+  .spec td{padding:11px 16px;border-bottom:1px solid rgba(255,255,255,.05);color:var(--dim)}
+  .spec td b{color:var(--ink);font-weight:650}
+  .spec tr:last-child th,.spec tr:last-child td{border-bottom:0}
+  .rack-row .controls{margin-left:auto}
+  @media (max-width:640px){
+    .rack-row .controls{margin-left:0}
+    .spec th{width:120px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html" class="on">Folly</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page twelve</p>
+    <h1>The Folly</h1>
+    <p class="lede">
+      Everything else on this site is flat. The Atlas looks straight down at the
+      ground, the Observatory pins stars to the inside of a sphere, the Chronicle
+      slides borders about on a plan. Nothing here had ever been stood up. This room
+      takes today's number, designs one building with it, and then builds it:
+      podium, walls, openings, roof, ornament, shadow and all. Drag it round.
+      Nobody is ever going to build this.
+    </p>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="wrap">
+
+      <canvas id="folly" width="960" height="620" aria-label="A three-dimensional drawing of a generated building standing on a plaza."></canvas>
+      <p class="hint canvas-hint">Drag to walk round it. Scroll on it to move closer. Space bar starts and stops the turntable. The figures on the plaza are 1.7 m tall, for scale.</p>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Finish</span>
+          <div class="chips" id="finishes"></div>
+        </div>
+
+        <div class="rack-row sliders">
+          <label>
+            <span class="rack-label">Light <b id="lightOut">—</b></span>
+            <input type="range" id="light" min="5" max="22.5" step="0.1" value="15">
+          </label>
+        </div>
+
+        <div class="rack-row">
+          <span class="rack-label">Seed <b id="seedOut">—</b></span>
+          <span class="rack-label">Idiom <b id="styleOut">—</b></span>
+          <span class="rack-label">Height <b id="heightOut">—</b></span>
+        </div>
+
+        <div class="rack-row">
+          <div class="chips">
+            <button class="chip on" type="button" id="btnSpin">Stop turning</button>
+            <button class="chip on" type="button" id="btnFigures">Hide figures</button>
+          </div>
+          <div class="controls">
+            <button class="btn small" id="btnNew">Another folly</button>
+            <button class="btn small ghost" id="btnToday">Today's folly</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="seed-card" id="plaque" style="margin-top:26px"></div>
+
+      <div class="spec" id="spec"></div>
+      <p class="hint">Every number in that table was settled by the date, and none of it is stored anywhere.</p>
+
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>How the date becomes a building</h2>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Choose an idiom</h3>
+          <p>The seed picks one of seven ways of building — a classical temple front,
+             a peristyle rotunda, a Gothic revival chapel, a Moorish kiosk, a tiered
+             pagoda, a sham castle or a late concrete monument. The idiom decides which
+             stones and roofing metals are even on the table, what shape the openings
+             are, and what the building is allowed to grow: towers, domes, battlements,
+             buttresses, corner kiosks, a stair core.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Set it out</h3>
+          <p>Then the dimensions: a footprint, a number of storeys, a storey height, a
+             bay rhythm. A podium of two to four steps is laid, the walls are extruded
+             off the plan as a prism, and the openings are spaced along each wall in
+             that wall's own coordinates — so a round-arched window on a curved drum
+             bends round the drum, and a lancet on a buttressed flank sits between the
+             buttresses.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Put a roof on it</h3>
+          <p>Gables, hips, pyramids, domes and onion domes all come out of the same few
+             primitives. A dome is a stack of rings whose radius and height follow a
+             profile curve; make the curve bulge and then come to a point and the same
+             code produces the onion. Lanterns, finials, ringed masts and crenellations
+             go on last.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>Draw it</h3>
+          <p>There is no 3D library here. Every surface is a polygon with an outward
+             normal; the camera rotates the world, clips it against a near plane and
+             divides by depth. Faces pointing away are thrown out, the rest are sorted
+             back to front and painted in that order, and each one is shaded by how
+             squarely it faces the sun — which moves with the light slider, so the same
+             folly can be seen at seven in the morning, flattened by noon, or lit from
+             the inside at midnight.</p>
+        </li>
+      </ol>
+      <p class="sub afterword">
+        Tomorrow this building is demolished and never drawn again. If you want the
+        same number doing other work: <a href="chronicle.html">the Chronicle</a> gives
+        a continent eight hundred years of history, <a href="atlas.html">the Atlas</a>
+        raises the ground it would have stood on, <a href="codex.html">the Codex</a>
+        invents the alphabet its plaque would be cut in,
+        <a href="orrery.html">the Orrery</a> hangs a family of worlds round a new star,
+        <a href="observatory.html">the Observatory</a> scatters a night sky,
+        <a href="menagerie.html">the Menagerie</a> breeds something to live in the
+        grounds, <a href="almanac.html">the Almanac</a> files the day's news and
+        <a href="chimes.html">the Chimes</a> play it.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="folly.js"></script>
+</body>
+</html>
