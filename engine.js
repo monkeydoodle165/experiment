@@ -90,7 +90,7 @@
   ];
   var ADJ = ['Improved', 'Patent', 'Self-Acting', 'Compound', 'Registered', 'Double-Geared',
     'Continuous', 'Reversible', 'Silent', 'Universal'];
-  var NOUN = ['Engine', 'Machine', 'Apparatus', 'Motion', 'Gear', 'Mechanism', 'Frame'];
+  var NOUN = ['Engine', 'Machine', 'Apparatus', 'Motion', 'Mechanism', 'Frame', 'Works'];
 
   /* ---------------- involute gear geometry ---------------- */
   function inv(a) { return Math.tan(a) - a; }
@@ -234,6 +234,7 @@
     var stages = ri(r, 3, 5);
     var heading = rf(r, -0.3, 0.3);
     var beltUsed = false;
+    var zag = r() < 0.5 ? 1 : -1;      /* the train zigzags rather than running straight */
     var names = 'ABCDEFGH';
 
     for (var s = 0; s < stages; s++) {
@@ -262,8 +263,10 @@
          Wheels sharing the driving shaft are exempt: like any compound train,
          they live in their own plane and are allowed to overlap in plan. */
       var best = null, fallback = null;
+      var swing = zag * rf(r, 0.5, 1.05);
+      zag = -zag;
       for (var t = 0; t < 60; t++) {
-        var ang = heading + (t === 0 ? 0 : rf(r, -1.25, 1.25));
+        var ang = heading + (t === 0 ? swing : rf(r, -1.3, 1.3));
         var nx = drivingWheel.x + Math.cos(ang) * dist;
         var ny = drivingWheel.y + Math.sin(ang) * dist;
         var cand = { ang: ang, x: nx, y: ny };
@@ -448,7 +451,7 @@
       d.Ne = ri(r, 15, 30);
       d.er = clamp(R * rf(r, 0.62, 0.9), 20, 48);
       d.anchor = d.er * 1.42;
-      d.pend = d.er * rf(r, 4.2, 6.4);
+      d.pend = d.er * rf(r, 2.2, 3.4);
       d.bob = d.er * 0.38;
       d.amp = rf(r, 0.11, 0.2);
       d.reach = d.anchor + d.pend + d.bob;
@@ -516,14 +519,14 @@
   var FINISHES = [
     {
       key: 'brass', name: 'Brass',
-      bg: '#100d09', plate: '#241c12', plateEdge: '#4a3a22', screw: '#c9a25e',
+      bg: '#100d09', plate: '#2e2416', plateEdge: '#6a5330', screw: '#e0b978',
       gear: ['#f0cd84', '#8f6725'], gearEdge: '#ffe7b8', pinion: ['#ffe1a0', '#a2762c'],
       steel: '#cbd4de', steelEdge: '#eef3f9', rod: '#b6c0cc',
       belt: '#6b5236', trace: '#64f0c8', ink: '#e8edf5', dim: '#9b8a6d', line: false
     },
     {
       key: 'iron', name: 'Cast iron',
-      bg: '#0a0d13', plate: '#151b25', plateEdge: '#2b3646', screw: '#8fa1b6',
+      bg: '#0a0d13', plate: '#1a222f', plateEdge: '#3d4b5f', screw: '#9fb2c8',
       gear: ['#9fb2c6', '#38455a'], gearEdge: '#d6e2f0', pinion: ['#c2d2e2', '#4a5a70'],
       steel: '#cfd8e3', steelEdge: '#f0f5fb', rod: '#a9b5c4',
       belt: '#3a4353', trace: '#64f0c8', ink: '#e8edf5', dim: '#7f8ea2', line: false
@@ -566,14 +569,32 @@
     for (var j = 0; j < M.devices.length; j++) {
       var d = M.devices[j];
       add(d.x, d.y, d.R + 8);
+      var p;
       if (d.kind === 'governor') {
         var up = { x: -d.u.y, y: d.u.x };
         add(d.x + d.u.x * d.dist + up.x * d.spin, d.y + d.u.y * d.dist + up.y * d.spin,
           d.arm + d.ball + 6);
-      } else {
-        var wide = (d.kind === 'fourbar' || d.kind === 'geneva') ? 0.5 : 0.3;
-        add(d.x + d.u.x * d.reach, d.y + d.u.y * d.reach,
-          Math.max(d.R * 0.8, d.reach * wide));
+      } else if (d.kind === 'piston') {
+        p = rotPt(d, d.off + d.cyl, 0);
+        add(p.x, p.y, d.bore * 1.4);
+      } else if (d.kind === 'hammer') {
+        p = rotPt(d, d.reach, 0);
+        add(p.x, p.y, d.headW * 1.8);
+      } else if (d.kind === 'geneva') {
+        p = rotPt(d, d.c, 0);
+        add(p.x, p.y, d.wr + 8);
+      } else if (d.kind === 'escapement') {
+        p = rotPt(d, d.anchor + d.pend, 0);
+        add(p.x, p.y, d.bob * 1.5);
+      } else if (d.kind === 'fourbar') {
+        p = rotPt(d, d.g, 0);
+        add(p.x, p.y, d.L4 + d.r2 * 0.4);
+        for (var t = 0; t < TAU; t += TAU / 48) {
+          var q = solveFourbar(d, t);
+          if (!q) continue;
+          add(d.x + d.u.x * q.C.x - d.u.y * q.C.y,
+            d.y + d.u.y * q.C.x + d.u.x * q.C.y, d.r2 * 0.4);
+        }
       }
     }
     return b;
