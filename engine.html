@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Engine — Drift</title>
+<meta name="description" content="A working machine dealt by today's date: gear trains with real involute teeth, belts, cams, linkages and a governor, all turning together in the browser.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+  #engine{
+    display:block;
+    width:100%;
+    height:auto;
+    aspect-ratio:960/620;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background:#100d09;
+    cursor:grab;
+    touch-action:pan-y;
+  }
+  #engine:active{cursor:grabbing}
+  .card-lead{color:#c3ccdb;margin:0 0 16px;max-width:64ch;font-size:.98rem}
+  .card-note{color:var(--dim);margin:16px 0 0;font-size:.92rem;max-width:66ch}
+  .card-note b{color:var(--ink);font-weight:650}
+  .seed-card .seed-num{
+    font-size:clamp(1.4rem,4.4vw,2.2rem);
+    margin-bottom:18px;
+    letter-spacing:0;
+    word-break:normal;
+  }
+  #partCard{margin-top:22px;min-height:96px}
+  .spec{margin-top:26px;overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+  .spec table{border-collapse:collapse;width:100%;font-size:.9rem}
+  .spec th{
+    text-align:left;padding:11px 16px;width:190px;
+    font:600 10px/1.6 ui-monospace,Menlo,monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--dim);
+    border-bottom:1px solid rgba(255,255,255,.05);
+    vertical-align:top;
+  }
+  .spec td{padding:11px 16px;border-bottom:1px solid rgba(255,255,255,.05);color:var(--dim)}
+  .spec td b{color:var(--ink);font-weight:650}
+  .spec tr:last-child th,.spec tr:last-child td{border-bottom:0}
+  .rack-row .controls{margin-left:auto}
+  @media (max-width:640px){
+    .rack-row .controls{margin-left:0}
+    .spec th{width:120px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html" class="on">Engine</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page thirteen</p>
+    <h1>The Engine</h1>
+    <p class="lede">
+      The Folly stood a building up but nothing in it moved. This room takes today's
+      number and lays out a machine instead — a driving wheel, a train of gears cut
+      with real involute teeth, sometimes a belt, and two or three mechanisms on the
+      end that do something with all that turning. Then it runs. Every wheel is
+      geared to every other wheel properly, so the last shaft turns at exactly the
+      rate the tooth counts say it should. Take hold of it and turn it yourself.
+    </p>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="wrap">
+
+      <canvas id="engine" width="960" height="620" aria-label="A generated machine: gear train, belts and mechanisms, turning."></canvas>
+      <p class="hint canvas-hint">Drag anywhere to turn the machine by hand. Click a wheel or a mechanism to read its numbers. Space bar starts and stops it.</p>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Finish</span>
+          <div class="chips" id="finishes"></div>
+        </div>
+
+        <div class="rack-row sliders">
+          <label>
+            <span class="rack-label">Driving wheel <b id="speedOut">—</b></span>
+            <input type="range" id="speed" min="1" max="40" step="1" value="16">
+          </label>
+        </div>
+
+        <div class="rack-row">
+          <span class="rack-label">Seed <b id="seedOut">—</b></span>
+          <span class="rack-label">Train <b id="ratioOut">—</b></span>
+          <span class="rack-label">Parts <b id="partsOut">—</b></span>
+        </div>
+
+        <div class="rack-row">
+          <div class="chips">
+            <button class="chip on" type="button" id="btnRun">Stop it</button>
+            <button class="chip on" type="button" id="btnTrace">Hide the paths</button>
+            <button class="chip" type="button" id="btnLabels">Show the numbers</button>
+          </div>
+          <div class="controls">
+            <button class="btn small" id="btnNew">Another engine</button>
+            <button class="btn small ghost" id="btnToday">Today's engine</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="seed-card" id="partCard" style="margin-top:22px"></div>
+
+      <div class="seed-card" id="plaque" style="margin-top:26px"></div>
+
+      <div class="spec" id="spec"></div>
+      <p class="hint">Nothing in that table was chosen by a person. Tomorrow the whole machine is scrapped.</p>
+
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>How the date becomes a machine</h2>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Cut the teeth</h3>
+          <p>Every gear here is a real involute gear. One module — the tooth size —
+             is chosen for the whole machine, and from it each wheel gets a pitch
+             circle, an addendum, a dedendum and a base circle. The flank of every
+             tooth is the curve you get by unwinding a taut string from that base
+             circle, which is the shape that lets two wheels roll on each other at a
+             constant speed instead of grinding.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Lay out the train</h3>
+          <p>Three to five stages are set out one after another. Each new shaft is
+             placed exactly the sum of the two pitch radii away from the last, at a
+             direction chosen to keep it clear of everything already on the plate.
+             Some shafts carry two wheels at once — a big one driven, a small one
+             driving — which is how a train gets a serious reduction out of a small
+             frame. Occasionally a stage is a belt instead, and if the belt is crossed
+             the next shaft runs backwards.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Mesh it honestly</h3>
+          <p>Teeth cannot simply be drawn on. Each wheel is given a phase worked out
+             from its neighbour's phase, its own tooth count and the angle of the line
+             between the two centres, so that a tooth on one wheel always arrives in a
+             gap on the other. Turn the machine slowly and watch any mesh: nothing
+             passes through anything.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>Put it to work</h3>
+          <p>The end of the train gets mechanisms, and each one solves its own
+             kinematics every frame. The crank and slider uses the piston equation.
+             The four-bar linkage is found by intersecting two circles, and the point
+             traced by its coupler is a genuine coupler curve — that lopsided loop is
+             not decoration. The Geneva wheel indexes on the real arctangent, dwelling
+             while the pin is out of the slot. The cam is a profile in polar
+             coordinates and the follower simply reads it off. The governor's balls
+             fly out as the speed rises, because that is all a governor has ever done.</p>
+        </li>
+      </ol>
+      <p class="sub afterword">
+        Same number, different work: <a href="folly.html">the Folly</a> designs the
+        building this machine would live in, <a href="chronicle.html">the Chronicle</a>
+        gives the country round it eight hundred years of history,
+        <a href="atlas.html">the Atlas</a> raises the ground,
+        <a href="codex.html">the Codex</a> invents the alphabet the maker's plate would
+        be cut in, <a href="orrery.html">the Orrery</a> hangs a family of worlds round a
+        new star, <a href="observatory.html">the Observatory</a> scatters a night sky,
+        <a href="menagerie.html">the Menagerie</a> breeds something to live under it,
+        <a href="almanac.html">the Almanac</a> files the day's news and
+        <a href="chimes.html">the Chimes</a> play it.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="engine.js"></script>
+</body>
+</html>
