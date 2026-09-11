@@ -508,8 +508,7 @@
   function recolour(plan) {
     var r = rng((st.seed ^ 0x5bf03635) >>> 0);
     buildColour(r, plan);
-    st.woven = layout().P;
-    render();
+    finish();
     writeOut();
   }
 
@@ -685,25 +684,37 @@
   }
 
   /* ---------------- weaving ---------------- */
-  var raf = null, last = 0;
+  var raf = null, last = 0, gen = 0;
+
+  function finish() {
+    gen++;
+    st.animating = false;
+    if (raf) { cancelAnimationFrame(raf); raf = null; }
+    st.woven = layout().P;
+    render();
+  }
+
   function startWeaving() {
-    var L = layout();
-    if (reduce) { st.woven = L.P; st.animating = false; render(); return; }
+    gen++;
+    var mine = gen;
+    if (raf) { cancelAnimationFrame(raf); raf = null; }
+    if (reduce || document.hidden) { finish(); return; }
     st.woven = 0;
     st.animating = true;
     last = 0;
-    if (raf) cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(tick);
+    raf = requestAnimationFrame(function (t) { tick(t, mine); });
   }
-  function tick(now) {
+
+  function tick(now, mine) {
+    if (mine !== gen) return;
     var L = layout();
     if (!last) last = now;
-    var dt = Math.min(0.05, (now - last) / 1000);
+    var dt = Math.min(0.12, (now - last) / 1000);
     last = now;
-    st.woven += dt * Math.max(24, L.P / 2.4);
+    st.woven += dt * Math.max(26, L.P / 2.2);
     if (st.woven >= L.P) { st.woven = L.P; st.animating = false; }
     render();
-    if (st.animating) raf = requestAnimationFrame(tick);
+    if (st.animating) raf = requestAnimationFrame(function (t) { tick(t, mine); });
   }
 
   /* ---------------- stats ---------------- */
@@ -879,9 +890,7 @@
       st.edited = true;
     }
     if (hit.r !== 'cloth') {
-      st.animating = false;
-      st.woven = layout().P;
-      render();
+      finish();
       writeOut();
     }
     if (first) explain(hit);
@@ -962,9 +971,7 @@
       st.cell = parseInt(sett.value, 10);
       var o = $('settOut');
       if (o) o.textContent = st.cell + ' px a thread';
-      st.woven = layout().P;
-      st.animating = false;
-      render();
+      finish();
       writeOut();
     });
     st.cell = parseInt(sett.value, 10) || 9;
@@ -978,9 +985,7 @@
     st.showDraft = !st.showDraft;
     this.textContent = st.showDraft ? 'Hide the draft' : 'Show the draft';
     this.classList.toggle('on', st.showDraft);
-    st.woven = layout().P;
-    st.animating = false;
-    render();
+    finish();
     writeOut();
   });
   wire('btnView', function () {
@@ -1002,7 +1007,7 @@
   });
 
   document.addEventListener('visibilitychange', function () {
-    if (document.hidden && raf) { cancelAnimationFrame(raf); st.animating = false; }
+    if (document.hidden && st.animating) finish();
   });
 
   /* ---------------- go ---------------- */
