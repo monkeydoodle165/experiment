@@ -485,7 +485,7 @@
       fibre: pk(r, FIBRES),
       weft: pk(r, FIBRES),
       sett: epi + ' ends and ' + (epi + ri(r, -4, 3)) + ' picks to the inch',
-      width: ri(r, 18, 46) + ' inches in the reed',
+      width: ri(r, 18, 46) + ' inches wide in the reed',
       length: ri(r, 4, 30) + ' yards',
       purpose: pk(r, PURPOSE),
       fate: pk(r, FATE)
@@ -764,7 +764,7 @@
       pq.innerHTML =
         '<div class="seed-num">' + esc(pl.name) + '</div>' +
         '<p class="card-lead">Woven by ' + esc(pl.weaver) + ' at ' + esc(pl.mill) +
-        ', ' + esc(pl.length) + ' of it, ' + esc(pl.width) + ' wide, at ' + esc(pl.sett) + '. ' +
+        ', ' + esc(pl.length) + ' of it, ' + esc(pl.width) + ', at ' + esc(pl.sett) + '. ' +
         'Warp of ' + esc(pl.fibre) + ', weft of ' + esc(pl.weft) + '. Made for ' +
         esc(pl.purpose) + '. It was ' + esc(pl.fate) + '.</p>' +
         swatchRow();
