@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Loom — Drift</title>
+<meta name="description" content="A weaving draft dealt by today's date and then actually woven: threading, tie-up, treadling and the cloth they make, all of it editable in the browser.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+  #loom{
+    display:block;
+    width:100%;
+    height:auto;
+    aspect-ratio:980/660;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background:#0c0f13;
+    cursor:crosshair;
+    touch-action:pan-y;
+  }
+  .card-lead{color:#c3ccdb;margin:0 0 14px;max-width:66ch;font-size:.98rem}
+  .card-lead b{color:var(--ink);font-weight:650}
+  .card-note{color:var(--dim);margin:14px 0 0;font-size:.92rem;max-width:68ch}
+  .card-note b{color:var(--ink);font-weight:650}
+  .seed-card .seed-num{
+    font-size:clamp(1.3rem,4vw,2rem);
+    margin-bottom:16px;
+    letter-spacing:0;
+    word-break:normal;
+  }
+  #cellCard{margin-top:22px;min-height:96px}
+  .spec{margin-top:26px;overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+  .spec table{border-collapse:collapse;width:100%;font-size:.9rem}
+  .spec th{
+    text-align:left;padding:11px 16px;width:200px;
+    font:600 10px/1.6 ui-monospace,Menlo,monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--dim);
+    border-bottom:1px solid rgba(255,255,255,.05);
+    vertical-align:top;
+  }
+  .spec td{padding:11px 16px;border-bottom:1px solid rgba(255,255,255,.05);color:var(--dim)}
+  .spec td b{color:var(--ink);font-weight:650}
+  .spec tr:last-child th,.spec tr:last-child td{border-bottom:0}
+  .rack-row .controls{margin-left:auto}
+  .key{display:flex;flex-wrap:wrap;gap:18px;margin:14px 0 0;padding:0;list-style:none}
+  .key li{display:flex;align-items:center;gap:8px;font-size:.84rem;color:var(--dim)}
+  .key i{width:13px;height:13px;border-radius:3px;display:inline-block}
+  @media (max-width:640px){
+    .rack-row .controls{margin-left:0}
+    .spec th{width:126px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html" class="on">Loom</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page fourteen</p>
+    <h1>The Loom</h1>
+    <p class="lede">
+      Thirteen rooms in and this site had never made anything you could hold. Today's
+      number has been handed to a loom instead. It threads the warp, ties the treadles to
+      the shafts, works out the order to press them in, dyes the yarn, and then weaves —
+      one pick at a time, on screen. Everything you can see is decided by three small
+      grids, and all three of them are yours to edit.
+    </p>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="wrap">
+
+      <canvas id="loom" width="980" height="660" aria-label="A weaving draft: threading along the top, tie-up in the corner, treadling down the side, and the cloth they produce."></canvas>
+      <p class="hint canvas-hint">Click or drag along the threading, the tie-up or the treadling and the cloth re-weaves under your hand. Click the cloth itself to be told why that square is the colour it is.</p>
+
+      <ul class="key">
+        <li><i style="background:#64f0c8"></i>threading, along the top — and treadling, down the right</li>
+        <li><i style="background:#7aa2ff"></i>tie-up, in the corner</li>
+        <li><i style="background:#7aa2ff;opacity:.55;width:3px;border-radius:1px"></i>where a repeat starts again</li>
+      </ul>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Weave</span>
+          <div class="chips" id="families"></div>
+        </div>
+
+        <div class="rack-row">
+          <span class="rack-label">Colour</span>
+          <div class="chips" id="plans"></div>
+        </div>
+
+        <div class="rack-row sliders">
+          <label>
+            <span class="rack-label">Sett <b id="settOut">—</b></span>
+            <input type="range" id="sett" min="5" max="18" step="1" value="9">
+          </label>
+        </div>
+
+        <div class="rack-row">
+          <span class="rack-label">Seed <b id="seedOut">—</b></span>
+          <span class="rack-label">Structure <b id="weaveOut">—</b></span>
+          <span class="rack-label">Cloth <b id="clothOut">—</b></span>
+        </div>
+
+        <div class="rack-row">
+          <div class="chips">
+            <button class="chip on" type="button" id="btnDraft">Hide the draft</button>
+            <button class="chip" type="button" id="btnView">Black and white</button>
+            <button class="chip" type="button" id="btnWeave">Weave it again</button>
+          </div>
+          <div class="controls">
+            <button class="btn small" id="btnNew">Another cloth</button>
+            <button class="btn small ghost" id="btnToday">Today's cloth</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="seed-card" id="cellCard"></div>
+
+      <div class="seed-card" id="plaque" style="margin-top:26px"></div>
+
+      <div class="spec" id="spec"></div>
+      <p class="hint">Nobody chose any of that. Tomorrow the warp is cut off and a different cloth goes on.</p>
+
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>How the date becomes a cloth</h2>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Thread the warp</h3>
+          <p>A loom has shafts — frames that lift groups of warp threads. The threading
+             says which shaft each thread passes through, and it is the first thing the
+             day's number decides: a straight run up the shafts, a point that climbs and
+             comes back down, a run that advances a shaft every repeat, or a sequence of
+             blocks that each rock between two shafts. The strip along the top of the
+             draft is that decision, one mark per thread.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Tie the treadles</h3>
+          <p>The small grid in the corner is the tie-up: which shafts each treadle lifts.
+             Step the lifted group along by one shaft a treadle and you have a twill.
+             Lift all but one shaft, counting round by a number that shares no factor
+             with the shaft count, and you have a satin. Lift alternate shafts and you
+             have plain weave, the oldest cloth there is.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Work the order</h3>
+          <p>The column down the right is the treadling: which treadle is pressed for
+             each pick of weft. Press them in order and a twill leans. Press them out and
+             back and it becomes a herringbone without a single thread being rethreaded.
+             Weavers call following the threading with your feet tromping as writ, and on
+             an overshot draft it is what turns a row of blocks into a star.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>Weave it</h3>
+          <p>The cloth is then the answer to one question, asked once per square: is this
+             thread's shaft among the ones this treadle lifts? If it is, the warp passes
+             over and you see the warp colour. If it is not, the weft passes over and you
+             see the weft. Every check, tartan, houndstooth and damask that has ever
+             existed is that question and nothing else. Runs of the same answer are drawn
+             here as single floats, which is why the surface has a grain.</p>
+        </li>
+      </ol>
+      <p class="sub afterword">
+        Same number, different trade: <a href="engine.html">the Engine</a> cuts the gears
+        for the mill that would drive this loom, <a href="folly.html">the Folly</a> puts up
+        the building it stands in, <a href="chronicle.html">the Chronicle</a> gives the
+        country round it eight hundred years to invent the pattern,
+        <a href="atlas.html">the Atlas</a> raises the ground the sheep are on,
+        <a href="menagerie.html">the Menagerie</a> breeds them,
+        <a href="codex.html">the Codex</a> letters the label,
+        <a href="orrery.html">the Orrery</a> hangs a family of worlds round a new star,
+        <a href="observatory.html">the Observatory</a> scatters the night sky,
+        <a href="almanac.html">the Almanac</a> files the day's news and
+        <a href="chimes.html">the Chimes</a> keep time with the shuttle.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="loom.js"></script>
+</body>
+</html>
