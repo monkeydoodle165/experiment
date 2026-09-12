@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Exchange — Drift</title>
+<meta name="description" content="A trading economy dealt by today's date: towns, roads, goods and merchants, with every price worked out from supply, demand and distance.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  #map{
+    display:block;
+    width:100%;
+    aspect-ratio:16/9;
+    border-radius:16px;
+    border:1px solid var(--line);
+    background:linear-gradient(160deg,rgba(100,240,200,.04),rgba(122,162,255,.03)),#07090d;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+  #chart{
+    display:block;
+    width:100%;
+    aspect-ratio:24/9;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background:#080b11;
+  }
+  .ex-grid{
+    display:grid;
+    gap:18px;
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+    align-items:start;
+  }
+  .ex-card{
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:20px 22px;
+    background:linear-gradient(160deg,rgba(100,240,200,.05),rgba(122,162,255,.03));
+  }
+  .ex-card h3{margin:0 0 4px;font-size:1.16rem}
+  .ex-card .ex-sub{
+    font:600 10px/1.6 ui-monospace,Menlo,monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--dim);
+    margin:0 0 16px;
+  }
+  table.ledger{width:100%;border-collapse:collapse;font-size:.88rem}
+  table.ledger th{
+    font:600 10px/1.6 ui-monospace,Menlo,monospace;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
+    text-align:right;padding:0 0 8px;font-weight:600;
+  }
+  table.ledger th:first-child{text-align:left}
+  table.ledger td{
+    padding:5px 0;border-top:1px solid rgba(255,255,255,.06);
+    text-align:right;color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  table.ledger td:first-child{text-align:left;color:var(--dim)}
+  table.ledger td .gdot{
+    width:9px;height:9px;border-radius:50%;display:inline-block;
+    margin-right:8px;vertical-align:-1px;
+  }
+  .up{color:#ff8a5b}
+  .down{color:var(--accent)}
+  .feed{list-style:none;margin:0;padding:0;max-height:330px;overflow:auto}
+  .feed li{
+    padding:8px 0;border-top:1px solid rgba(255,255,255,.06);
+    font-size:.9rem;color:var(--dim);
+  }
+  .feed li:first-child{border-top:0}
+  .feed li b{color:var(--ink);font-weight:600}
+  .feed time{
+    font:600 10px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.12em;color:var(--accent2);
+    display:inline-block;min-width:66px;
+  }
+  .feed li.bad time{color:#ff8a5b}
+  .feed li.good time{color:var(--accent)}
+  .legend{display:flex;flex-wrap:wrap;gap:10px 16px;margin-top:14px}
+  .legend span{
+    font:600 11px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.06em;color:var(--dim);
+    display:inline-flex;align-items:center;gap:7px;
+  }
+  .legend i{width:14px;height:3px;border-radius:2px;display:inline-block}
+  .chart-head{
+    display:flex;flex-wrap:wrap;gap:12px;align-items:baseline;
+    justify-content:space-between;margin-bottom:14px;
+  }
+  .spread{
+    font:600 12px/1.6 ui-monospace,Menlo,monospace;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--dim);
+  }
+  .spread b{color:var(--accent);font-size:1rem;letter-spacing:.04em}
+  .spread.wide b{color:#ff8a5b}
+  .rack-row .controls{margin-left:auto}
+  @media (max-width:640px){ .rack-row .controls{margin-left:0} }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html" class="on">Exchange</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page fifteen</p>
+    <h1>The Exchange</h1>
+    <p class="lede">
+      Today's number has laid out a trading world: eight or nine towns on a road
+      network, eight goods, and a few dozen merchants with a purse each and no
+      instructions. Nobody sets a price here. Every town simply makes some things
+      and eats others, and what it has in its warehouse against what it gets
+      through in a season is the whole of the pricing. The merchants read those
+      numbers, buy where a thing is cheap, haul it somewhere it is dear, and in
+      doing so quietly drag the two prices together.
+    </p>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="wrap">
+
+      <canvas id="map" aria-label="A map of towns joined by roads, with caravans moving along them."></canvas>
+      <p class="hint canvas-hint">Click a town to open its warehouse. Space pauses. Every moving dot is a loaded caravan, coloured by what it is carrying.</p>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Speed</span>
+          <div class="chips" id="speeds"></div>
+          <div class="controls">
+            <button class="btn small ghost" id="btnEmbargo">Close the roads</button>
+            <button class="btn small ghost" id="btnShock">Something happens</button>
+            <button class="btn small ghost" id="btnNew">New world</button>
+            <button class="btn small ghost" id="btnToday">Today's world</button>
+          </div>
+        </div>
+
+        <div class="rack-row">
+          <span class="rack-label" style="min-width:190px">Tolls on every sale <b id="tollOut">6%</b></span>
+          <input type="range" id="toll" min="0" max="40" step="1" value="6" style="flex:1;min-width:180px;accent-color:var(--accent)">
+        </div>
+
+        <div class="rack-row">
+          <span class="rack-label">Year <b id="clockOut">—</b></span>
+          <span class="rack-label">Caravans out <b id="movingOut">—</b></span>
+          <span class="rack-label">Cargoes sold <b id="tradesOut">0</b></span>
+          <span class="rack-label">Merchants <b id="merchOut">—</b></span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <div class="ex-grid">
+        <div class="ex-card" id="townCard">
+          <h3>—</h3>
+          <p class="ex-sub">—</p>
+        </div>
+        <div class="ex-card">
+          <h3>The word going round</h3>
+          <p class="ex-sub">Nothing here is scripted</p>
+          <ul class="feed" id="feed"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="wrap">
+      <h2>One good, every town</h2>
+      <p class="sub">
+        Each line is what a single town is asking for the chosen good, plotted as
+        the years go by. The dashed line is what the thing is worth in the
+        abstract. Close the roads and watch the lines fan apart; open them again
+        and watch the merchants pull them back together.
+      </p>
+
+      <div class="chips" id="goods" style="margin-bottom:18px"></div>
+
+      <div class="chart-head">
+        <span class="spread" id="spreadOut">Spread <b>—</b></span>
+        <span class="spread">Cheapest <b id="cheapOut">—</b> · dearest <b id="dearOut">—</b></span>
+      </div>
+
+      <canvas id="chart" aria-label="A chart of one good's price in every town over time."></canvas>
+      <div class="legend" id="legend"></div>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>Where the prices come from</h2>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>The land decides</h3>
+          <p>Every town is dropped on a terrain — coast, plain, hills, mountain,
+             forest or river crossing — and the terrain decides what it is any
+             good at making. Fish come off coasts, iron out of mountains, wool off
+             pasture, cloth and glass out of the crowded river towns. Each place
+             ends up decent at three things and dependent on the rest.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>The warehouse decides</h3>
+          <p>Production runs in every day, consumption eats out of the same pile,
+             and the price is read straight off what is left: roughly two months'
+             supply and the good sells at what it is worth, a week's supply and it
+             is four times that, a glut and the price sinks to a quarter. No
+             merchant sets it, no market maker smooths it.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Distance decides the rest</h3>
+          <p>A merchant compares the price at his elbow with the price one road
+             away, subtracts the haulage — which is charged by bulk, so spice
+             travels and timber mostly does not — subtracts the toll, and goes
+             if anything is left. Buying lifts the price he is paying. Selling
+             drops the price he is getting. Enough merchants and the gap closes
+             to roughly the cost of the journey, which is as near as the world
+             gets to a single price for anything.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        The same date integer that draws the flow field on the
+        <a href="./">front page</a>, weaves the cloth in <a href="loom.html">the
+        Loom</a>, cuts the gears in <a href="engine.html">the Engine</a> and
+        founds the countries in <a href="chronicle.html">the Chronicle</a> lays out
+        this map, names the towns, deals the goods and gives every merchant his
+        purse. After that nobody is steering. There is no target price anywhere in
+        the code, no equilibrium being solved for and no invisible hand written
+        down — a few dozen small, entirely selfish decisions a day are the only
+        mechanism, and the convergence on the chart is a result rather than an
+        instruction. Push the tolls up to forty per cent and it stops happening,
+        because at that point the journey costs more than the difference is worth,
+        and the towns go back to being strangers.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="exchange.js"></script>
+</body>
+</html>
