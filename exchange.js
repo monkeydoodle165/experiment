@@ -76,6 +76,11 @@
   var DEMAND = { food: 1.0, raw: 0.5, craft: 0.3, lux: 0.16 };
   /* nothing keeps for ever, and food keeps least of all */
   function spoilOf(gd) { return gd.kind === 'food' ? 0.0025 : 0.0005; }
+  /* the two elasticities: a dear good is worth more trouble to make and
+     gets used more sparingly, which is half of how a price settles */
+  function supplyPull(rel) { return clamp(Math.pow(rel, 0.4), 0.45, 1.9); }
+  function demandPull(rel) { return clamp(Math.pow(1 / rel, 0.45), 0.4, 2.2); }
+  var FREIGHT = 0.12;   // coin per league per unit of bulk
 
   var TERRAIN = [
     { n: 'coast',          w: { sea: 3.2, trade: 2.0, craft: 1.0, field: 0.6, pasture: 0.5, wood: 0.4, mine: 0.1, vine: 0.3 } },
@@ -266,7 +271,7 @@
 
     /* --- merchants --- */
     var merchants = [];
-    var mcount = clamp(Math.round(N * 2.6), 12, 30);
+    var mcount = clamp(Math.round(N * 4.5), 24, 44);
     for (i = 0; i < mcount; i++) merchants.push(newMerchant(towns));
 
     /* --- price history --- */
@@ -303,7 +308,7 @@
     return {
       name: merchantName(home.name),
       at: home.i, from: home.i, to: home.i,
-      coin: rr(320, 1100), cap: rr(26, 62),
+      coin: rr(500, 1600), cap: rr(14, 34),
       good: -1, qty: 0, paid: 0,
       pos: 0, len: 0, wait: ri(0, 12), trips: 0, profit: 0
     };
@@ -335,15 +340,17 @@
       t = W.towns[i];
       for (g = 0; g < G; g++) {
         var gd = W.goods[g];
-        var s = t.stock[g] + t.prod[g] * t.prodMul[g];
-        var want = t.cons[g] * t.consMul[g];
+        /* dear things get made harder and used more sparingly */
+        var rel = t.price[g] / gd.base;
+        var s = t.stock[g] + t.prod[g] * t.prodMul[g] * supplyPull(rel);
+        var want = t.cons[g] * t.consMul[g] * demandPull(rel);
         s -= Math.min(s, want);
         s *= 1 - spoilOf(gd);
         t.stock[g] = s;
 
         var tgt = Math.max(1.5, want * 60);
-        var p = gd.base * Math.pow(tgt / (s + tgt * 0.02), 0.55);
-        p = clamp(p, gd.base * 0.26, gd.base * 4.4);
+        var p = gd.base * Math.pow(tgt / (s + tgt * 0.02), 0.45);
+        p = clamp(p, gd.base * 0.33, gd.base * 3.4);
         t.price[g] += (p - t.price[g]) * 0.2;
       }
     }
@@ -357,10 +364,40 @@
     if (T % SAMPLE === 0) sample();
   }
 
+  /* the best single load a merchant could pick up in a given town, judged on
+     what it would fetch one road away less the cost of getting it there */
+  function dealAt(ti, m) {
+    var a = W.towns[ti], best = null, i, g;
+    for (i = 0; i < a.adj.length; i++) {
+      var link = a.adj[i];
+      if (!link.e.open) continue;
+      var b = W.towns[link.to], d = link.e.d;
+      for (g = 0; g < W.G; g++) {
+        var gd = W.goods[g];
+        var buy = a.price[g] * 1.015;
+        var sell = b.price[g] * 0.985 * (1 - toll);
+        var net = sell - buy - d * FREIGHT * gd.bulk;
+        if (net <= buy * 0.005) continue;
+        var spare = a.stock[g] - a.cons[g] * a.consMul[g] * 5;
+        if (spare < 1) continue;
+        var qty = Math.floor(Math.min(m.cap / gd.bulk, m.coin / buy, spare * 0.5));
+        if (qty < 1) continue;
+        /* hauling a lot moves both prices against you — allow for that */
+        var bite = 1 / (1 + (qty / Math.max(4, a.stock[g] * 0.5)) +
+                            (qty / Math.max(4, b.stock[g] * 0.5)));
+        var score = net * qty * (0.4 + 0.6 * bite) / (d + 3);
+        if (!best || score > best.score) {
+          best = { score: score, g: g, qty: qty, to: link.to, d: d, buy: buy };
+        }
+      }
+    }
+    return best;
+  }
+
   function moveMerchant(m) {
-    var i, g;
+    var i;
     if (m.len > 0) {                       // on the road
-      m.pos += 0.45;
+      m.pos += 0.75;
       if (m.pos < m.len) return;
       /* arrived */
       m.at = m.to; m.len = 0; m.pos = 0;
@@ -372,18 +409,18 @@
         m.coin += got;
         var gain = got - m.paid;
         m.profit += gain; m.trips++; trades++;
-        if (gain > W.goods[g0].base * 12) {
+        if (gain > W.goods[g0].base * 6) {
           say('<b>' + m.name + '</b> clears ' + money(gain) + ' coin on ' +
               Math.round(m.qty) + ' of ' + W.goods[g0].n.toLowerCase() +
               ' into <b>' + t.name + '</b>.', 'good');
-        } else if (gain < -W.goods[g0].base * 6) {
+        } else if (gain < -W.goods[g0].base * 3) {
           say('<b>' + m.name + '</b> arrives in <b>' + t.name + '</b> to find the ' +
               W.goods[g0].n.toLowerCase() + ' market already full. Down ' +
               money(-gain) + ' coin.', 'bad');
         }
         m.qty = 0; m.good = -1; m.paid = 0;
       }
-      m.wait = ri(1, 6);
+      m.wait = ri(0, 2);
       if (m.coin < 40) {
         var old = m.name;
         var nm = newMerchant(W.towns);
@@ -398,55 +435,34 @@
     if (m.wait > 0) { m.wait--; return; }
     if (embargo) { m.wait = 6; return; }
 
-    /* look one road out and price the journey */
+    /* is there anything here worth loading? */
     var a = W.towns[m.at];
-    var best = null;
-    for (i = 0; i < a.adj.length; i++) {
-      var link = a.adj[i];
-      if (!link.e.open) continue;
-      var b = W.towns[link.to], d = link.e.d;
-      for (g = 0; g < W.G; g++) {
-        var gd = W.goods[g];
-        var buy = a.price[g] * 1.015;
-        var sell = b.price[g] * 0.985 * (1 - toll);
-        var freight = d * 0.34 * gd.bulk;
-        var net = sell - buy - freight;
-        if (net <= buy * 0.02) continue;
-        var spare = a.stock[g] - a.cons[g] * a.consMul[g] * 14;
-        if (spare < 1) continue;
-        var qty = Math.floor(Math.min(m.cap / gd.bulk, m.coin / buy, spare * 0.38));
-        if (qty < 1) continue;
-        /* hauling a lot moves both prices against you — discount for that */
-        var bite = 1 / (1 + (qty / Math.max(4, a.stock[g] * 0.5)) +
-                            (qty / Math.max(4, b.stock[g] * 0.5)));
-        var score = net * qty * (0.4 + 0.6 * bite) / (d + 3);
-        if (!best || score > best.score) {
-          best = { score: score, g: g, qty: qty, to: link.to, d: d, buy: buy };
-        }
-      }
-    }
-
+    var best = dealAt(m.at, m);
     if (best) {
-      var gg = best.g;
-      a.stock[gg] -= best.qty;
+      a.stock[best.g] -= best.qty;
       m.paid = best.qty * best.buy;
       m.coin -= m.paid;
-      m.good = gg; m.qty = best.qty;
+      m.good = best.g; m.qty = best.qty;
       m.from = m.at; m.to = best.to; m.len = best.d; m.pos = 0;
       return;
     }
 
-    /* nothing worth loading: sit tight, or wander empty now and then */
-    if (rand() < 0.12 && a.adj.length) {
-      var open = [];
-      for (i = 0; i < a.adj.length; i++) if (a.adj[i].e.open) open.push(a.adj[i]);
-      if (open.length) {
-        var w = open[Math.floor(rand() * open.length)];
-        m.from = m.at; m.to = w.to; m.len = w.e.d; m.pos = 0; m.good = -1; m.qty = 0;
-        return;
-      }
+    /* nothing here: go empty to whichever neighbour has something to sell,
+       rather than sitting in a town that has run out of everything */
+    var bt = -1, bv = 0;
+    for (i = 0; i < a.adj.length; i++) {
+      if (!a.adj[i].e.open) continue;
+      var dd = dealAt(a.adj[i].to, m);
+      if (!dd) continue;
+      var v = dd.score / (1 + a.adj[i].e.d / 4);
+      if (v > bv) { bv = v; bt = i; }
     }
-    m.wait = ri(4, 16);
+    if (bt >= 0) {
+      m.from = m.at; m.to = a.adj[bt].to; m.len = a.adj[bt].e.d;
+      m.pos = 0; m.good = -1; m.qty = 0;
+      return;
+    }
+    m.wait = ri(3, 10);
   }
 
   /* ================= events ================= */
@@ -788,8 +804,9 @@
     var rows = '';
     for (var g = 0; g < W.G; g++) {
       var gd = W.goods[g];
-      var net = t.prod[g] * t.prodMul[g] - t.cons[g] * t.consMul[g];
       var rel = t.price[g] / gd.base;
+      var net = t.prod[g] * t.prodMul[g] * supplyPull(rel) -
+                t.cons[g] * t.consMul[g] * demandPull(rel);
       var cls = rel > 1.12 ? 'up' : rel < 0.9 ? 'down' : '';
       rows += '<tr><td><span class="gdot" style="background:' + gd.col + '"></span>' +
         gd.n + '</td>' +
@@ -831,11 +848,10 @@
       if (p < lo) { lo = p; loT = i; }
       if (p > hi) { hi = p; hiT = i; }
     }
-    var mean = sum / W.N;
-    var spread = mean > 0 ? (hi - lo) / mean * 100 : 0;
+    var gap = lo > 0 ? hi / lo : 1;
     var sEl = el('spreadOut');
-    sEl.innerHTML = 'Spread <b>' + spread.toFixed(0) + '%</b>';
-    sEl.className = 'spread' + (spread > 55 ? ' wide' : '');
+    sEl.innerHTML = 'Dearest ÷ cheapest <b>×' + gap.toFixed(1) + '</b>';
+    sEl.className = 'spread' + (gap > 2.6 ? ' wide' : '');
     el('cheapOut').textContent = W.towns[loT].name + ' ' + money(lo);
     el('dearOut').textContent = W.towns[hiT].name + ' ' + money(hi);
   }
@@ -930,7 +946,7 @@
   /* ================= go ================= */
   resize();
   build(seedForToday());
-  /* run a few weeks so the page does not open on a flat line */
+  /* run a few seasons so the page does not open on a flat line */
   for (var w = 0; w < 260; w++) step();
   raf = requestAnimationFrame(frame);
 })();
