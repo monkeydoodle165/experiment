@@ -367,21 +367,73 @@
   }
 
   /* ================= evaluation ================= */
+  var HUNT_A = new Int8Array(64), HUNT_B = new Int8Array(64);
+
   function evaluate(G, b, side) {
-    var N = G.N, sc = 0, mid = (N - 1) / 2;
+    var N = G.N, mid = (N - 1) / 2;
+    var m0 = 0, m1 = 0, pos = 0, k0 = -1, k1 = -1, n0 = 0, n1 = 0;
     for (var i = 0; i < b.length; i++) {
       var v = b[i];
       if (v === 0 || v === BLOCK) continue;
       var s = v > 0 ? 0 : 1;
       var pd = G.types[(v > 0 ? v : -v) - 1];
+      if (s === 0) { m0 += pd.value; HUNT_A[n0++] = i; } else { m1 += pd.value; HUNT_B[n1++] = i; }
+      if (pd.royal) { if (s === 0) k0 = i; else k1 = i; }
       var sign = s === 0 ? 1 : -1;
-      sc += sign * pd.value;
       var r = (i / N) | 0, c = i % N;
       if (G.win === 'breakthrough') {
         var adv = s === 0 ? (N - 1 - r) : r;
-        sc += sign * adv * adv * 3;
+        pos += sign * adv * adv * 3;
       } else {
-        sc += sign * Math.round((2 * mid - Math.abs(c - mid) - Math.abs(r - mid)) * 3);
+        pos += sign * Math.round((2 * mid - Math.abs(c - mid) - Math.abs(r - mid)) * 3);
+      }
+    }
+    var sc = m0 - m1 + pos;
+
+    if (G.win === 'regicide') {
+      /* drive the enemy crown off the middle, and bring the army to it */
+      if (k1 >= 0) sc += Math.round((Math.abs((k1 % N) - mid) + Math.abs(((k1 / N) | 0) - mid)) * 5);
+      if (k0 >= 0) sc -= Math.round((Math.abs((k0 % N) - mid) + Math.abs(((k0 / N) | 0) - mid)) * 5);
+      for (var j = 0; j < b.length; j++) {
+        var w = b[j];
+        if (w === 0 || w === BLOCK) continue;
+        var ws = w > 0 ? 0 : 1;
+        if (G.types[(w > 0 ? w : -w) - 1].royal) continue;
+        var tk = ws === 0 ? k1 : k0;
+        if (tk < 0) continue;
+        var dr = Math.abs(((j / N) | 0) - ((tk / N) | 0)), dc = Math.abs((j % N) - (tk % N));
+        sc += (ws === 0 ? 1 : -1) * (N - (dr > dc ? dr : dc)) * 2;
+      }
+    } else if (G.win === 'annihilation') {
+      if (G.startMat === undefined) {
+        var sm = 0;
+        for (var q = 0; q < G.start.length; q++) {
+          var sv = G.start[q];
+          if (sv > 0 && sv !== BLOCK) sm += G.types[sv - 1].value;
+        }
+        G.startMat = sm * 2;
+      }
+      /* a lead is worth more the emptier the board gets, so trade when ahead */
+      var tot = m0 + m1;
+      sc += Math.round((m0 - m1) * (G.startMat - tot) / (G.startMat || 1) * 1.4);
+      /* once it is down to stragglers, the side in front has to go and find them */
+      if (n0 + n1 <= 12 && n0 > 0 && n1 > 0) {
+        var chase = m0 > m1 ? 0 : (m1 > m0 ? 1 : -1);
+        if (chase >= 0) {
+          var hunters = chase === 0 ? HUNT_A : HUNT_B, nh = chase === 0 ? n0 : n1;
+          var prey = chase === 0 ? HUNT_B : HUNT_A, np = chase === 0 ? n1 : n0;
+          var near = 0;
+          for (var h = 0; h < nh; h++) {
+            var hr = (hunters[h] / N) | 0, hc = hunters[h] % N, bestd = 99;
+            for (var p = 0; p < np; p++) {
+              var pr2 = Math.abs(((prey[p] / N) | 0) - hr), pc2 = Math.abs((prey[p] % N) - hc);
+              var dd = pr2 > pc2 ? pr2 : pc2;
+              if (dd < bestd) bestd = dd;
+            }
+            near += (N - bestd);
+          }
+          sc += (chase === 0 ? 1 : -1) * near * 4;
+        }
       }
     }
     return side === 0 ? sc : -sc;
@@ -492,7 +544,7 @@
   var COL_DARK = ['#0d3a30', '#11224d'];
 
   var G, board, side, human = 0, flip = false, sel = -1, legal = [], last = null,
-    history = [], over = null, quietRun = 0, thinking = false, aiDepth = 3, prand = Math.random;
+    history = [], over = null, quietRun = 0, thinking = false, aiDepth = 5, prand = Math.random;
 
   /* ---------- game lifecycle ---------- */
   function newGame(seed, keepSides) {
@@ -536,7 +588,7 @@
     if (over || side === human) { thinking = false; return; }
     thinking = true; status(); draw();
     setTimeout(function () {
-      var budget = aiDepth <= 2 ? 260 : (aiDepth === 3 ? 700 : 1500);
+      var budget = aiDepth <= 3 ? 300 : (aiDepth === 5 ? 900 : 2000);
       var res = bestMove(G, board, side, aiDepth, budget, prand);
       thinking = false;
       if (res.move < 0) { checkOver(); draw(); status(); return; }
@@ -867,7 +919,7 @@
 
   var lvl = $('gLevels');
   if (lvl) {
-    [['Gentle', 2], ['Even', 3], ['Sharp', 4]].forEach(function (p) {
+    [['Gentle', 3], ['Even', 5], ['Sharp', 7]].forEach(function (p) {
       var b = document.createElement('button');
       b.className = 'chip' + (p[1] === aiDepth ? ' on' : '');
       b.textContent = p[0];
