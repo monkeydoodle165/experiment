@@ -626,10 +626,11 @@
   });
 
   /* ---------- drawing ---------- */
-  var DPR = 1;
+  var DPR = 1, VW = 560;
   function fit() {
     DPR = Math.min(window.devicePixelRatio || 1, 2);
     var w = Math.max(260, Math.min(cv.parentElement.clientWidth || 560, 560));
+    VW = w;
     cv.style.width = w + 'px';
     cv.style.height = w + 'px';
     cv.width = Math.floor(w * DPR);
@@ -637,7 +638,8 @@
     cx.setTransform(DPR, 0, 0, DPR, 0, 0);
   }
   function geom() {
-    var w = cv.clientWidth, pad = 20;
+    /* never let a collapsed container produce a negative cell size */
+    var w = Math.max(160, cv.clientWidth || VW), pad = 20;
     var cell = (w - pad * 2) / G.N;
     return { ox: pad, oy: pad, cell: cell, w: w };
   }
