@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Gambit — Drift</title>
+<meta name="description" content="A board game invented by today's date — board, pieces, rules and win condition — with an opponent that works out how to play it.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .g-layout{display:grid;gap:26px;grid-template-columns:minmax(0,1fr)}
+  @media (min-width:900px){
+    .g-layout{grid-template-columns:minmax(0,560px) minmax(240px,1fr)}
+  }
+  .board{display:flex;justify-content:center}
+  #board{
+    display:block;
+    width:100%;
+    max-width:560px;
+    border-radius:16px;
+    border:1px solid var(--line);
+    background:#07090d;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+  .g-side{display:flex;flex-direction:column;gap:16px;min-width:0}
+  .g-card{
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:18px 20px;
+    background:linear-gradient(160deg,rgba(100,240,200,.05),rgba(122,162,255,.03));
+  }
+  .g-card h3{
+    margin:0 0 10px;
+    font:600 10px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.18em;text-transform:uppercase;color:var(--accent2);
+  }
+  .g-title{font-size:1.5rem;margin:0 0 4px;letter-spacing:-.01em}
+  .g-sub{margin:0;color:var(--dim);font-size:.85rem}
+  .g-win{margin:0;font-size:.95rem}
+  .g-rules{margin:10px 0 0;padding-left:18px;color:var(--dim);font-size:.88rem}
+  .g-rules li{margin-bottom:6px}
+  .g-status{
+    font:600 12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;
+    letter-spacing:.1em;text-transform:uppercase;color:var(--dim);
+  }
+  .g-status.done{color:var(--accent)}
+  .g-status.lost{color:#ff8a5b}
+  .g-log{
+    max-height:190px;overflow:auto;
+    font:.78rem/1.8 ui-monospace,Menlo,monospace;
+    color:var(--dim);
+  }
+  .g-move.mine{color:var(--ink)}
+  .g-pieces{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(270px,1fr))}
+  .g-piece{display:flex;gap:14px;align-items:flex-start}
+  .g-dia{flex:0 0 auto}
+  .g-diagram{border-radius:8px;border:1px solid var(--line);display:block}
+  .g-piece h4{margin:0 0 5px;font-size:1rem}
+  .g-piece h4 em{font-style:normal;color:var(--dim);font-weight:400;font-size:.82rem}
+  .g-piece p{margin:0 0 4px;color:var(--dim);font-size:.86rem}
+  .g-piece .g-meta{
+    font:600 10px/1.5 ui-monospace,Menlo,monospace;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--accent2);
+  }
+  .g-plaque p{margin:0;color:var(--dim);font-size:.9rem;font-style:italic}
+  .g-key{display:flex;gap:16px;flex-wrap:wrap;font-size:.8rem;color:var(--dim);margin-top:12px}
+  .g-key span{display:inline-flex;align-items:center;gap:7px}
+  .g-key i{width:11px;height:11px;border-radius:50%;display:inline-block}
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html" class="on">Gambit</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page sixteen</p>
+    <h1>The Gambit</h1>
+    <p class="lede">
+      Everything else on this site is something to look at. This is something to lose.
+      Today's number has invented a board game — the size of the board, the pieces and
+      exactly how each of them moves, whether there is a king to take or a far rank to
+      reach, and whether you can crush a man between two of yours — and then something
+      has to actually play it. Nobody wrote an opening book for a game that did not
+      exist this morning, so the opponent is working it out by searching, the way you
+      would. Tomorrow this game is gone and a different one is here.
+    </p>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="wrap">
+
+      <div class="g-layout">
+        <div>
+          <div class="board">
+            <canvas id="board" aria-label="Game board. Click a piece, then click where it should go."></canvas>
+          </div>
+          <p class="hint canvas-hint">Click a piece, then click a marked square. N invents a new game, F turns the board round.</p>
+          <div class="g-key">
+            <span><i style="background:#64f0c8"></i> yours</span>
+            <span><i style="background:#11224d;box-shadow:inset 0 0 0 2px #7aa2ff"></i> its</span>
+            <span><i style="background:rgba(100,240,200,.6)"></i> a move</span>
+            <span><i style="border:2px solid #ff8a5b;background:transparent"></i> a capture</span>
+          </div>
+        </div>
+
+        <div class="g-side">
+          <div class="g-card">
+            <h3>Today's game</h3>
+            <p class="g-title" id="gName">—</p>
+            <p class="g-sub"><span id="gBoardOut">—</span> · seed <span id="gSeedOut">—</span></p>
+          </div>
+
+          <div class="g-card">
+            <h3>How it is won</h3>
+            <p class="g-win" id="gWinOut">—</p>
+            <ul class="g-rules" id="gExtraOut"></ul>
+          </div>
+
+          <div class="g-card">
+            <h3>Play</h3>
+            <p class="g-status" id="gStatus">—</p>
+            <div class="rack-row" style="margin-top:12px">
+              <span class="rack-label">Opponent</span>
+              <div class="chips" id="gLevels"></div>
+            </div>
+            <div class="controls" style="margin-top:14px">
+              <button class="btn small" id="gToday">Today's game</button>
+              <button class="btn small ghost" id="gNew">Invent another</button>
+              <button class="btn small ghost" id="gRestart">Start over</button>
+              <button class="btn small ghost" id="gUndo">Take it back</button>
+              <button class="btn small ghost" id="gSwap">Play the other side</button>
+              <button class="btn small ghost" id="gFlip">Turn the board</button>
+            </div>
+          </div>
+
+          <div class="g-card">
+            <h3>Moves played · <span id="gPly">0</span></h3>
+            <div class="g-log" id="gLog"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>The pieces</h2>
+      <p class="sub">
+        Each diagram is that piece standing in the middle of an empty board, looking up
+        the way you are. Filled dots are squares it can move to or take on; hollow green
+        is a move it cannot take with; orange rings are captures only. Faded dots mean it
+        keeps going in that direction until something stops it.
+      </p>
+      <div class="g-pieces" id="gPieces"></div>
+      <div class="g-plaque" id="gPlaque" style="margin-top:30px"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="wrap">
+      <h2>How a game is invented</h2>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Cut the board</h3>
+          <p>Six, seven or eight squares a side, sometimes with a couple of squares
+             knocked out of the middle. Whatever is removed is removed in pairs, a
+             half-turn apart, so the two halves of the board stay identical — neither
+             side is handed the better ground.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Invent the men</h3>
+          <p>Three or four kinds of piece, each built by stacking movement atoms: step
+             one square, slide until blocked, leap two-and-one over anything, only
+             forwards, take one way and move another. A piece's worth is not assigned,
+             it is measured — the generator counts how many squares that piece could
+             reach from every square of an empty board and prices it off that, which is
+             how a slider ends up worth five of a foot soldier without anyone deciding
+             it should.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Say how it ends</h3>
+          <p>Take the crown, walk a man onto the far rank, or take absolutely
+             everything. Sometimes a sandwich rule comes with it, so a piece caught
+             between two of yours is lifted off whether it was ever attacked or not.
+             The opening array is then drawn once and rotated a half-turn, so both
+             armies are the same army.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>Find out how to play it</h3>
+          <p>The opponent has never seen this game either. It generates every legal
+             move, plays each one out a few turns deep, assumes you will answer as
+             well as it can see, and keeps the line that leaves it best off — with a
+             cut-off so it stops examining a branch you would never allow, and a
+             tail search that follows exchanges to the end so it does not stop counting
+             halfway through a trade. Set it to Gentle and it looks two moves ahead;
+             set it to Sharp and it looks four and takes a second over it.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        The same date integer that draws the field on the <a href="./">front page</a>
+        seeds every room here — it plants <a href="garden.html">the Garden</a>, writes
+        <a href="chimes.html">the Chimes</a>, deals <a href="lattice.html">the
+        Lattice</a>, files <a href="almanac.html">the Almanac</a>, scatters
+        <a href="observatory.html">the Observatory</a>, raises
+        <a href="atlas.html">the Atlas</a>, stocks <a href="menagerie.html">the
+        Menagerie</a>, lights <a href="orrery.html">the Orrery</a>, letters
+        <a href="codex.html">the Codex</a>, runs <a href="chronicle.html">the
+        Chronicle</a>, builds <a href="folly.html">the Folly</a>, cuts the gears of
+        <a href="engine.html">the Engine</a>, threads <a href="loom.html">the Loom</a>
+        and prices <a href="exchange.html">the Exchange</a>. Here it writes a rulebook.
+        Nothing is saved between visits, so if you beat it, that is between the two of
+        you and the tab you are about to close.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="gambit.js"></script>
+</body>
+</html>
