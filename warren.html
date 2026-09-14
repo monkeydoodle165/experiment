@@ -1,1 +1,232 @@
-&lt;!DOCTYPE html&gt;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Warren — Drift</title>
+<meta name="description" content="A small text adventure dealt by today's date. Find the keys, open the doors, and carry the errand back out.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .wr-grid{display:grid;grid-template-columns:1fr 300px;gap:22px;align-items:start}
+  @media (max-width:860px){.wr-grid{grid-template-columns:1fr}}
+
+  .wr-status{
+    display:flex;flex-wrap:wrap;gap:10px 22px;align-items:baseline;
+    border:1px solid var(--line);border-radius:14px;
+    padding:12px 18px;margin-bottom:14px;
+    background:rgba(11,15,22,.6);
+  }
+  .wr-status span{font:600 10px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+  .wr-status b{color:var(--accent);font-weight:700;letter-spacing:.04em;margin-left:7px}
+
+  #wrLog{
+    height:clamp(340px,52vh,520px);
+    overflow-y:auto;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:20px 22px;
+    background:rgba(7,9,13,.75);
+    scroll-behavior:smooth;
+  }
+  .wr-line{margin:0 0 11px;font-size:.96rem;color:#c3ccdb;max-width:62ch}
+  .wr-line b{color:var(--ink)}
+  .wr-title{color:var(--accent);font-weight:700;letter-spacing:.01em;font-size:1.04rem;margin-top:4px}
+  .wr-note{color:var(--dim);font-size:.9rem}
+  .wr-echo{
+    color:var(--accent2);
+    font:600 .92rem/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;
+    margin-top:14px;
+  }
+
+  #wrForm{display:flex;gap:10px;margin-top:14px}
+  #wrCmd{
+    flex:1;
+    background:rgba(255,255,255,.04);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:11px 18px;
+    color:var(--ink);
+    font:inherit;font-size:.95rem;
+  }
+  #wrCmd:focus{outline:none;border-color:var(--accent)}
+  #wrCmd:disabled{opacity:.45}
+
+  .wr-side{display:grid;gap:16px}
+  .wr-card{
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px 18px;
+    background:rgba(11,15,22,.6);
+  }
+  .wr-card h3{
+    margin:0 0 12px;
+    font:600 10px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.18em;text-transform:uppercase;color:var(--dim);
+  }
+  .wr-card .chips{gap:7px}
+  .wr-card .chip{font-size:.8rem;padding:5px 11px;text-align:left}
+  .wr-empty{color:var(--dim);font-size:.85rem}
+  #wrMap svg{display:block;max-height:280px;margin:0 auto}
+  .wr-legend{margin:12px 0 0;font-size:.78rem;color:var(--dim);line-height:1.6}
+  .wr-legend i{font-style:normal;color:#ff8a5b}
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html" class="on">Warren</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">room seventeen</p>
+    <h1>The Warren</h1>
+    <p class="lede">
+      Every other room on this site hands you a world and a set of sliders and lets
+      you stand outside it. This one shuts the door behind you. Today's number has
+      dealt a building — chambers, passages, two or three doors that are locked and
+      the keys to them hidden somewhere you can already reach — and left one thing
+      in the deepest part of it that you are expected to carry back out. Type at it,
+      or click at it. Tomorrow it will be somewhere else entirely.
+    </p>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="wrap">
+
+      <div class="wr-status">
+        <span>Place <b id="wrPlace">—</b></span>
+        <span>You are in <b id="wrWhere">—</b></span>
+        <span>Moves <b id="wrMoves">0</b></span>
+        <span>Seed <b id="wrSeed">—</b></span>
+      </div>
+
+      <div class="wr-grid">
+        <div>
+          <div id="wrLog" role="log" aria-live="polite" aria-label="What is happening"></div>
+          <form id="wrForm" autocomplete="off">
+            <input id="wrCmd" type="text" placeholder="north, take the tally, examine the door, help…" aria-label="Type a command" autofocus>
+            <button class="btn" type="submit">Do it</button>
+          </form>
+          <p class="hint">Arrow up walks back through what you have already typed.</p>
+        </div>
+
+        <aside class="wr-side">
+          <div class="wr-card">
+            <h3>The map so far</h3>
+            <div id="wrMap"></div>
+            <p class="wr-legend">
+              Filled squares are chambers you have stood in. <i>Orange bars</i> are doors
+              that are still shut. Question marks are ways on you have seen but not taken.
+            </p>
+          </div>
+          <div class="wr-card">
+            <h3>Ways on</h3>
+            <div class="chips" id="wrExits"></div>
+          </div>
+          <div class="wr-card">
+            <h3>On the floor</h3>
+            <div class="chips" id="wrHere"></div>
+          </div>
+          <div class="wr-card">
+            <h3>Carrying</h3>
+            <div class="chips" id="wrBag"></div>
+          </div>
+        </aside>
+      </div>
+
+      <div class="controls" style="margin-top:22px">
+        <button class="btn small" id="btnToday">Today's warren</button>
+        <button class="btn small ghost" id="btnRestart">Put it all back</button>
+        <button class="btn small ghost" id="btnOther">Deal a different one</button>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>How the place is dealt</h2>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>A setting, then a building</h3>
+          <p>The day's number picks one of six places — a drowned cloister, a signal
+             station on the ice, a glassworks, a seed vault inside a mountain, a custom
+             house on a tideway, a paper mill — and everything else comes out of that
+             choice: the chambers, what the floor is made of, what you can hear, what
+             light there is, and what has been left lying about.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Grown onto a grid</h3>
+          <p>Eight to eleven chambers are added one at a time, each one hung off a
+             chamber that is already there, in a direction that is still free. That is
+             why every exit is a true compass direction and why the map can be drawn at
+             all. One or two extra passages are then punched through where two chambers
+             happen to be neighbours, which is where the loops come from.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Locked so that it can always be opened</h3>
+          <p>Every passage is tested by removing it and seeing whether the building
+             falls into two halves. The ones that do are the only passages worth
+             locking. Locks are then placed one at a time, always on the edge of what
+             you can currently reach, and each key is hidden in the part you can
+             already get to — so the gating is strictly progressive, and there is no
+             way to deal a warren whose key is behind its own door.</p>
+        </li>
+      </ol>
+      <p class="sub afterword">
+        The errand goes in the deepest region, behind the last lock, and you have not
+        finished until you are standing back where you came in with it on you. There is
+        no timer and nothing in here wants to hurt you; the only thing you can lose is
+        the thread. Everything you can type is also a button, because a parser is a
+        lovely thing and an obstacle course for anybody who is not already fluent in
+        one. When you are done, <a href="gambit.html">the Gambit</a> will play you at a
+        game it invented this morning, <a href="exchange.html">the Exchange</a> turns
+        the same number into a market with nobody minding it, and
+        <a href="almanac.html">the Almanac</a> files a dispatch from a town that only
+        lasts the day.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="warren.js"></script>
+</body>
+</html>
