@@ -83,7 +83,7 @@
       sounds: ["the furnace cooling and complaining about it", "glass settling somewhere in the dark", "a fan turning without having been asked", "your boots, mostly", "a high ringing you can only hear if you stop"],
       lights: ["a last orange breath out of the pot arch", "a skylight two fingers deep in dust", "a strip light with a stutter in it"],
       quirks: ["A gather has been left on the end of a punty and has slumped into a shape nobody chose.", "The floor glitters. All of it. Walk carefully.", "Someone's initials are in the brick, dated, and the date is not recent."],
-      keys: ['a graphite paddle', 'a numbered mould', 'a brass key on a leather thong', 'a pattern card', 'a pair of tongs', 'a torn ledger page', 'a colour sample', 'a gaffer’s punty'],
+      keys: ['a graphite paddle', 'a numbered mould', 'a brass key on a leather thong', 'a pattern card', 'a pair of tongs', 'a torn ledger page', 'a colour sample', 'a long steel punty'],
       barriers: ['a sliding fire door', 'a steel shutter', 'a chained gate', 'a hatch bolted from the far side', 'a stack of crates you cannot shift alone']
     },
     {
@@ -151,10 +151,10 @@
   ];
 
   var CURIOS = [
-    ["a child’s drawing", "Three figures and a building with too many windows. It is signed, and the signature is a single letter."],
+    ["a child's drawing", "Three figures and a building with too many windows. It is signed, and the signature is a single letter."],
     ["a pocket watch", "Stopped. You wind it two turns and it starts again immediately, which somehow settles nothing."],
     ["a photograph", "A group, squinting, arranged by height. One of them has been very carefully scratched out with a pin."],
-    ["a tin of tobacco", "Empty of tobacco. Full of teeth, all of them a dog’s, which is the best case."],
+    ["a tin of tobacco", "Empty of tobacco. Full of teeth, all of them a dog's, which is the best case."],
     ["a bundle of letters", "Tied with string, addressed here, all of them unopened, all in the same hand."],
     ["a brass whistle", "It works. You test it once and decide not to test it again."],
     ["a folded map", "Of somewhere else entirely, with a route on it in red, ending in a circle around nothing."],
@@ -167,10 +167,10 @@
   var VOW = ['a', 'e', 'i', 'o', 'u', 'ae', 'ea', 'ei', 'ou', 'y'];
   var CODA = ['l', 'll', 'm', 'n', 'nd', 'ng', 'r', 'rk', 'rn', 'sk', 'st', 'th', 'ck', 'ft', 'lm'];
 
-  function coin(r) {
+  function coin(r, setting) {
     var s = r.pick(ONSET) + r.pick(VOW) + r.pick(CODA);
     if (r.chance(0.45)) s += r.pick(VOW) + r.pick(CODA);
-    s += r.pick(r.setting.suffix);
+    s += r.pick(setting.suffix);
     return s.charAt(0).toUpperCase() + s.slice(1);
   }
 
@@ -190,7 +190,6 @@
     var rand = rng(seed >>> 0);
     var r = R(rand);
     var setting = r.pick(SETTINGS);
-    r.setting = setting;
 
     var N = r.range(8, 11);
     var names = r.shuffle(setting.rooms).slice(0, N);
@@ -211,9 +210,8 @@
 
     var edges = [];
     function link(a, b, d) {
-      var e = { a: a, b: b, dir: d.k, locked: false, opened: false, barrier: null, key: null };
       var idx = edges.length;
-      edges.push(e);
+      edges.push({ a: a, b: b, dir: d.k, locked: false, opened: false, barrier: null, key: null });
       rooms[a].exits[d.k] = idx;
       rooms[b].exits[d.op] = idx;
       return idx;
@@ -226,23 +224,22 @@
       for (var i = 0; i < opts.length; i++) {
         var d = opts[i], nx = from.x + d.dx, ny = from.y + d.dy;
         if (cells[nx + ',' + ny] === undefined) {
-          var id = rooms.length;
-          put(id, nx, ny);
-          link(from.id, id, d);
+          var nid = rooms.length;
+          put(nid, nx, ny);
+          link(from.id, nid, d);
           break;
         }
       }
     }
     N = rooms.length;
 
-    // a loop or two, where the grid allows it
-    var extra = r.range(1, 2);
-    var tries = 0;
-    while (extra > 0 && tries++ < 200) {
-      var a = rooms[Math.floor(rand() * N)], d2 = r.pick(DIRS);
-      var nb = cells[(a.x + d2.dx) + ',' + (a.y + d2.dy)];
-      if (nb !== undefined && a.exits[d2.k] === undefined) {
-        link(a.id, nb, d2);
+    // exactly one extra passage: enough for a loop, few enough to leave bridges to lock
+    var extra = 1, tries = 0;
+    while (extra > 0 && tries++ < 300) {
+      var a0 = rooms[Math.floor(rand() * N)], d2 = r.pick(DIRS);
+      var nb = cells[(a0.x + d2.dx) + ',' + (a0.y + d2.dy)];
+      if (nb !== undefined && a0.exits[d2.k] === undefined) {
+        link(a0.id, nb, d2);
         extra--;
       }
     }
@@ -257,9 +254,8 @@
       }
       return out;
     }
-    function reach(skip, from) {
-      var seen = {}, q = [from === undefined ? 0 : from], out = [];
-      seen[q[0]] = 1;
+    function reach(skip) {
+      var seen = { 0: 1 }, q = [0], out = [];
       while (q.length) {
         var c = q.shift(); out.push(c);
         var nb = neighbours(c, skip);
@@ -267,44 +263,59 @@
       }
       return out;
     }
-
-    // bridges, by brute force: pull each edge and see whether the place falls in two
-    var bridges = [];
-    for (var ei = 0; ei < edges.length; ei++) {
-      var near = reach([ei], 0);
-      if (near.length < N) {
-        var far = [];
-        for (var q2 = 0; q2 < N; q2++) if (near.indexOf(q2) < 0) far.push(q2);
-        bridges.push({ e: ei, near: near, far: far });
+    function distances() {
+      var dist = {}, q = [0];
+      dist[0] = 0;
+      while (q.length) {
+        var c = q.shift(), nb = neighbours(c, null);
+        for (var i = 0; i < nb.length; i++) {
+          if (dist[nb[i]] === undefined) { dist[nb[i]] = dist[c] + 1; q.push(nb[i]); }
+        }
       }
+      return dist;
     }
 
-    // locks, placed progressively so a key is never behind its own door
-    var barriers = r.shuffle(setting.barriers);
-    var keyNames = r.shuffle(setting.keys);
+    // bridges, by brute force: pull each passage and see whether the place falls in two
+    var bridges = [];
+    for (var ei = 0; ei < edges.length; ei++) {
+      var near = reach([ei]);
+      if (near.length < N) bridges.push({ e: ei, near: near, size: N - near.length });
+    }
+
+    /* Locks, placed one at a time. A candidate is a bridge that is still reachable,
+       leaving at least two chambers on the near side to hide a key in and at least one
+       beyond it. The key for a lock goes wherever is still reachable *after* that lock
+       is added, so the chain nests inward: the last door placed is the first you can
+       open, and each key you find lets you through the door outside it. */
     var locked = [], plan = [];
     var wanted = r.range(2, 3);
     while (plan.length < wanted) {
-      var avail = reach(locked, 0);
+      var avail = reach(locked);
       if (avail.length < 3) break;
       var cands = bridges.filter(function (b) {
         if (locked.indexOf(b.e) >= 0) return false;
         var e = edges[b.e];
-        var ia = avail.indexOf(e.a) >= 0, ib = avail.indexOf(e.b) >= 0;
-        if (ia === ib) return false;
-        var far = ia ? b.far : b.near;
-        if (far.indexOf(0) >= 0) far = ia ? b.near : b.far;
-        return far.length >= 2 && far.length <= N - 3;
+        if (avail.indexOf(e.a) < 0 || avail.indexOf(e.b) < 0) return false;
+        var inNear = 0, beyond = 0;
+        for (var q = 0; q < avail.length; q++) {
+          if (b.near.indexOf(avail[q]) >= 0) inNear++; else beyond++;
+        }
+        return inNear >= 2 && beyond >= 1;
       });
       if (!cands.length) break;
-      var chosen = cands[Math.floor(rand() * cands.length)];
-      plan.push({ e: chosen.e, avail: avail });
+      cands.sort(function (p, q) { return q.size - p.size; });
+      var top = cands.slice(0, Math.max(1, Math.ceil(cands.length / 2)));
+      var chosen = top[Math.floor(rand() * top.length)];
       locked.push(chosen.e);
+      plan.push({ e: chosen.e, avail: reach(locked) });
     }
 
     var items = [];
     function addItem(o) { o.id = items.length; items.push(o); return o; }
     var used = {};
+
+    var barriers = r.shuffle(setting.barriers);
+    var keyNames = r.shuffle(setting.keys);
 
     plan.forEach(function (p, i) {
       var e = edges[p.e];
@@ -316,34 +327,26 @@
       var where = pool[Math.floor(rand() * pool.length)];
       used[where] = 1;
       var it = addItem({
-        name: keyNames[i % keyNames.length],
-        kind: 'key',
-        opens: p.e,
-        room: where,
-        desc: null
+        name: keyNames[i % keyNames.length], kind: 'key', opens: p.e, room: where, desc: null
       });
       it.desc = "It is " + it.name + ". It has the look of something that belongs to " + e.barrier + ".";
       e.key = it.id;
       rooms[where].items.push(it.id);
     });
 
-    // the errand goes as deep as the locks allow
-    var open = reach(locked, 0);
+    // the errand goes as deep as the locks allow, and always behind at least one of them
+    var open = reach(locked), dist = distances();
     var deepPool = [];
     for (var z = 1; z < N; z++) if (open.indexOf(z) < 0) deepPool.push(z);
     if (!deepPool.length) {
-      var far2 = reach([], 0);
-      deepPool = [far2[far2.length - 1]];
-      if (deepPool[0] === 0) deepPool = [1];
+      for (var z2 = 1; z2 < N; z2++) deepPool.push(z2);
     }
-    var goalRoom = deepPool[Math.floor(rand() * deepPool.length)];
-    var goal = addItem({
-      name: setting.errand, kind: 'goal', room: goalRoom, desc: setting.goalDesc
-    });
+    deepPool.sort(function (p, q) { return (dist[q] || 0) - (dist[p] || 0); });
+    var goalRoom = deepPool[0];
+    var goal = addItem({ name: setting.errand, kind: 'goal', room: goalRoom, desc: setting.goalDesc });
     rooms[goalRoom].items.push(goal.id);
 
-    var curios = r.shuffle(CURIOS).slice(0, r.range(2, 4));
-    curios.forEach(function (c) {
+    r.shuffle(CURIOS).slice(0, r.range(2, 4)).forEach(function (c) {
       var where = 1 + Math.floor(rand() * (N - 1));
       var it = addItem({ name: c[0], kind: 'curio', room: where, desc: c[1] });
       rooms[where].items.push(it.id);
@@ -352,7 +355,7 @@
     return {
       seed: seed >>> 0,
       setting: setting,
-      place: coin(r) + ' ' + setting.title,
+      place: coin(r, setting) + ' ' + setting.title,
       rooms: rooms, edges: edges, items: items,
       goal: goal.id, start: 0,
       here: 0, moves: 0, carried: [], won: false,
@@ -363,7 +366,9 @@
   /* ---------- state and shell ---------- */
   var W = null, history = [], hIdx = 0;
   function $(id) { return document.getElementById(id); }
-
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
   function say(text, cls) {
     var log = $('wrLog');
     var p = document.createElement('p');
@@ -402,7 +407,7 @@
       say(bits.join(' '));
     }
     if (rm.items.length) {
-      say("Here: " + list(rm.items.map(function (i) { return '<b>' + item(i).name + '</b>'; })) + ".");
+      say("Here: " + list(rm.items.map(function (i) { return '<b>' + esc(item(i).name) + '</b>'; })) + ".");
     }
     var ex = exitsOf(rm.id).map(function (x) {
       if (x.edge.locked && !x.edge.opened) return x.d.full + ' (' + x.edge.barrier + ', shut)';
@@ -436,8 +441,7 @@
     if (ex === undefined) { say("There is no way " + dirByKey(dk).full + " from here.", 'wr-note'); return; }
     var e = W.edges[ex];
     if (e.locked && !e.opened) {
-      var k = W.carried.indexOf(e.key) >= 0;
-      if (!k) {
+      if (W.carried.indexOf(e.key) < 0) {
         say(cap(e.barrier) + " stands in the way, and it is not going to be talked round.", 'wr-note');
         return;
       }
@@ -445,7 +449,6 @@
       say("You put " + item(e.key).name + " to " + e.barrier + ", and it gives.", 'wr-note');
     }
     W.here = (e.a === W.here) ? e.b : e.a;
-    W.moves++;
     describe(W.rooms[W.here].visited);
     checkWin();
   }
@@ -458,14 +461,14 @@
       return;
     }
     var id = findIn(rm.items, what);
-    if (id === null) { say("There is no " + what + " here.", 'wr-note'); return; }
+    if (id === null) { say("There is no " + esc(what) + " here.", 'wr-note'); return; }
     takeId(id);
   }
   function takeId(id) {
     var rm = room();
     rm.items.splice(rm.items.indexOf(id), 1);
     W.carried.push(id);
-    say("Taken: <b>" + item(id).name + "</b>.");
+    say("Taken: <b>" + esc(item(id).name) + "</b>.");
     if (item(id).kind === 'goal') {
       say("That is what you came for. Now get it back to " + W.rooms[W.start].name + ".", 'wr-note');
     }
@@ -477,7 +480,7 @@
     if (id === null) { say("You are not carrying that.", 'wr-note'); return; }
     W.carried.splice(W.carried.indexOf(id), 1);
     room().items.push(id);
-    say("Dropped: " + item(id).name + ".");
+    say("Dropped: " + esc(item(id).name) + ".");
     refresh();
   }
   function examine(what) {
@@ -485,30 +488,31 @@
     if (id === null) id = findIn(room().items, what);
     if (id !== null) {
       var it = item(id);
-      say(it.desc || ("It is " + it.name + ", and it does not reward a second look."));
+      say(it.desc || ("It is " + esc(it.name) + ", and it does not reward a second look."));
       return;
     }
-    var ex = exitsOf(W.here);
+    var ex = exitsOf(W.here), t = what.toLowerCase();
     for (var i = 0; i < ex.length; i++) {
       var e = ex[i].edge;
-      if (e.barrier && (e.barrier.toLowerCase().indexOf(what) >= 0 || ex[i].d.full.indexOf(what) >= 0 || ex[i].d.k === what)) {
+      if (e.barrier && (e.barrier.toLowerCase().indexOf(t) >= 0 || ex[i].d.full.indexOf(t) === 0 || ex[i].d.k === t)) {
         say(cap(e.barrier) + ". " + (e.opened ? "Open now, and standing where you left it." : "Shut, and it means it."));
         return;
       }
     }
-    say("You look. There is no " + what + " to look at.", 'wr-note');
+    say("You look. There is no " + esc(what) + " to look at.", 'wr-note');
   }
   function inventory() {
     if (!W.carried.length) { say("You are carrying nothing but yourself."); return; }
-    say("Carrying: " + list(W.carried.map(function (i) { return '<b>' + item(i).name + '</b>'; })) + ".");
+    say("Carrying: " + list(W.carried.map(function (i) { return '<b>' + esc(item(i).name) + '</b>'; })) + ".");
   }
   function unlock(what) {
     var ex = exitsOf(W.here).filter(function (x) { return x.edge.locked && !x.edge.opened; });
     if (!ex.length) { say("Nothing here is locked against you.", 'wr-note'); return; }
     var target = ex[0];
     if (what) {
+      var t = what.toLowerCase();
       for (var i = 0; i < ex.length; i++) {
-        if (ex[i].d.k === what || ex[i].d.full.indexOf(what) === 0 || ex[i].edge.barrier.toLowerCase().indexOf(what) >= 0) target = ex[i];
+        if (ex[i].d.k === t || ex[i].d.full.indexOf(t) === 0 || ex[i].edge.barrier.toLowerCase().indexOf(t) >= 0) target = ex[i];
       }
     }
     if (W.carried.indexOf(target.edge.key) < 0) {
@@ -527,8 +531,11 @@
       var seen = W.rooms.filter(function (r2) { return r2.visited; }).length;
       var extras = W.carried.filter(function (i) { return item(i).kind === 'curio'; }).length;
       say('&nbsp;');
-      say("You come up into " + W.rooms[W.start].name + " with " + item(W.goal).name + " under your coat, and the place lets you go.", 'wr-title');
-      say("Out in " + W.moves + " moves. " + seen + " of " + W.rooms.length + " chambers seen, " + W.locks + " " + (W.locks === 1 ? 'door' : 'doors') + " opened" + (extras ? ", and " + extras + " thing" + (extras === 1 ? '' : 's') + " that was not yours" : "") + ".");
+      say("You come up into " + W.rooms[W.start].name + " with " + item(W.goal).name +
+        " under your coat, and the place lets you go.", 'wr-title');
+      say("Out in " + W.moves + " moves. " + seen + " of " + W.rooms.length + " chambers seen, " +
+        W.locks + " " + (W.locks === 1 ? 'door' : 'doors') + " opened" +
+        (extras ? ", and " + extras + " thing" + (extras === 1 ? '' : 's') + " that was not yours" : "") + ".");
       say("Tomorrow the number changes and none of this will be here.", 'wr-note');
       $('wrCmd').disabled = true;
       refresh();
@@ -546,7 +553,7 @@
   function command(raw) {
     var s = raw.toLowerCase().trim().replace(/\s+/g, ' ');
     if (!s) return;
-    say('&gt; ' + raw, 'wr-echo');
+    say('&gt; ' + esc(raw), 'wr-echo');
     if (W.won) { say("You are out. Start again, or take tomorrow's.", 'wr-note'); return; }
     W.moves++;
 
@@ -556,8 +563,7 @@
     if (/^(e|east)$/.test(s)) return go('e');
     if (/^(w|west)$/.test(s)) return go('w');
     if ((m = s.match(/^(?:go|walk|head|move)\s+(?:to\s+the\s+)?(\w+)$/))) {
-      var d = m[1].charAt(0);
-      if ('nsew'.indexOf(d) >= 0 && /^(n|s|e|w|north|south|east|west)$/.test(m[1])) return go(d);
+      if (/^(n|s|e|w|north|south|east|west)$/.test(m[1])) return go(m[1].charAt(0));
       say("You can go north, south, east or west, and that is the whole of it.", 'wr-note');
       return;
     }
@@ -566,11 +572,11 @@
     if ((m = s.match(/^(?:take|get|grab|pick up)\s+(.+)$/))) return take(m[1]);
     if ((m = s.match(/^(?:drop|leave|put down)\s+(.+)$/))) return drop(m[1]);
     if (/^(i|inv|inventory)$/.test(s)) return inventory();
-    if ((m = s.match(/^(?:unlock|open|force)\s*(.*)$/))) return unlock(m[1]);
     if ((m = s.match(/^use\s+(.+?)\s+on\s+(.+)$/))) return unlock(m[2]);
+    if ((m = s.match(/^(?:unlock|open|force)\s*(.*)$/))) return unlock(m[1]);
     if (/^(z|wait)$/.test(s)) { say("You wait. The place waits longer, and is better at it.", 'wr-note'); return; }
     if (/^(help|\?|commands)$/.test(s)) { HELP.forEach(function (h) { say(h, 'wr-note'); }); return; }
-    if (/^(xyzzy)$/.test(s)) { say("Nothing happens, but it was worth asking.", 'wr-note'); return; }
+    if (/^xyzzy$/.test(s)) { say("Nothing happens, but it was worth asking.", 'wr-note'); return; }
     say("That is not a thing you know how to do here. Try <b>help</b>.", 'wr-note');
   }
 
@@ -599,32 +605,30 @@
         '" stroke="' + (shut ? '#ff8a5b' : 'rgba(255,255,255,.22)') + '" stroke-width="2"' +
         (shut ? ' stroke-dasharray="4 3"' : '') + '/>';
       if (shut) {
-        var mx = (ax + bx) / 2, my = (ay + by) / 2;
-        var vertical = A.x === B.x;
-        s += '<rect x="' + (mx - (vertical ? 8 : 2)) + '" y="' + (my - (vertical ? 2 : 8)) +
-          '" width="' + (vertical ? 16 : 4) + '" height="' + (vertical ? 4 : 16) + '" fill="#ff8a5b"/>';
+        var mx = (ax + bx) / 2, my = (ay + by) / 2, vert = A.x === B.x;
+        s += '<rect x="' + (mx - (vert ? 8 : 2)) + '" y="' + (my - (vert ? 2 : 8)) +
+          '" width="' + (vert ? 16 : 4) + '" height="' + (vert ? 4 : 16) + '" fill="#ff8a5b"/>';
       }
     });
 
     W.rooms.forEach(function (r2) {
-      var x = px(r2.x), y = py(r2.y);
-      var cur = r2.id === W.here;
+      var x = px(r2.x), y = py(r2.y), cur = r2.id === W.here;
       if (!r2.visited) {
-        var adj = exitsOf(r2.id).some(function (q) {
-          return W.rooms[q.to].visited;
-        });
+        var adj = exitsOf(r2.id).some(function (q) { return W.rooms[q.to].visited; });
         if (!adj) return;
-        s += '<rect x="' + x + '" y="' + y + '" width="' + C + '" height="' + C + '" rx="7" fill="none" stroke="rgba(255,255,255,.16)" stroke-dasharray="3 3"/>';
-        s += '<text x="' + (x + C / 2) + '" y="' + (y + C / 2 + 5) + '" text-anchor="middle" font-size="15" fill="rgba(255,255,255,.28)">?</text>';
+        s += '<rect x="' + x + '" y="' + y + '" width="' + C + '" height="' + C +
+          '" rx="7" fill="none" stroke="rgba(255,255,255,.16)" stroke-dasharray="3 3"/>';
+        s += '<text x="' + (x + C / 2) + '" y="' + (y + C / 2 + 5) +
+          '" text-anchor="middle" font-size="15" fill="rgba(255,255,255,.28)">?</text>';
         return;
       }
       s += '<rect x="' + x + '" y="' + y + '" width="' + C + '" height="' + C + '" rx="7" fill="' +
         (cur ? 'rgba(100,240,200,.18)' : 'rgba(255,255,255,.05)') + '" stroke="' +
-        (cur ? '#64f0c8' : 'rgba(255,255,255,.24)') + '" stroke-width="' + (cur ? 2 : 1) + '"><title>' +
-        r2.name + '</title></rect>';
-      var loot = r2.items.length ? '●' : '';
+        (cur ? '#64f0c8' : 'rgba(255,255,255,.24)') + '" stroke-width="' + (cur ? 2 : 1) +
+        '"><title>' + r2.name + '</title></rect>';
+      var mark = cur ? '☉' : (r2.items.length ? '●' : r2.name.replace(/^the\s+/, '').charAt(0).toUpperCase());
       s += '<text x="' + (x + C / 2) + '" y="' + (y + C / 2 + 5) + '" text-anchor="middle" font-size="14" fill="' +
-        (cur ? '#64f0c8' : 'rgba(255,255,255,.55)') + '">' + (cur ? '☉' : (loot || r2.name.replace(/^the\s+/, '').charAt(0).toUpperCase())) + '</text>';
+        (cur ? '#64f0c8' : 'rgba(255,255,255,.55)') + '">' + mark + '</text>';
     });
     s += '</svg>';
     el.innerHTML = s;
@@ -687,19 +691,18 @@
     say(W.place, 'wr-title');
     say(W.setting.premise);
     say("You are after <b>" + W.setting.errand + "</b>. It is in here somewhere, behind " +
-      (W.locks === 1 ? 'a door' : W.locks + ' doors') + " that are shut, and you are going to have to " +
-      "carry it back out to " + W.rooms[W.start].name + " yourself.", 'wr-note');
+      (W.locks === 1 ? 'a door that is shut' : W.locks + ' doors that are shut') +
+      ", and you are going to have to carry it back out to " + W.rooms[W.start].name +
+      " yourself.", 'wr-note');
     say('&nbsp;');
     describe(false);
     say("Type <b>help</b> if you want the verbs, or just click things.", 'wr-note');
   }
 
   function boot() {
-    var form = $('wrForm');
-    form.addEventListener('submit', function (ev) {
+    $('wrForm').addEventListener('submit', function (ev) {
       ev.preventDefault();
-      var c = $('wrCmd');
-      var v = c.value;
+      var c = $('wrCmd'), v = c.value;
       c.value = '';
       if (!v.trim()) return;
       history.push(v); hIdx = history.length;
