@@ -530,12 +530,13 @@
       W.won = true;
       var seen = W.rooms.filter(function (r2) { return r2.visited; }).length;
       var extras = W.carried.filter(function (i) { return item(i).kind === 'curio'; }).length;
+      var doorsOpened = W.edges.filter(function (e) { return e.locked && e.opened; }).length;
       say('&nbsp;');
       say("You come up into " + W.rooms[W.start].name + " with " + item(W.goal).name +
         " under your coat, and the place lets you go.", 'wr-title');
       say("Out in " + W.moves + " moves. " + seen + " of " + W.rooms.length + " chambers seen, " +
-        W.locks + " " + (W.locks === 1 ? 'door' : 'doors') + " opened" +
-        (extras ? ", and " + extras + " thing" + (extras === 1 ? '' : 's') + " that was not yours" : "") + ".");
+        doorsOpened + " of " + W.locks + " " + (W.locks === 1 ? 'door' : 'doors') + " opened" +
+        (extras ? ", and " + extras + (extras === 1 ? " thing that was" : " things that were") + " not yours" : "") + ".");
       say("Tomorrow the number changes and none of this will be here.", 'wr-note');
       $('wrCmd').disabled = true;
       refresh();
