@@ -24,9 +24,15 @@
   .brief p:last-child{margin-bottom:0}
   .brief p.lead-line{color:var(--ink);font-weight:600;font-size:1.02rem}
 
-  /* ---- two columns ---- */
-  .case{display:grid;gap:26px;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);align-items:start}
-  @media (max-width:880px){.case{grid-template-columns:1fr}}
+  /* ---- two columns ----
+     minmax(0,...) on both tracks, otherwise a track sized 1fr grows past the
+     container to fit the sheet and the whole page scrolls sideways instead of
+     the wrapper round the table. */
+  .case{
+    display:grid;gap:26px;align-items:start;
+    grid-template-columns:minmax(0,1fr) minmax(0,1.18fr);
+  }
+  @media (max-width:880px){.case{grid-template-columns:minmax(0,1fr)}}
   .case h3{
     font:600 10px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;
     letter-spacing:.18em;text-transform:uppercase;color:var(--dim);
@@ -59,23 +65,25 @@
 
   /* ---- the sheet ---- */
   .sheet-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
-  table.sheet{width:100%;border-collapse:collapse;min-width:420px}
-  .sheet th,.sheet td{border-bottom:1px solid var(--line);padding:7px 9px;text-align:left}
+  table.sheet{width:100%;border-collapse:collapse;min-width:340px}
+  .sheet th,.sheet td{border-bottom:1px solid var(--line);padding:6px 7px;text-align:left}
   .sheet tr:last-child td{border-bottom:none}
   .sheet th{
-    font:600 10px/1.6 ui-monospace,Menlo,monospace;
-    letter-spacing:.13em;text-transform:uppercase;color:var(--dim);
-    white-space:nowrap;
+    font:600 10px/1.5 ui-monospace,Menlo,monospace;
+    letter-spacing:.11em;text-transform:uppercase;color:var(--dim);
   }
-  .sheet td.room{color:var(--accent);font-weight:600;font-size:.88rem;white-space:nowrap}
+  .sheet td.room{
+    color:var(--accent);font-weight:600;font-size:.84rem;
+    line-height:1.3;max-width:120px;
+  }
   .sheet select{
-    width:100%;min-width:104px;
+    width:100%;min-width:86px;
     background:rgba(7,9,13,.66);
     color:var(--ink);
     border:1px solid transparent;
     border-radius:8px;
-    padding:5px 6px;
-    font:inherit;font-size:.85rem;
+    padding:5px 4px;
+    font:inherit;font-size:.84rem;
     cursor:pointer;
   }
   .sheet select:focus{outline:none;border-color:var(--accent)}
@@ -230,7 +238,9 @@
           <p>Statements are added one at a time until a solver can find only one
              arrangement that fits them, and then removed one at a time for as long
              as one arrangement is still all that fits. What is left is a minimal
-             set: take away any single statement and the case goes ambiguous.</p>
+             set: take away any single statement and the case goes ambiguous. Six to
+             eleven statements at the short end, fifteen to twenty-four at the long
+             one.</p>
         </li>
       </ol>
 
@@ -254,12 +264,13 @@
         for a second and come back empty-handed. The count above the sheet says
         <em>one solution, proved</em> because that search has already been run — on your
         machine, in the moment the page loaded, on the case in front of you rather than
-        on a sample of others.
+        on a sample of others. Dealing one costs about a millisecond at the short end
+        and about ten at the long one, which is why you did not notice it happening.
       </p>
 
       <p class="sub afterword">
         The same date integer that draws the flow field on the
-        <a href="./">front page</a> deals this case, and it is doing eighteen other
+        <a href="./">front page</a> deals this case, and it is doing seventeen other
         jobs besides — it grows <a href="garden.html">the Garden</a>, writes
         <a href="chimes.html">the Chimes</a>, deals <a href="lattice.html">the
         Lattice</a>, files <a href="almanac.html">the Almanac</a>, scatters
