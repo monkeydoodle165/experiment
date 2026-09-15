@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Inquest — Drift</title>
+<meta name="description" content="A deduction case dealt by today's date. Every statement is true, exactly one arrangement fits them all, and the page proves it before showing you anything.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  /* ---- case brief ---- */
+  .brief{
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:22px 24px;
+    background:linear-gradient(160deg,rgba(100,240,200,.06),rgba(122,162,255,.04));
+    margin-bottom:28px;
+  }
+  .brief p{margin:0 0 10px;color:var(--dim);font-size:.95rem}
+  .brief p:last-child{margin-bottom:0}
+  .brief p.lead-line{color:var(--ink);font-weight:600;font-size:1.02rem}
+
+  /* ---- two columns ---- */
+  .case{display:grid;gap:26px;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);align-items:start}
+  @media (max-width:880px){.case{grid-template-columns:1fr}}
+  .case h3{
+    font:600 10px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;
+    letter-spacing:.18em;text-transform:uppercase;color:var(--dim);
+    margin:0 0 12px;
+  }
+
+  /* ---- statements ---- */
+  .testimony{list-style:none;counter-reset:t;padding:0;margin:0;display:grid;gap:8px}
+  .testimony li{
+    position:relative;
+    padding:9px 13px 9px 40px;
+    border:1px solid var(--line);
+    border-radius:12px;
+    background:rgba(11,15,22,.55);
+    font-size:.92rem;
+    line-height:1.5;
+    cursor:pointer;
+    transition:opacity .15s ease,border-color .15s ease;
+  }
+  .testimony li::before{
+    counter-increment:t;content:counter(t);
+    position:absolute;left:14px;top:10px;
+    font:600 11px/1.5 ui-monospace,Menlo,monospace;
+    color:var(--accent2);
+  }
+  .testimony li:hover{border-color:rgba(255,255,255,.2)}
+  .testimony li.struck{opacity:.38;text-decoration:line-through}
+  .testimony li.good{border-color:rgba(100,240,200,.42)}
+  .testimony li.bad{border-color:#e0687f;color:#ffc2cd}
+
+  /* ---- the sheet ---- */
+  .sheet-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+  table.sheet{width:100%;border-collapse:collapse;min-width:420px}
+  .sheet th,.sheet td{border-bottom:1px solid var(--line);padding:7px 9px;text-align:left}
+  .sheet tr:last-child td{border-bottom:none}
+  .sheet th{
+    font:600 10px/1.6 ui-monospace,Menlo,monospace;
+    letter-spacing:.13em;text-transform:uppercase;color:var(--dim);
+    white-space:nowrap;
+  }
+  .sheet td.room{color:var(--accent);font-weight:600;font-size:.88rem;white-space:nowrap}
+  .sheet select{
+    width:100%;min-width:104px;
+    background:rgba(7,9,13,.66);
+    color:var(--ink);
+    border:1px solid transparent;
+    border-radius:8px;
+    padding:5px 6px;
+    font:inherit;font-size:.85rem;
+    cursor:pointer;
+  }
+  .sheet select:focus{outline:none;border-color:var(--accent)}
+  .sheet option{background:#0b0f16;color:#e8edf5}
+  .sheet td.dup select{border-color:#e0687f;color:#ffc2cd}
+  .sheet td.given select{color:var(--accent2)}
+
+  /* ---- readouts and verdict ---- */
+  .inq-status{
+    font:600 12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;
+    letter-spacing:.11em;text-transform:uppercase;color:var(--dim);
+  }
+  .inq-status.done{color:var(--accent)}
+  .accuse{display:flex;flex-wrap:wrap;gap:8px}
+  .verdict{
+    display:none;
+    margin-top:14px;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:13px 16px;
+    font-size:.94rem;
+    color:var(--dim);
+  }
+  .verdict.right{border-color:var(--accent);color:var(--accent)}
+  .verdict.wrong{border-color:#e0687f;color:#ffc2cd}
+  .rack-row .controls{margin-left:auto}
+  @media (max-width:640px){.rack-row .controls{margin-left:0}}
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html" class="on">Inquest</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page eighteen</p>
+    <h1>The Inquest</h1>
+    <p class="lede">
+      Every other room here hands you a world and a set of dials. This one hands you
+      a set of facts and expects you to think. Today's number shuts a few people in a
+      building, one to a room, and something goes missing; the thief leaves one thing
+      behind on the floor. Every statement below is true and exactly one arrangement
+      of the sheet satisfies all of them at once — which is not a promise, it is a
+      thing the page proved with a solver before it drew any of this.
+    </p>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="wrap">
+
+      <div class="brief" id="caseBrief"></div>
+
+      <div class="case">
+        <div>
+          <h3>Statements</h3>
+          <ol class="testimony" id="testimony"></ol>
+          <p class="hint">Click a statement to cross it off once you have squeezed it dry.</p>
+        </div>
+
+        <div>
+          <h3>The sheet</h3>
+          <div class="sheet-wrap" id="sheet"></div>
+          <p class="hint">
+            A statement turns green when what you have written satisfies it and red when
+            it does not. Nothing else is checked for you.
+          </p>
+
+          <h3 style="margin-top:26px">Name the thief</h3>
+          <div class="accuse" id="accuse"></div>
+          <div class="verdict" id="verdict"></div>
+        </div>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Length</span>
+          <div class="chips" id="levels"></div>
+        </div>
+        <div class="rack-row">
+          <span class="rack-label">Case <b id="caseOut">—</b></span>
+          <span class="rack-label">Statements <b id="cluesOut">—</b></span>
+        </div>
+        <div class="rack-row">
+          <span class="inq-status" id="statusOut">—</span>
+          <div class="controls">
+            <button class="btn small" id="btnNew">New case</button>
+            <button class="btn small ghost" id="btnToday">Today's case</button>
+            <button class="btn small ghost" id="btnClear">Clear the sheet</button>
+            <button class="btn small ghost" id="btnHint">Hint</button>
+            <button class="btn small ghost" id="btnReveal">Give up</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="hint">N deals a new case, T goes back to today's, H fills in one square.</p>
+
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>How the case is put together</h2>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Deal the building</h3>
+          <p>A setting is drawn from six — a shut-up country house, a hotel out of
+             season, a night sleeper, a museum after closing, a theatre after the
+             curtain, a polar station in the dark — and it supplies the rooms, the
+             people, their trades, what is lying on each floor and what has been
+             taken. Each of those is shuffled independently across the rooms, and
+             that arrangement is the answer. Nobody sees it.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Write down everything true</h3>
+          <p>Several hundred true statements about that arrangement are then
+             generated: who shares a room with what, who is next door to whom, who
+             is west of whom by exactly two doors, who is at the end of the corridor,
+             who is definitely not in the Still Room. All of them are true. Almost
+             none of them are needed.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Cut it down to one answer</h3>
+          <p>Statements are added one at a time until a solver can find only one
+             arrangement that fits them, and then removed one at a time for as long
+             as one arrangement is still all that fits. What is left is a minimal
+             set: take away any single statement and the case goes ambiguous.</p>
+        </li>
+      </ol>
+
+      <h2 style="margin-top:56px">The solver</h2>
+      <p class="sub">
+        Every room in the line is a position, and every name, trade, object and clock
+        face is a variable whose value is one of those positions. Each variable keeps
+        a bitmask of the positions it could still occupy. A statement narrows a
+        variable by asking, for each position left in its mask, whether any
+        combination of the other variables' remaining positions would make that
+        statement true; positions with no such support are struck out. On top of that,
+        a value pinned to one room takes that room away from every other value in its
+        column, and a room only one value can still occupy is handed to it. That runs
+        to a fixed point; where it stalls, the search picks the variable with the
+        fewest positions left and tries each of them, and it counts solutions rather
+        than stopping at the first.
+      </p>
+      <p class="sub">
+        Counting rather than stopping is the whole point. A puzzle with two answers is
+        not a puzzle, and the only way to know a case has exactly one is to go looking
+        for a second and come back empty-handed. The count above the sheet says
+        <em>one solution, proved</em> because that search has already been run — on your
+        machine, in the moment the page loaded, on the case in front of you rather than
+        on a sample of others.
+      </p>
+
+      <p class="sub afterword">
+        The same date integer that draws the flow field on the
+        <a href="./">front page</a> deals this case, and it is doing eighteen other
+        jobs besides — it grows <a href="garden.html">the Garden</a>, writes
+        <a href="chimes.html">the Chimes</a>, deals <a href="lattice.html">the
+        Lattice</a>, files <a href="almanac.html">the Almanac</a>, scatters
+        <a href="observatory.html">the Observatory</a>, raises
+        <a href="atlas.html">the Atlas</a>, breeds <a href="menagerie.html">the
+        Menagerie</a>, lights <a href="orrery.html">the Orrery</a>, invents
+        <a href="codex.html">the Codex</a>, runs <a href="chronicle.html">the
+        Chronicle</a>, builds <a href="folly.html">the Folly</a>, cuts the gears of
+        <a href="engine.html">the Engine</a>, threads <a href="loom.html">the Loom</a>,
+        opens <a href="exchange.html">the Exchange</a>, invents the rules of
+        <a href="gambit.html">the Gambit</a> and locks the doors of
+        <a href="warren.html">the Warren</a>. Nothing here is saved between visits.
+        Tomorrow the building is somewhere else and none of these people exist.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="inquest.js"></script>
+</body>
+</html>
