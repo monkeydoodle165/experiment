@@ -74,6 +74,8 @@
 
   /* ================= settings ================= */
 
+  /* `along` finishes the sentence "N people were there, one to a <unit>, ..."
+     so it must not repeat the one-to-a-unit part itself. */
   var CORRIDOR = {
     along: 'strung out along one corridor', fromEnd: 'west end first',
     lowPhrase: 'west of', endLow: 'at the west end', endHigh: 'at the east end',
@@ -110,7 +112,7 @@
     {
       where: 'the 11.40 sleeper, somewhere north of Crewe and not stopping',
       axis: {
-        along: 'one to a carriage down the length of the train', fromEnd: 'engine end first',
+        along: 'down the length of the train', fromEnd: 'engine end first',
         lowPhrase: 'ahead of', endLow: 'at the front of the train', endHigh: 'at the back of the train',
         adjPhrase: 'coupled directly to', unit: 'carriage', units: 'carriages', unitCap: 'Carriage'
       },
@@ -127,7 +129,7 @@
     {
       where: 'the Borough Museum, an hour after closing, one lamp in six still lit',
       axis: {
-        along: 'one to a gallery along the enfilade', fromEnd: 'west end first',
+        along: 'along the enfilade', fromEnd: 'west end first',
         lowPhrase: 'west of', endLow: 'at the west end', endHigh: 'at the east end',
         adjPhrase: 'next along from', unit: 'gallery', units: 'galleries', unitCap: 'Gallery'
       },
@@ -144,7 +146,7 @@
     {
       where: 'the Alhambra, twenty minutes after the curtain came down',
       axis: {
-        along: 'one to a room along the back corridor', fromEnd: 'prompt side first',
+        along: 'along the back corridor', fromEnd: 'prompt side first',
         lowPhrase: 'promptward of', endLow: 'at the prompt end', endHigh: 'at the far end',
         adjPhrase: 'next door to', unit: 'room', units: 'rooms', unitCap: 'Room'
       },
@@ -161,11 +163,11 @@
     {
       where: 'Vestbukta Station, eleven weeks into the dark',
       axis: {
-        along: 'one to a hut along the covered way', fromEnd: 'seaward end first',
+        along: 'along the covered way', fromEnd: 'seaward end first',
         lowPhrase: 'seaward of', endLow: 'at the seaward end', endHigh: 'at the inland end',
         adjPhrase: 'next along from', unit: 'hut', units: 'huts', unitCap: 'Hut'
       },
-      missing: 'the station\'s one spare transmitter valve is gone, out of its box, and the box put back in the rack',
+      missing: "the station's one spare transmitter valve is gone, out of its box, and the box put back in the rack",
       rooms: ['the Radio Shack', 'the Mess', 'the Generator Hut', 'the Ice Laboratory',
               'the Drying Room', 'the Store Hut', 'the Garage', 'the Bunkroom'],
       people: ['Sandvik', 'Odede', 'Kaasinen', 'Brightwell', 'Ruiz', 'Thorsby', 'Nakagawa', 'Egede'],
@@ -191,8 +193,8 @@
   function popcount(x) { var c = 0; while (x) { x &= x - 1; c++; } return c; }
   function bits(x) { var r = [], i = 0; while (x) { if (x & 1) r.push(i); x >>>= 1; i++; } return r; }
 
-  /* does value p for variable idx of this clue have any support in the other
-     variables' current domains? arity is at most three, so brute force is fine. */
+  /* does value p for variable `target` of this clue have any support in the
+     other variables' current domains? arity is at most three, so brute force. */
   function support(clue, dom, target, p, N) {
     var vars = clue.vars, n = vars.length, vals = new Array(n);
     function rec(k) {
@@ -264,7 +266,7 @@
 
   /* counts solutions, stopping at `stopAt`. `truncated` means the node budget
      ran out, in which case the count is not to be trusted and callers treat the
-     puzzle as not yet proved unique. */
+     case as not yet proved unique. */
   function solve(clues, K, N, stopAt) {
     var found = 0, first = null, nodes = 0, truncated = false;
     var dom = [], c, v;
@@ -353,8 +355,7 @@
   }
 
   function distText(ax, k, ra, rb) {
-    var n = k - 1;
-    var body = (n === 1)
+    var body = (k === 2)
       ? 'is exactly one ' + ax.unit
       : 'are exactly two ' + ax.units;
     return 'There ' + body + ' between ' + ra + ' and ' + rb + '.';
@@ -715,10 +716,10 @@
   }
 
   function tally() {
-    var bits2 = [];
-    if (state.hints) bits2.push(state.hints + (state.hints === 1 ? ' hint' : ' hints'));
-    if (state.wrong.length) bits2.push(state.wrong.length + (state.wrong.length === 1 ? ' wrong name' : ' wrong names'));
-    return bits2.length ? 'Solved with ' + bits2.join(' and ') + '.' : 'Solved with no help at all.';
+    var parts = [];
+    if (state.hints) parts.push(state.hints + (state.hints === 1 ? ' hint' : ' hints'));
+    if (state.wrong.length) parts.push(state.wrong.length + (state.wrong.length === 1 ? ' wrong name' : ' wrong names'));
+    return parts.length ? 'Solved with ' + parts.join(' and ') + '.' : 'Solved with no help at all.';
   }
 
   function accuse(v) {
