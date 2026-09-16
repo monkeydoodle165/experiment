@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Span — Drift</title>
+<meta name="description" content="A gorge dealt by today's date and a bridge you have to build across it, with real axial forces, buckling, and members that break.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  /* ---- the brief ---- */
+  .brief{
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:22px 24px;
+    background:linear-gradient(160deg,rgba(100,240,200,.06),rgba(122,162,255,.04));
+    margin-bottom:24px;
+  }
+  .brief p{margin:0 0 10px;color:var(--dim);font-size:.95rem}
+  .brief p:last-child{margin-bottom:0}
+  .brief p.lead-line{color:var(--ink);font-weight:600;font-size:1.02rem}
+  .brief p.dimline{font-size:.86rem;opacity:.78;border-top:1px solid var(--line);padding-top:10px}
+  .brief b{color:var(--accent)}
+
+  /* ---- the yard ---- */
+  #span{
+    display:block;
+    width:100%;
+    border-radius:16px;
+    border:1px solid var(--line);
+    background:#080b11;
+    cursor:crosshair;
+    touch-action:none;
+  }
+  .note{
+    min-height:1.2em;
+    margin:10px 0 0;
+    text-align:center;
+    font-size:.82rem;
+    color:#ffc2cd;
+    opacity:0;
+    transition:opacity .25s ease;
+  }
+
+  /* ---- budget bar ---- */
+  .budget{
+    height:8px;border-radius:999px;
+    background:rgba(255,255,255,.07);
+    overflow:hidden;flex:1 1 160px;min-width:120px;
+  }
+  .budget i{display:block;height:100%;width:0;background:var(--accent);transition:width .18s ease}
+  .span-status{
+    font:600 12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
+  }
+  .span-status.done{color:var(--accent)}
+  .verdict{
+    display:none;margin-top:16px;
+    border:1px solid var(--line);border-radius:12px;
+    padding:13px 16px;font-size:.94rem;color:var(--dim);
+  }
+  .verdict.right{border-color:var(--accent);color:var(--accent)}
+  .verdict.wrong{border-color:#e0687f;color:#ffc2cd}
+  .rack-row .controls{margin-left:auto}
+  @media (max-width:700px){.rack-row .controls{margin-left:0}}
+
+  /* ---- material table ---- */
+  .stock{width:100%;border-collapse:collapse;margin-top:8px;font-size:.9rem}
+  .stock th,.stock td{border-bottom:1px solid var(--line);padding:8px 8px;text-align:left}
+  .stock tr:last-child td{border-bottom:none}
+  .stock th{
+    font:600 10px/1.5 ui-monospace,Menlo,monospace;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--dim);
+  }
+  .stock td.mat{color:var(--ink);font-weight:600}
+  .stock td.mat em{
+    width:11px;height:11px;border-radius:3px;display:inline-block;margin-right:8px;
+  }
+  .stock-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;padding:4px 14px}
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html" class="on">Span</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page nineteen</p>
+    <h1>The Span</h1>
+    <p class="lede">
+      The Folly stands a building up and nothing is ever asked of it. The Engine turns
+      and nothing leans on it. Here is today's gorge, today's roadway laid across the
+      opening, and something heavy that has to get to the other side. Draw the rest of
+      the bridge yourself, out of timber, steel and wire rope, then send the load across
+      and watch every member colour up with what it is actually carrying. The ones you
+      got wrong will tell you by snapping.
+    </p>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="wrap">
+
+      <div class="brief" id="briefOut"></div>
+
+      <canvas id="span" aria-label="A gorge with a roadway across it. Drag between joints to build."></canvas>
+      <p class="note" id="noteOut"></p>
+      <p class="hint canvas-hint">
+        Drag from one joint to another to lay a member, or tap one and then the next.
+        Green squares are solid ground and hold fast; white dots are in mid-air and
+        will only stay there if you hold them up.
+      </p>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Stock</span>
+          <div class="chips" id="tools"></div>
+        </div>
+
+        <div class="rack-row">
+          <span class="rack-label">Spent <b id="costOut">—</b></span>
+          <div class="budget"><i id="bar"></i></div>
+          <span class="rack-label">Budget <b id="budgetOut">—</b></span>
+        </div>
+
+        <div class="rack-row">
+          <span class="rack-label">Gorge <b id="seedOut">—</b></span>
+          <span class="rack-label">Gap <b id="gapOut">—</b></span>
+          <span class="rack-label">Drop <b id="depthOut">—</b></span>
+          <span class="rack-label">Load <b id="loadOut">—</b></span>
+          <span class="rack-label">Members <b id="membersOut">0</b></span>
+          <span class="rack-label">Worst <b id="stressOut">—</b></span>
+        </div>
+
+        <div class="rack-row">
+          <span class="span-status" id="statusOut">—</span>
+          <div class="controls">
+            <button class="btn small" id="btnTest">Send it across</button>
+            <button class="btn small ghost" id="btnUndo">Undo</button>
+            <button class="btn small ghost" id="btnClear">Start again</button>
+            <button class="btn small ghost" id="btnSolve">Show me one that works</button>
+            <button class="btn small ghost" id="btnNew">Another gorge</button>
+            <button class="btn small ghost" id="btnToday">Today's gorge</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="verdict" id="verdict"></div>
+
+      <p class="hint">
+        1, 2 and 3 pick a material, E takes members down again, Z undoes the last one,
+        space sends the load across, N deals another gorge and T comes back to today's.
+      </p>
+
+      <div class="stock-wrap" style="margin-top:26px">
+        <table class="stock">
+          <tr>
+            <th>Material</th><th>Price</th><th>Pull</th><th>Push</th><th>Notes</th>
+          </tr>
+          <tr>
+            <td class="mat"><em style="background:#c08a55"></em>Timber</td>
+            <td>£9/m</td><td>42 kN</td><td>42 kN to 6 m, 21 kN at 9 m</td>
+            <td>Cheap, light, and it folds up if you make it long.</td>
+          </tr>
+          <tr>
+            <td class="mat"><em style="background:#9fb3c8"></em>Steel</td>
+            <td>£26/m</td><td>130 kN</td><td>130 kN to 6 m, 64 kN at 9 m</td>
+            <td>Three times the price and three times the member.</td>
+          </tr>
+          <tr>
+            <td class="mat"><em style="background:#e3cf94"></em>Wire rope</td>
+            <td>£6/m</td><td>100 kN</td><td>nothing at all</td>
+            <td>Will not push. Hang things from it, never stand them on it.</td>
+          </tr>
+          <tr>
+            <td class="mat"><em style="background:#6d7a8a"></em>Roadway</td>
+            <td>given</td><td>50 kN</td><td>180 kN</td>
+            <td>Bolted end to end: it pushes well and pulls badly, so it will not
+                hang itself across the gap as a chain and save you the trouble.</td>
+          </tr>
+        </table>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What the bridge is actually doing</h2>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Every member is a spring</h3>
+          <p>A member of length <code>L</code> pulls or pushes with a force of
+             <code>EA/L</code> times however far it has been stretched or squashed —
+             stiffer the shorter it is, exactly like the real thing. Joints are pins:
+             they carry no bending, so the only thing a member can do is pull its two
+             ends together or shove them apart.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Nothing is rigid</h3>
+          <p>Forces are summed at every joint, divided by the mass hanging on it and
+             integrated forward three hundred times a second, with a little damping
+             along each member so the structure settles instead of ringing. That is why
+             the bridge sags visibly before the load has even set off: it is finding
+             its own equilibrium, not being placed in one.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Long members buckle</h3>
+          <p>In tension a member holds until it reaches its breaking force. In
+             compression it also has to beat Euler: capacity falls off as
+             <code>1/L²</code>, so a nine-metre timber strut gives up at half the load
+             a four-metre one will take. Held over capacity for a thirtieth of a
+             second, it goes — and everything it was carrying goes to its neighbours,
+             which is how one bad member takes a bridge down in stages.</p>
+        </li>
+      </ol>
+
+      <h2 style="margin-top:56px">Why the gorge is always crossable</h2>
+      <p class="sub">
+        Dealing a gap at random and asking you to bridge it on a fixed budget is only
+        fair if the page knows it can be done. So before any of this is drawn, four
+        standard lattice trusses — timber and steel, four and eight metres deep — are
+        built against today's gorge and each one is put through the entire crossing
+        headlessly: settle under its own weight, take the load on at one end, carry it
+        across, put it down on the far bank. The cheapest one that survives becomes the
+        reference, your budget is that cost plus forty-five per cent, and
+        <em>Show me one that works</em> hands you the reference itself. If none of the
+        four survive the gorge is narrowed by four metres and the whole thing is dealt
+        again, which over three hundred gorges has not once been needed — though on
+        forty-eight of those three hundred, exactly one of the four was still standing
+        at the end. It costs about eight milliseconds to find out, which is why you did
+        not notice it happening.
+      </p>
+      <p class="sub">
+        None of that makes your bridge a good one. The reference is a dull, heavy,
+        over-braced lattice with two diagonals in every panel where one would mostly
+        do. Measured against it: an ordinary Pratt truss — verticals at every panel
+        point, single diagonals leaning in towards the middle so they are pulled rather
+        than pushed — gets the load across a hundred and thirteen of a hundred and
+        twenty gorges, and where it works it does the same job for about seventy-three
+        per cent of the reference's price. The budget is the ceiling, not the target.
+      </p>
+      <p class="sub">
+        Two things worth knowing before you start. Wire rope really will not push: a
+        cable asked to take compression simply goes slack and carries nothing, so a
+        cable-stayed deck needs a mast standing on solid ground to hang from. And the
+        roadway is not scenery — it is four-metre panels with a breaking force like
+        everything else, and an unsupported panel with two tonnes standing on it is the
+        usual way this ends. A roadway that has dropped two and a half metres counts as
+        failed whether anything has snapped or not, on the grounds that it is no longer
+        a road. For what it is worth, the reference trusses sag about half a metre at
+        worst.
+      </p>
+
+      <p class="sub afterword">
+        The same date integer that draws the flow field on the
+        <a href="./">front page</a> cuts this gorge, and it is doing eighteen other
+        jobs besides — it grows <a href="garden.html">the Garden</a>, writes
+        <a href="chimes.html">the Chimes</a>, deals <a href="lattice.html">the
+        Lattice</a>, files <a href="almanac.html">the Almanac</a>, scatters
+        <a href="observatory.html">the Observatory</a>, raises
+        <a href="atlas.html">the Atlas</a>, breeds <a href="menagerie.html">the
+        Menagerie</a>, lights <a href="orrery.html">the Orrery</a>, invents
+        <a href="codex.html">the Codex</a>, runs <a href="chronicle.html">the
+        Chronicle</a>, builds <a href="folly.html">the Folly</a>, cuts the gears of
+        <a href="engine.html">the Engine</a>, threads <a href="loom.html">the Loom</a>,
+        opens <a href="exchange.html">the Exchange</a>, invents the rules of
+        <a href="gambit.html">the Gambit</a>, locks the doors of
+        <a href="warren.html">the Warren</a> and arranges the corridor in
+        <a href="inquest.html">the Inquest</a>. Nothing here is saved between visits.
+        Tomorrow the gorge is somewhere else and your bridge is not.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="span.js"></script>
+</body>
+</html>
