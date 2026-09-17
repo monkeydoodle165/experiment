@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Junction — Drift</title>
+<meta name="description" content="A station dealt by today's date, a working timetable to go with it, and an interlocking that will not let you have two things at once.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  /* ---- the brief ---- */
+  .brief{
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:22px 24px;
+    background:linear-gradient(160deg,rgba(100,240,200,.06),rgba(122,162,255,.04));
+    margin-bottom:24px;
+  }
+  .brief p{margin:0 0 10px;color:var(--dim);font-size:.95rem}
+  .brief p:last-child{margin-bottom:0}
+  .brief p.lead-line{color:var(--ink);font-weight:600;font-size:1.02rem}
+  .brief p.dimline{font-size:.86rem;opacity:.78;border-top:1px solid var(--line);padding-top:10px}
+  .brief b{color:var(--accent)}
+
+  /* ---- the panel ---- */
+  #jn{
+    display:block;
+    width:100%;
+    border-radius:16px;
+    border:1px solid var(--line);
+    background:#080b11;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+  .note{
+    min-height:1.2em;
+    margin:10px 0 0;
+    text-align:center;
+    font-size:.82rem;
+    color:#ffc2cd;
+    opacity:0;
+    transition:opacity .25s ease;
+  }
+  .verdict{
+    display:none;margin-top:16px;
+    border:1px solid var(--line);border-radius:12px;
+    padding:13px 16px;font-size:.94rem;color:var(--dim);
+  }
+  .verdict.right{border-color:var(--accent);color:var(--accent)}
+  .verdict.wrong{border-color:#e0687f;color:#ffc2cd}
+  .verdict b{color:inherit}
+  .rack-row .controls{margin-left:auto}
+  @media (max-width:760px){.rack-row .controls{margin-left:0}}
+  .btn.small[disabled]{cursor:default;transform:none}
+
+  /* ---- the working timetable ---- */
+  .stock{width:100%;border-collapse:collapse;font-size:.88rem}
+  .stock th,.stock td{border-bottom:1px solid var(--line);padding:7px 9px;text-align:left;white-space:nowrap}
+  .stock tr:last-child td{border-bottom:none}
+  .stock th{
+    font:600 10px/1.5 ui-monospace,Menlo,monospace;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--dim);
+  }
+  .stock td{color:var(--dim)}
+  .stock td.mat{color:var(--ink);font-weight:600;font-family:ui-monospace,Menlo,monospace}
+  .stock tr[data-id]{cursor:pointer}
+  .stock tr[data-id]:hover td{color:var(--ink)}
+  .stock tr.sel td{background:rgba(100,240,200,.09);color:var(--ink)}
+  .stock tr.late td{color:#ffc2cd}
+  .stock tr.late td.mat{color:#ffc2cd}
+  .stock tr.done td{opacity:.45}
+  .stock-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;padding:4px 14px;margin-top:26px}
+
+  .key{display:flex;flex-wrap:wrap;gap:16px;margin-top:14px}
+  .key span{font-size:.8rem;color:var(--dim);display:inline-flex;align-items:center;gap:7px}
+  .key i{width:16px;height:9px;border-radius:3px;display:inline-block}
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html" class="on">Junction</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page twenty</p>
+    <h1>The Junction</h1>
+    <p class="lede">
+      Every other room here gives you as long as you like. This one gives you a clock.
+      Today's number lays out a station, writes a working timetable across it, and then
+      hands you the panel: thirteen to seventeen trains are going to turn up at the edges of
+      that diagram whether you are ready or not, and each one needs a road to come into
+      and a road to leave by. You cannot crash anything — the interlocking will simply
+      refuse you — so the only thing you can lose here is time, and it is measured.
+    </p>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="wrap">
+
+      <div class="brief" id="briefOut"></div>
+
+      <canvas id="jn" aria-label="A signal box diagram of today's station, with trains on it."></canvas>
+      <p class="note" id="noteOut"></p>
+      <p class="hint canvas-hint">
+        Click a train to take it, then click the road you want it in. Click it again —
+        or use the button — to let it out. Trains waiting outside are the little tabs at
+        the edges.
+      </p>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Station <b id="stationOut">—</b></span>
+          <span class="rack-label">Clock <b id="clockOut">—</b></span>
+          <span class="rack-label">Away <b id="workedOut">—</b></span>
+          <span class="rack-label">Lost <b id="lateOut">—</b></span>
+          <span class="rack-label">Right time <b id="rightOut">—</b></span>
+          <span class="rack-label">Panel lost <b id="refOut">—</b></span>
+        </div>
+
+        <div class="rack-row">
+          <span class="rack-label">Speed</span>
+          <div class="chips" id="speeds"></div>
+          <div class="controls">
+            <button class="btn small" id="btnPlay">Start the shift</button>
+            <button class="btn small ghost" id="btnGo">Send it away</button>
+            <button class="btn small ghost" id="btnAuto">Let the panel work it</button>
+            <button class="btn small ghost" id="btnNew">Another station</button>
+            <button class="btn small ghost" id="btnToday">Today's station</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="verdict" id="verdict"></div>
+
+      <div class="key">
+        <span><i style="background:#64f0c8"></i>Express</span>
+        <span><i style="background:#7aa2ff"></i>Stopping service</span>
+        <span><i style="background:#c08a55"></i>Freight</span>
+        <span><i style="background:#e3cf94"></i>Parcels</span>
+        <span><i style="background:#9fb3c8"></i>Empty stock</span>
+        <span><i style="background:rgba(255,180,91,.55)"></i>Road occupied</span>
+        <span><i style="background:rgba(122,162,255,.75)"></i>Road set</span>
+      </div>
+
+      <p class="hint">
+        Space starts and stops the clock, 1 to 9 put the train you have taken into that
+        road, D or Enter sends it away, N deals another station and T comes back to
+        today's.
+      </p>
+
+      <div class="stock-wrap">
+        <div id="board"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What the panel will and will not let you do</h2>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>A route, not a set of points</h3>
+          <p>You do not throw individual points here, any more than a signalman does.
+             You ask for a road from where a train is to where you want it, and the
+             frame either sets the whole thing and clears the signal or tells you which
+             bit of track is standing in the way and who is holding it. Every route is a
+             list of sections — the line it comes in on, whichever slices of the throat
+             it has to cross, and the road itself — and two routes that want the same
+             section cannot both exist.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>The throat is the whole game</h3>
+          <p>Notice which line each road lies opposite. A train coming in on the line
+             that points straight at platform 2 crosses nothing at all to get into
+             platform 2, and crosses four slices of the throat to reach the loop at the
+             bottom — blocking everything in between while it does. Putting a train in
+             the nearest free road is usually right and occasionally the worst thing you
+             can do, because the road you leave free is the one the next train cannot
+             reach.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Length, platforms and dead ends</h3>
+          <p>A road is only as useful as it is long: an eleven-coach express will not go
+             into a nine-coach platform. Passengers need a platform, so a stopping
+             service cannot be put in the goods loop — though a train booked non-stop
+             does not care, which is the cheapest trick available to you. And the bay is
+             a dead end facing west: only something that arrives from the west and goes
+             back west can use it at all.</p>
+        </li>
+      </ol>
+
+      <h2 style="margin-top:56px">Where the number to beat comes from</h2>
+      <p class="sub">
+        Handing you a timetable at random and then scoring you on it is only fair if the
+        page knows the timetable can be worked. So the station is dealt once and the
+        timetable over it is dealt up to sixteen times, and every one of those drafts is
+        put through the entire shift headlessly by a dispatcher that sets every route it
+        legally can, as early as it can, preferring the road nearest the line the train
+        is on and the shortest road the train will actually fit in. The draft that
+        dispatcher got round with the least delay is the one you are given, and the
+        delay it lost doing it is the number in the rack. Over three hundred stations it
+        has never once failed to get every train away; the median shift costs it a little
+        over three minutes, nine shifts in ten cost it under six, and the worst one seen
+        cost it sixteen.
+      </p>
+      <p class="sub">
+        It is not a good signalman, though, and that is the point. It never holds a road
+        back for something better, it never notices that the loop would do for a train
+        that is not stopping, and it will cheerfully drop a six-coach parcels train into
+        the only platform long enough for the express that is four minutes behind it.
+        Beating it is a matter of thinking one train further ahead than it does. All of
+        this costs about sixteen milliseconds, which is why you did not see it happen.
+      </p>
+      <p class="sub">
+        Two notes on the clock. A train that is refused a road does not vanish — it
+        stands outside on its line accruing minutes, and nothing behind it on that line
+        can move until it does, so one bad decision at the west end is felt at the east
+        end six minutes later. And a route is released as a whole when the train
+        completes it, not section by section as it passes, which is a real and
+        deliberately old-fashioned way of working: it costs you a little capacity in
+        exchange for never having to think about where the back of a train is.
+      </p>
+
+      <p class="sub afterword">
+        The same date integer that draws the flow field on the
+        <a href="./">front page</a> lays out this station and writes its timetable, and
+        it is doing nineteen other jobs besides — it grows
+        <a href="garden.html">the Garden</a>, writes <a href="chimes.html">the
+        Chimes</a>, deals <a href="lattice.html">the Lattice</a>, files
+        <a href="almanac.html">the Almanac</a>, scatters
+        <a href="observatory.html">the Observatory</a>, raises
+        <a href="atlas.html">the Atlas</a>, breeds <a href="menagerie.html">the
+        Menagerie</a>, lights <a href="orrery.html">the Orrery</a>, invents
+        <a href="codex.html">the Codex</a>, runs <a href="chronicle.html">the
+        Chronicle</a>, builds <a href="folly.html">the Folly</a>, cuts the gears of
+        <a href="engine.html">the Engine</a>, threads <a href="loom.html">the Loom</a>,
+        opens <a href="exchange.html">the Exchange</a>, invents the rules of
+        <a href="gambit.html">the Gambit</a>, locks the doors of
+        <a href="warren.html">the Warren</a>, arranges the corridor in
+        <a href="inquest.html">the Inquest</a> and cuts the gorge under
+        <a href="span.html">the Span</a>. Nothing here is saved between visits.
+        Tomorrow this station is somewhere else, under a different name, with a
+        different lot of trains on it.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="junction.js"></script>
+</body>
+</html>
