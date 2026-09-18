@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Bureau — Drift</title>
+<meta name="description" content="A dispatch written and enciphered by today's date, and a desk to break it on: frequency counts, a crib, and a machine that has already proved it can be done.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  /* ---- the brief ---- */
+  .brief{
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:22px 24px;
+    background:linear-gradient(160deg,rgba(100,240,200,.06),rgba(122,162,255,.04));
+    margin-bottom:24px;
+  }
+  .brief p{margin:0 0 10px;color:var(--dim);font-size:.95rem}
+  .brief p:last-child{margin-bottom:0}
+  .brief p.lead-line{color:var(--ink);font-weight:600;font-size:1.02rem}
+  .brief p.dimline{font-size:.86rem;opacity:.78;border-top:1px solid var(--line);padding-top:10px}
+  .brief b{color:var(--accent)}
+
+  /* ---- the intercept ---- */
+  .desk{
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:18px 16px;
+    background:#080b11;
+  }
+  .ct{
+    display:flex;flex-wrap:wrap;
+    gap:6px 15px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    line-height:1;
+    justify-content:flex-start;
+  }
+  .grp{display:flex;gap:1px}
+  .cell{
+    display:flex;flex-direction:column;align-items:center;
+    width:16px;padding:3px 0;border-radius:3px;
+    cursor:pointer;
+    transition:background .12s ease;
+  }
+  .cell b{font-weight:600;font-size:.82rem;color:#7d8798}
+  .cell i{
+    font-style:normal;font-weight:700;font-size:.92rem;
+    min-height:1.1em;line-height:1.2;
+    color:rgba(255,255,255,.22);
+  }
+  .cell.got b{color:#5e6878}
+  .cell.got i{color:var(--accent)}
+  .cell:hover{background:rgba(255,255,255,.07)}
+  .cell.sel{background:rgba(122,162,255,.20)}
+
+  /* ---- the key strip ---- */
+  .tiles{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(82px,1fr));
+    gap:9px;margin-top:24px;
+  }
+  .tile{
+    border:1px solid var(--line);
+    border-radius:11px;
+    background:rgba(11,15,22,.6);
+    padding:9px 8px 8px;
+    text-align:center;
+    cursor:pointer;
+    font:inherit;color:inherit;
+    transition:border-color .15s ease,background .15s ease;
+  }
+  .tile:hover{border-color:rgba(255,255,255,.26)}
+  .tile u{
+    display:block;text-decoration:none;
+    font:700 .92rem/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.1em;color:var(--dim);
+  }
+  .tile i{
+    display:block;font-style:normal;
+    font:700 1.3rem/1.2 ui-monospace,Menlo,monospace;
+    color:var(--accent);min-height:1.35em;
+  }
+  .tile .bar{
+    display:block;height:3px;border-radius:2px;
+    background:rgba(255,255,255,.08);margin:2px 0 5px;
+  }
+  .tile .bar span{display:block;height:100%;border-radius:2px;background:var(--accent2)}
+  .tile small{font-size:.62rem;color:var(--dim);letter-spacing:.04em}
+  .tile.filled{background:rgba(100,240,200,.07)}
+  .tile.sel{border-color:var(--accent)}
+  .tile.clash{border-color:#e0687f}
+  .tile.clash i{color:#ffc2cd}
+
+  /* ---- readouts ---- */
+  .meter{
+    display:inline-block;width:110px;height:6px;border-radius:3px;
+    background:rgba(255,255,255,.09);overflow:hidden;vertical-align:middle;
+  }
+  .meter span{
+    display:block;height:100%;width:0;border-radius:3px;
+    background:linear-gradient(90deg,var(--accent2),var(--accent));
+    transition:width .25s ease;
+  }
+  .note{
+    min-height:1.2em;margin:12px 0 0;text-align:center;
+    font-size:.82rem;color:var(--accent);opacity:0;transition:opacity .25s ease;
+  }
+  .verdict{
+    display:none;margin-top:18px;
+    border:1px solid var(--line);border-radius:12px;
+    padding:15px 18px;font-size:.95rem;color:var(--dim);
+  }
+  .verdict.right{border-color:var(--accent)}
+  .verdict p{margin:0}
+  .verdict b{color:var(--accent)}
+  .wireout{margin-top:14px;display:grid;gap:5px}
+  .wire{
+    font:500 .8rem/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;
+    letter-spacing:.05em;color:var(--ink);
+  }
+  .rack-row .controls{margin-left:auto}
+  @media (max-width:760px){
+    .rack-row .controls{margin-left:0}
+    .cell{width:14px}
+    .ct{gap:6px 11px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html" class="on">Bureau</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page twenty-one</p>
+    <h1>The Bureau</h1>
+    <p class="lede">
+      Somebody wired a dispatch this morning and somebody else took a copy of it off
+      the line. It is in front of you, in a cipher, and nobody here knows the key.
+      Today's number wrote the message, chose the system, cut the key and enciphered
+      it — and then, before handing any of it over, broke the thing itself, so that
+      the one promise this page makes is a promise it has already kept.
+    </p>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="wrap">
+
+      <div class="brief" id="briefOut"></div>
+
+      <div class="desk">
+        <div class="ct" id="ctOut"></div>
+      </div>
+      <p class="note" id="noteOut"></p>
+      <p class="hint canvas-hint">
+        Click a letter in the intercept — or a tile below — and then type what you think
+        it stands for. Backspace clears it. Nothing you type can be wrong for long.
+      </p>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">System <b id="sysOut">—</b></span>
+          <span class="rack-label">Letters <b id="lenOut">—</b></span>
+          <span class="rack-label">Settled <b id="settledOut">—</b></span>
+          <span class="rack-label">Off the desk <b id="nudgeOut">0</b></span>
+          <span class="rack-label">Clock <b id="clockOut">0:00</b></span>
+          <span class="rack-label">Reads as English <b id="fitOut">—</b></span>
+          <em class="meter"><span id="fitBar"></span></em>
+        </div>
+        <div class="rack-row">
+          <div class="controls">
+            <button class="btn small ghost" id="btnNudge">Give me one letter</button>
+            <button class="btn small ghost" id="btnMachine">Let the desk try it</button>
+            <button class="btn small ghost" id="btnClear">Clear the sheet</button>
+            <button class="btn small ghost" id="btnNew">Another intercept</button>
+            <button class="btn small ghost" id="btnToday">Today's intercept</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="tiles" id="slotsOut"></div>
+
+      <div class="verdict" id="verdict"></div>
+
+      <p class="hint">
+        A to Z types a letter into whichever tile is lit, Backspace takes it out again,
+        and the arrow keys walk along the strip. On a substitution day, two cipher
+        letters pointed at the same plain letter turn red — that is never right, and it
+        is usually the fastest way to find the mistake you made twenty minutes ago.
+      </p>
+
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>How to get in</h2>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Count first, guess second</h3>
+          <p>The tiles are sorted by how often each cipher letter appears, commonest
+             first, with a bar to show it. In telegram English the top of that list is
+             almost always E, then T, A, O, N and the rest of the usual crowd. That is
+             not a solution, it is a shortlist: it tells you which four or five letters
+             are worth being wrong about, and stops you spending an hour on a letter
+             that turns up twice.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Use the crib</h3>
+          <p>Every dispatch on this circuit opens <code>FROM</code> … <code>TO THE
+             BUREAU</code> and closes <code>MESSAGE ENDS</code>, and the sentences are
+             divided by <code>STOP</code>. That is a lot of known plaintext. Lay
+             <code>MESSAGE ENDS</code> against the last eleven letters of the intercept
+             and you have seven or eight of the alphabet before you have done any
+             thinking at all — and against a repeating key, the same trick hands you a
+             run of key letters directly.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Watch the gauge, not your hunch</h3>
+          <p>The bar marked <em>reads as English</em> scores every pair of letters your
+             current sheet produces against how often that pair turns up in this
+             circuit's traffic, and reports the result as a percentage of the way from
+             gibberish to the real thing. It is the same number the machine climbs. If
+             a change you were sure about drops it, you were not sure about it.</p>
+        </li>
+      </ol>
+
+      <h2 style="margin-top:56px">What is actually behind the tiles</h2>
+      <p class="sub">
+        A different system comes up depending on the day. A <b>simple substitution</b>
+        is one fixed alphabet cut from a keyword: one cipher letter for each plain one,
+        the same from beginning to end, which is why counting works on it. A
+        <b>Vigenere</b> takes a short keyword and shifts each letter by the next letter
+        of that word in turn, so a single plain letter comes out five or six different
+        ways and a plain frequency count tells you almost nothing — you have to find
+        the length of the key first, then solve each slice of the message as its own
+        little Caesar shift. A <b>Beaufort</b> does the same thing backwards, subtracting
+        the letter from the key rather than adding, which is the sort of detail that
+        makes a good day's work out of an afternoon.
+      </p>
+      <p class="sub">
+        The strip under the intercept is the key itself, whichever system is up. For a
+        substitution it is all twenty-six letters, sorted by how much of the message
+        each one is holding. For the periodic systems it is one tile per letter of the
+        key, and every tile you fill in lights up every fifth or seventh letter of the
+        whole dispatch at once, the length of it, which is a very satisfying thing to
+        watch happen.
+      </p>
+
+      <h2 style="margin-top:56px">Why it is certainly breakable</h2>
+      <p class="sub">
+        Handing you a cipher and wishing you luck would be cheap. So before this page
+        renders a single tile it attacks the intercept itself, with no knowledge of the
+        key: for a substitution it hill-climbs, starting from a frequency-matched
+        alphabet and repeatedly swapping the two letters that most improve a bigram
+        score built from a couple of thousand lines of this circuit's own traffic,
+        restarting from random alphabets fifteen times to shake itself out of local
+        optima. For a periodic key it counts coincidences at every period up to twelve
+        to find the key length, then picks each key letter by fit. If the attack cannot
+        get at least ninety-five per cent of the letters back, the message is thrown
+        away and another one is written. Whatever you are looking at got through that.
+        The exact figure and the time it took are in the brief above.
+      </p>
+      <p class="sub afterword">
+        The same date integer that draws the flow field on the
+        <a href="./">front page</a> writes this dispatch and enciphers it, and it is
+        doing twenty other jobs besides — it grows <a href="garden.html">the Garden</a>,
+        writes <a href="chimes.html">the Chimes</a>, deals
+        <a href="lattice.html">the Lattice</a>, files <a href="almanac.html">the
+        Almanac</a>, scatters <a href="observatory.html">the Observatory</a>, raises
+        <a href="atlas.html">the Atlas</a>, breeds <a href="menagerie.html">the
+        Menagerie</a>, lights <a href="orrery.html">the Orrery</a>, invents
+        <a href="codex.html">the Codex</a>, runs <a href="chronicle.html">the
+        Chronicle</a>, builds <a href="folly.html">the Folly</a>, cuts the gears of
+        <a href="engine.html">the Engine</a>, threads <a href="loom.html">the Loom</a>,
+        opens <a href="exchange.html">the Exchange</a>, invents the rules of
+        <a href="gambit.html">the Gambit</a>, locks the doors of
+        <a href="warren.html">the Warren</a>, arranges the corridor in
+        <a href="inquest.html">the Inquest</a>, cuts the gorge under
+        <a href="span.html">the Span</a> and works the timetable at
+        <a href="junction.html">the Junction</a>. Nothing here is saved between visits.
+        Tomorrow there is a different message, from a different desk, in a different
+        hand.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="bureau.js"></script>
+</body>
+</html>
