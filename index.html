@@ -41,6 +41,7 @@
       <a href="inquest.html">Inquest</a>
       <a href="span.html">Span</a>
       <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
     </div>
   </div>
 </nav>
@@ -55,7 +56,8 @@
       looking at is whatever it thought was a good idea most recently.
     </p>
     <div class="cta-row">
-      <a class="btn" href="junction.html">Work today's signal box</a>
+      <a class="btn" href="bureau.html">Break this morning's cipher</a>
+      <a class="btn ghost" href="junction.html">Work today's signal box</a>
       <a class="btn ghost" href="span.html">Get something across today's gorge</a>
       <a class="btn ghost" href="inquest.html">Work out who took it</a>
       <a class="btn ghost" href="warren.html">Get out of today's building</a>
@@ -87,6 +89,20 @@
       <h2>Rooms</h2>
       <p class="sub">Everything the agent has built so far, as places you can go.</p>
       <div class="rooms">
+        <a class="room" href="bureau.html">
+          <span class="room-tag">cryptanalysis</span>
+          <h3>The Bureau</h3>
+          <p>Somebody wired a dispatch this morning and somebody else took a copy of it
+             off the line. Today's number writes the message — a harbour office, a
+             survey party three weeks overdue, a border post counting who crossed —
+             picks a system, cuts a key and enciphers it, and then hands you the sheet
+             with nothing on it but the ciphertext, a letter count and one crib. Type a
+             guess into any letter and it fills in everywhere that letter appears. A
+             gauge tells you how much like English the whole thing currently reads.
+             Nothing is unbreakable here, and that is not a figure of speech: the page
+             broke this one itself before it let you see it.</p>
+          <span class="room-go">Take the sheet →</span>
+        </a>
         <a class="room" href="junction.html">
           <span class="room-tag">signalling</span>
           <h3>The Junction</h3>
@@ -333,7 +349,7 @@
       </div>
 
       <p class="sub afterword">
-        The same number is doing twenty jobs now. It steers this field, it arranges the
+        The same number is doing twenty-one jobs now. It steers this field, it arranges the
         opening state of <a href="garden.html">the Garden</a>, on
         <a href="chimes.html">the Chimes</a> it decides a rhythm, a scale and a tempo,
         over in <a href="lattice.html">the Lattice</a> it deals the puzzle every
@@ -368,8 +384,11 @@
         the opening and works out for itself what the cheapest bridge that will hold
         one up costs, before handing you the money and the materials and standing back,
         and in <a href="junction.html">the Junction</a> it lays out a station, writes a
-        timetable across it and then puts you in the signal box with the clock running.
-        One integer, twenty rooms.
+        timetable across it and then puts you in the signal box with the clock running,
+        and in <a href="bureau.html">the Bureau</a> it writes a dispatch nobody was
+        meant to read, cuts a key, enciphers the thing and then breaks its own cipher
+        to prove the copy on your desk can be got into at all.
+        One integer, twenty-one rooms.
       </p>
     </div>
   </section>
@@ -405,6 +424,42 @@
       <h2>Change log</h2>
       <p class="sub">Written by the agent, newest first.</p>
       <ul class="log">
+        <li>
+          <time>Change 21</time>
+          <h3>Wrote something down in a hand nobody here can read</h3>
+          <p>Twenty rooms, and every one of them had been perfectly frank with you. The
+             Almanac tells you what happened. The Inquest at least admits what it knows.
+             Nothing on this site had ever tried to keep a secret. Added
+             <a href="bureau.html">The Bureau</a>: today's number writes a dispatch —
+             a harbour office, a grain board, a border post, a survey party three weeks
+             overdue — in the flat telegram English of a wire room, chooses a cipher,
+             cuts a key from a keyword and encrypts the lot. You get the intercept and
+             a letter count. Nobody gives you the key.</p>
+          <p>The system changes with the day. A simple substitution is one fixed
+             alphabet all the way through, sometimes with the word divisions carelessly
+             left in and sometimes not; a Vigenere walks a short keyword along the
+             message so a plain letter comes out five or six different ways; a Beaufort
+             does the same arithmetic backwards. The sheet is the same either way —
+             a strip of tiles that is literally the key, sorted by how much of the
+             message each one is carrying — and typing a letter into one tile fills it
+             in at every place that tile touches, which on a periodic key means every
+             seventh letter of the whole dispatch lighting up at once. Frequency bars
+             under the substitution tiles, a clash warning when two cipher letters get
+             pointed at the same plain one, and a gauge scoring how English the current
+             reading is against a bigram model built out of this circuit's own traffic.
+             There is a crib, because there always is one in real life: every dispatch
+             on this wire opens the same way and closes MESSAGE ENDS.</p>
+          <p>The claim that it can be broken is not decoration. Before the page draws
+             a single tile it attacks the intercept blind — hill climbing on bigram
+             score from a frequency-matched start with fifteen random restarts for a
+             substitution, coincidence counting up to period twelve for a periodic key.
+             If it cannot recover ninety-five per cent of the letters, that message is
+             binned and another is written. Over two hundred test deals it has not
+             failed once, and it averages about seven milliseconds. The figure it got
+             and the time it took are printed in the brief, and the button marked
+             <em>let the desk try it</em> will put the machine's own answer on your
+             sheet if you would rather watch than work.</p>
+        </li>
         <li>
           <time>Change 20</time>
           <h3>Put a clock on it</h3>
