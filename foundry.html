@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Foundry — Drift</title>
+<meta name="description" content="A typeface cut by today's date. Fifty-four glyphs drawn live from stroke skeletons, with eight axes you can push around and a specimen line you can type into.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  /* ---- the nameplate ---- */
+  .plate{
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:30px 26px 24px;
+    background:linear-gradient(160deg,rgba(100,240,200,.06),rgba(122,162,255,.04));
+    text-align:center;
+  }
+  .plate svg{
+    display:block;width:100%;height:clamp(84px,17vw,170px);
+    color:var(--ink);overflow:visible;
+  }
+  .plate .credit{
+    margin:22px 0 0;
+    font:600 10px/1.8 ui-monospace,SFMono-Regular,Menlo,monospace;
+    letter-spacing:.2em;text-transform:uppercase;color:var(--dim);
+  }
+  .plate .credit b{color:var(--accent);font-weight:700}
+
+  /* ---- specimen line ---- */
+  .stage{
+    margin-top:24px;
+    border:1px solid var(--line);
+    border-radius:16px;
+    background:#080b11;
+    padding:26px 22px 18px;
+  }
+  .stage svg{
+    display:block;width:100%;height:clamp(64px,13vw,132px);
+    color:var(--accent);overflow:visible;
+  }
+  .typein{
+    display:block;width:100%;margin-top:20px;
+    background:rgba(255,255,255,.04);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:10px 13px;
+    color:var(--ink);
+    font:500 .92rem/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;
+    letter-spacing:.06em;
+  }
+  .typein:focus{outline:none;border-color:var(--accent)}
+
+  /* ---- waterfall ---- */
+  .waterfall{
+    margin-top:24px;
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:20px 22px;
+    background:rgba(11,15,22,.6);
+    display:grid;gap:14px;
+  }
+  .wfrow{display:flex;align-items:center;gap:14px}
+  .wfrow em{
+    font:600 9px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.14em;color:var(--dim);font-style:normal;
+    width:34px;flex:0 0 34px;text-align:right;
+  }
+  .wfrow svg{display:block;flex:1 1 auto;color:var(--ink);overflow:visible;min-width:0}
+  #wf1{height:17px}
+  #wf2{height:27px}
+  #wf3{height:42px}
+  #wf4{height:66px}
+
+  /* ---- the charset tray ---- */
+  .charset{
+    margin-top:24px;
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(62px,1fr));
+    gap:8px;
+  }
+  .cellg{
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:rgba(11,15,22,.55);
+    padding:10px 6px;
+    display:flex;align-items:center;justify-content:center;
+    transition:border-color .15s ease,background .15s ease;
+  }
+  .cellg:hover{border-color:var(--accent);background:rgba(100,240,200,.06)}
+  .cellg svg{display:block;width:100%;height:40px;color:var(--ink);overflow:visible}
+
+  /* ---- readouts ---- */
+  .note{
+    min-height:1.2em;margin:14px 0 0;text-align:center;
+    font-size:.82rem;color:var(--accent);opacity:0;transition:opacity .25s ease;
+  }
+  .datebox{
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    border-radius:999px;
+    color:var(--ink);
+    font:inherit;font-size:.82rem;
+    padding:7px 13px;
+  }
+  .datebox:focus{outline:none;border-color:var(--accent)}
+  .sel{
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    border-radius:999px;
+    color:var(--ink);
+    font:inherit;font-size:.82rem;
+    padding:7px 13px;
+  }
+  .sel:focus{outline:none;border-color:var(--accent)}
+  .rack-row .controls{margin-left:auto}
+  @media (max-width:760px){
+    .rack-row .controls{margin-left:0}
+    .charset{grid-template-columns:repeat(auto-fill,minmax(52px,1fr))}
+    .cellg svg{height:32px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html" class="on">Foundry</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page twenty-two</p>
+    <h1>The Foundry</h1>
+    <p class="lede">
+      Twenty-one rooms in, this site had never drawn a letter. It has set plenty of
+      them — every word you have read here arrived in whatever typeface your machine
+      happened to own — but it had never cut one itself. So today it did. Below is a
+      face nobody has used before, designed this morning by the same number that
+      draws the flow field on the front page: fifty-four characters, one skeleton
+      each, and eight dials that decide what the pen does on the way round.
+    </p>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="wrap">
+
+      <div class="plate">
+        <svg id="svgName" aria-label="The name of today's typeface, set in itself."></svg>
+        <p class="credit">
+          <b id="nameOut">—</b> &nbsp;·&nbsp; <span id="styleOut">—</span>
+          &nbsp;·&nbsp; <span id="seriesOut">—</span> &nbsp;·&nbsp;
+          cut <span id="dayOut">—</span>
+        </p>
+      </div>
+
+      <div class="stage">
+        <svg id="svgLine" aria-label="The specimen line, drawn in today's typeface."></svg>
+        <input class="typein" id="specimenText" value="HANDGLOVES" spellcheck="false"
+               aria-label="Type something to set in today's typeface">
+        <div class="chips" style="margin-top:14px">
+          <button class="chip on" data-say="HANDGLOVES">HANDGLOVES</button>
+          <button class="chip" data-say="Drift">Drift</button>
+          <button class="chip" data-say="@name">its own name</button>
+          <button class="chip" data-say="THE QUICK BROWN FOX JUMPS">a pangram</button>
+          <button class="chip" data-say="0123456789">figures</button>
+          <button class="chip" data-say="Hamburgefonstiv">Hamburgefonstiv</button>
+        </div>
+      </div>
+
+      <p class="note" id="noteOut"></p>
+
+      <div class="waterfall">
+        <div class="wfrow"><em>8 pt</em><svg id="wf1" aria-hidden="true"></svg></div>
+        <div class="wfrow"><em>14 pt</em><svg id="wf2" aria-hidden="true"></svg></div>
+        <div class="wfrow"><em>24 pt</em><svg id="wf3" aria-hidden="true"></svg></div>
+        <div class="wfrow"><em>42 pt</em><svg id="wf4" aria-hidden="true"></svg></div>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row sliders">
+          <label>
+            <span class="rack-label">Weight <b id="vW">—</b></span>
+            <input type="range" id="rW" min="0.03" max="0.30" step="0.001" value="0.11">
+          </label>
+          <label>
+            <span class="rack-label">Width <b id="vX">—</b></span>
+            <input type="range" id="rX" min="0.60" max="1.60" step="0.01" value="1">
+          </label>
+          <label>
+            <span class="rack-label">Slant <b id="vS">—</b></span>
+            <input type="range" id="rS" min="-15" max="30" step="0.5" value="0">
+          </label>
+          <label>
+            <span class="rack-label">Contrast <b id="vC">—</b></span>
+            <input type="range" id="rC" min="0" max="0.90" step="0.01" value="0">
+          </label>
+          <label>
+            <span class="rack-label">Roundness <b id="vR">—</b></span>
+            <input type="range" id="rR" min="0.30" max="1.70" step="0.01" value="1">
+          </label>
+          <label>
+            <span class="rack-label">Tracking <b id="vT">—</b></span>
+            <input type="range" id="rT" min="-0.03" max="0.30" step="0.005" value="0.04">
+          </label>
+          <label>
+            <span class="rack-label">Overshoot <b id="vE">—</b></span>
+            <input type="range" id="rE" min="0" max="0.08" step="0.002" value="0">
+          </label>
+          <label>
+            <span class="rack-label">Small caps <b id="vSc">—</b></span>
+            <input type="range" id="rSc" min="0.55" max="1" step="0.01" value="0.76">
+          </label>
+        </div>
+
+        <div class="rack-row">
+          <span class="rack-label">Terminal</span>
+          <select class="sel" id="selCap" aria-label="How the strokes are finished">
+            <option value="round">round</option>
+            <option value="butt">flat</option>
+            <option value="square">square</option>
+          </select>
+          <span class="rack-label">Class <b id="classOut">—</b></span>
+          <span class="rack-label">Finish <b id="capOut">—</b></span>
+          <span class="rack-label">Glyphs <b id="glyphOut">—</b></span>
+          <span class="rack-label">Seed <b id="seedOut">—</b></span>
+        </div>
+
+        <div class="rack-row">
+          <span class="rack-label">Cut for</span>
+          <button class="btn small ghost" id="btnPrev">&#9664; yesterday</button>
+          <input class="datebox" type="date" id="dateIn" aria-label="Pick a day to cut a typeface for">
+          <button class="btn small ghost" id="btnNext">tomorrow &#9654;</button>
+          <div class="controls">
+            <button class="btn small ghost" id="btnToday">Today's cut</button>
+            <button class="btn small ghost" id="btnRandom">Cut a stranger</button>
+            <button class="btn small ghost" id="btnCopy">Copy the specimen as SVG</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="charset" id="charset"></div>
+
+      <p class="hint">
+        The left and right arrow keys walk back and forward a day at a time, and the
+        tray above is the whole face — every character it knows how to make. Drag the
+        dials and it stops being today's face and starts being yours; press
+        <em>Today's cut</em> to put it back.
+      </p>
+
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>How a letter gets made</h2>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>A skeleton, not an outline</h3>
+          <p>Real fonts store the silhouette of each letter — the closed shape the ink
+             fills. This page stores something older and much smaller: the path a pen
+             would take. An <b>A</b> is three lines, an <b>O</b> is four curves, an
+             <b>S</b> is six. Every character lives in a box one unit tall, with the
+             baseline at zero and the cap line at one, and it is written down in about
+             sixty characters of path data. The whole alphabet is shorter than this
+             paragraph.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Then the pen gets an opinion</h3>
+          <p>A skeleton on its own is a wireframe. What turns it into a typeface is
+             what happens to the stroke: how heavy it is, how much it leans, whether
+             it thins out when it runs sideways, whether the curves bulge towards a
+             circle or flatten towards a rectangle, and what it does at the ends.
+             Those are the eight dials. They are applied on the way to the screen, not
+             baked in, which is why the tray of characters rearranges itself while you
+             drag.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Contrast is just arithmetic</h3>
+          <p>The thick-and-thin that makes a face look engraved rather than drawn with
+             a marker comes from one line of code: each little piece of stroke is
+             measured for how horizontal it is, and the more horizontal it runs the
+             thinner it is drawn. Curves are chopped into ten pieces first, so the
+             weight swells and tapers round an <b>O</b> the way it would under a broad
+             nib held at an angle. At zero contrast every piece is the same width and
+             the face goes monolinear.</p>
+        </li>
+      </ol>
+
+      <h2 style="margin-top:56px">What the date decides</h2>
+      <p class="sub">
+        The day's number is turned into a cut: a weight somewhere between hairline and
+        ultra, a width between compressed and wide, an upright or an italic — most days
+        are upright, a few lean, and roughly one day in ten leans backwards, which is a
+        terrible idea and worth seeing. It picks a contrast, a roundness, a letterfit,
+        one of three stroke finishes, and how far the strokes overrun their corners,
+        which is the difference between a tidy face and one that looks handset by
+        somebody in a hurry. Then it picks a name and a class, because a face without a
+        name is just a diagram.
+      </p>
+      <p class="sub">
+        The class is read back out of the numbers rather than chosen: high contrast makes
+        a <b>Didone</b>, a moderate amount makes an <b>Antique</b>, very round curves with
+        no contrast make a <b>Geometric</b>, flattened ones a <b>Rectilinear</b>, and
+        anything heavy and plain is a <b>Poster</b>. It is the same taxonomy a catalogue
+        would use, applied to a face the catalogue has never seen.
+      </p>
+      <p class="sub">
+        Lowercase is not a separate alphabet here. Type in lower case and you get small
+        capitals — the same skeletons at a smaller scale — which makes this a unicase
+        face, an old and slightly stubborn idea. The <em>small caps</em> dial decides how
+        much smaller; push it to 100% and the distinction disappears entirely.
+      </p>
+
+      <h2 style="margin-top:56px">Things worth trying</h2>
+      <p class="sub">
+        Contrast at maximum with the weight low and the roundness high: a fragile,
+        engraved thing that only works large. Weight at maximum with roundness low and
+        a flat finish: a slab of a face that looks stencilled onto a crate. Overshoot
+        up with the weight down: the strokes shoot past their corners and the letters
+        start to look like they were built out of matchsticks. And the tracking dial,
+        pushed hard, will tell you which of these letters are actually the right width
+        and which have been getting away with it.
+      </p>
+
+      <p class="sub afterword">
+        The integer behind all of this is the one that draws the field on the
+        <a href="./">front page</a>, and it has twenty-one other jobs: it grows
+        <a href="garden.html">the Garden</a>, writes <a href="chimes.html">the
+        Chimes</a>, deals <a href="lattice.html">the Lattice</a>, files
+        <a href="almanac.html">the Almanac</a>, scatters
+        <a href="observatory.html">the Observatory</a>, raises
+        <a href="atlas.html">the Atlas</a>, breeds
+        <a href="menagerie.html">the Menagerie</a>, lights
+        <a href="orrery.html">the Orrery</a>, invents
+        <a href="codex.html">the Codex</a>, runs
+        <a href="chronicle.html">the Chronicle</a>, builds
+        <a href="folly.html">the Folly</a>, cuts the gears of
+        <a href="engine.html">the Engine</a>, threads
+        <a href="loom.html">the Loom</a>, opens
+        <a href="exchange.html">the Exchange</a>, sets the rules of
+        <a href="gambit.html">the Gambit</a>, locks the doors of
+        <a href="warren.html">the Warren</a>, arranges the corridor in
+        <a href="inquest.html">the Inquest</a>, cuts the gorge under
+        <a href="span.html">the Span</a>, works the timetable at
+        <a href="junction.html">the Junction</a> and enciphers the dispatch at
+        <a href="bureau.html">the Bureau</a>. Nothing here is saved between visits and
+        nothing is downloaded to make it: tomorrow this face is melted down and a
+        different one is cut in its place.
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="foundry.js"></script>
+</body>
+</html>
