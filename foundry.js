@@ -277,15 +277,24 @@
         var len = Math.sqrt(dx * dx + dy * dy) || 1e-6;
         var w = o.weight * gs * (1 - o.contrast * (Math.abs(dx) / len));
         ws.push(Math.max(0.004, w));
-        pushSeg(buckets, o.cap, ws[i], T[i], T[i + 1]);
+        /* Only the two pieces at the real ends of the stroke are allowed the
+           chosen finish. A square cap in the middle of a flattened curve pokes
+           out tangentially and scallops the outside of the bowl, so the interior
+           pieces are cut flat and the joints are plugged below. */
+        var outer = !closed && (i === 0 || i === n - 2);
+        var capHere = o.cap === 'round' ? 'round' : (outer ? o.cap : 'butt');
+        pushSeg(buckets, capHere, ws[i], T[i], T[i + 1]);
       }
 
-      /* butt and square finishes notch at every joint, so plug the joints */
+      /* Butt and square finishes notch at every joint, so plug the joints with
+         a round dot. The dot takes the THINNER of the two widths meeting there:
+         the thicker one would bulge past the thin piece's edge and scallop the
+         outside of every curve. */
       if (o.cap !== 'round') {
         for (i = 1; i < n - 1; i++) {
-          dot(buckets, T[i], Math.max(ws[i - 1], ws[i]));
+          dot(buckets, T[i], Math.min(ws[i - 1], ws[i]));
         }
-        if (closed) dot(buckets, T[0], Math.max(ws[0], ws[n - 2]));
+        if (closed) dot(buckets, T[0], Math.min(ws[0], ws[n - 2]));
       }
     }
   }
