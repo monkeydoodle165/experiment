@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Kiln — Drift</title>
+<meta name="description" content="A pot thrown and a glaze mixed by today's date, worked up into its Seger formula, checked against the limits for its cone, and then fired.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .kiln-grid{
+    display:grid;gap:20px;
+    grid-template-columns:minmax(0,2.1fr) minmax(0,1fr);
+    align-items:start;
+  }
+  @media (max-width:760px){ .kiln-grid{grid-template-columns:minmax(0,1fr)} }
+
+  #pot{
+    display:block;width:100%;aspect-ratio:16/11;
+    border-radius:16px;border:1px solid var(--line);
+    background:#080b11;cursor:grab;touch-action:none;
+  }
+  #pot:active{cursor:grabbing}
+  #profile{
+    display:block;width:100%;aspect-ratio:3/4;
+    border-radius:14px;border:1px solid var(--line);
+    background:rgba(11,15,22,.6);cursor:crosshair;touch-action:none;
+  }
+  #sched{
+    display:block;width:100%;aspect-ratio:5/2;
+    border-radius:14px;border:1px solid var(--line);
+    background:rgba(11,15,22,.6);
+  }
+
+  .formula{
+    margin:0 0 20px;padding:16px 18px;
+    border-radius:14px;border:1px dashed var(--line);
+    color:var(--accent2);
+    font:.88rem/1.9 ui-monospace,SFMono-Regular,Menlo,monospace;
+    word-break:break-word;
+  }
+  .verdict{
+    margin:0 0 24px;padding:14px 18px;
+    border-radius:14px;border:1px solid var(--line);
+    font-size:.94rem;color:var(--dim);
+  }
+  .verdict b{color:var(--ink);font-weight:650}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  .verdict.bad{border-color:rgba(255,120,120,.45);background:rgba(255,120,120,.06)}
+
+  .facts{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin:0}
+  .facts dt{
+    font:600 10px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:7px;
+  }
+  .facts dd{margin:0;font-size:.98rem;color:var(--ink)}
+  .plaque{
+    border:1px solid var(--line);border-radius:16px;padding:26px 28px;
+    background:linear-gradient(160deg,rgba(100,240,200,.06),rgba(122,162,255,.04));
+  }
+  .plaque h3{margin:0 0 6px;font-size:1.5rem;letter-spacing:-.01em}
+  .plaque .who{
+    font:600 11px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--accent2);
+  }
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .sliders label b{color:var(--accent);font-weight:700;font-size:.85rem}
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html" class="on">Kiln</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page twenty-three</p>
+    <h1>The Kiln</h1>
+    <p class="lede">
+      Every other room on this site is made of arithmetic the site invented for
+      itself. This one had to go and look something up. Today's number throws a pot
+      and mixes a glaze to put on it out of real materials — feldspar, whiting,
+      dolomite, talc, kaolin, a boron frit — works the recipe up into its Seger
+      formula the way a glaze is actually worked up, adds the thermal expansion
+      together oxide by oxide, and will not show you anything until the numbers land
+      inside the limits for the cone it means to fire at. Then you are welcome to
+      wreck it.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <h2>The pot</h2>
+      <p class="sub">
+        Drag the pot to turn it. Drag the handles on the profile to rethrow it —
+        it is a surface of revolution, so the silhouette is the whole shape.
+      </p>
+
+      <div class="kiln-grid">
+        <div>
+          <canvas id="pot" aria-label="Today's pot, glazed and fired"></canvas>
+          <p class="hint canvas-hint">Left and right arrow keys walk to other days.</p>
+        </div>
+        <div>
+          <canvas id="profile" aria-label="Editable profile of today's pot"></canvas>
+        </div>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Form</span>
+          <div class="chips" id="forms"></div>
+        </div>
+        <div class="rack-row">
+          <span class="rack-label">Clay</span>
+          <div class="chips" id="bodies"></div>
+        </div>
+        <div class="rack-row">
+          <div class="controls">
+            <button class="btn small" id="btnNew">Throw another</button>
+            <button class="btn small ghost" id="btnToday">Today's pot</button>
+            <button class="btn small ghost" id="btnCopy">Copy the recipe</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="plaque" style="margin-top:26px">
+        <span class="who" id="potterOut">—</span>
+        <h3 id="nameOut">—</h3>
+        <p id="purposeOut">—</p>
+        <p id="fateOut">—</p>
+        <p class="dim" style="font-size:.85rem"><span id="factForm">—</span> · dealt from <span id="factSeed">—</span> · <span id="dayOut">—</span></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>The glaze</h2>
+      <p class="sub">
+        Weight per cent into moles, the bases normalised to one, and the alumina and
+        silica read off against that. This is the unity formula — the thing a glaze
+        actually is, underneath whichever bag of powder you happened to reach for.
+      </p>
+
+      <p class="formula" id="formula">—</p>
+      <div class="verdict" id="verdict">—</div>
+
+      <div class="rack">
+        <div class="sliders" id="recipe"></div>
+        <div class="rack-row">
+          <span class="rack-label">Colour</span>
+          <div class="chips" id="colorchips"></div>
+        </div>
+        <div class="rack-row">
+          <span class="rack-label">Opacity</span>
+          <div class="chips" id="opacchips"></div>
+        </div>
+        <div class="sliders">
+          <label>Colouring oxide <b id="colAmtOut">—</b>
+            <input type="range" id="colAmt" min="0" max="12" step="0.25" value="0">
+          </label>
+          <label>Opacifier <b id="opacAmtOut">—</b>
+            <input type="range" id="opacAmt" min="0" max="18" step="0.5" value="0">
+          </label>
+          <label>Coat thickness <b id="thickOut">—</b>
+            <input type="range" id="thickRange" min="0.1" max="1.1" step="0.01" value="0.5">
+          </label>
+        </div>
+      </div>
+
+      <dl class="facts" style="margin-top:34px">
+        <div><dt>Surface</dt><dd id="factSurface">—</dd></div>
+        <div><dt>Colour</dt><dd id="factColour">—</dd></div>
+        <div><dt>Silica : alumina</dt><dd id="factRatio">—</dd></div>
+        <div><dt>Expansion</dt><dd id="factCte">—</dd></div>
+        <div><dt>Fit</dt><dd id="factFit">—</dd></div>
+        <div><dt>Melt</dt><dd id="factMelt">—</dd></div>
+        <div><dt>Clay body</dt><dd id="factBody">—</dd></div>
+        <div><dt>Drafts</dt><dd id="factTries">—</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="wrap">
+      <h2>The firing</h2>
+      <p class="sub">
+        A ramp to red heat, a slower one to the cone, twenty minutes held at the top,
+        and then the part that matters: how fast it is allowed to come down. Fire a
+        cone 10 glaze at cone 04 and watch it stay a dusty powder. Cool a zinc glaze
+        slowly and watch crystals grow in it on the way down.
+      </p>
+
+      <canvas id="sched" aria-label="Today's firing schedule"></canvas>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Cone</span>
+          <div class="chips" id="cones"></div>
+        </div>
+        <div class="rack-row">
+          <span class="rack-label">Air</span>
+          <div class="chips" id="atms"></div>
+        </div>
+        <div class="rack-row">
+          <span class="rack-label">Cooling</span>
+          <div class="chips" id="cools"></div>
+        </div>
+        <div class="rack-row">
+          <div class="controls">
+            <button class="btn small" id="btnFire">Fire the kiln</button>
+          </div>
+        </div>
+        <div class="rack-row">
+          <span class="rack-label">Then</span>
+          <span style="font-size:.9rem;color:var(--dim)">
+            Peak, atmosphere and cooling rate are all read back out by the glaze.
+          </span>
+        </div>
+      </div>
+
+      <dl class="facts" style="margin-top:34px">
+        <div><dt>Schedule</dt><dd id="factCone">—</dd></div>
+        <div><dt>Atmosphere</dt><dd id="factAtm">—</dd></div>
+        <div><dt>Cooling</dt><dd id="factCool">—</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>How a glaze gets dealt</h2>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Draft a recipe</h3>
+          <p>A skeleton suited to the cone — feldspar, a carbonate or two, kaolin,
+             silica, and a boron frit at the low end, because nothing else will melt
+             down there — is filled in with quantities drawn from the day's number.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Work it up</h3>
+          <p>Each material's oxides are divided by their molecular weights to get
+             moles, the bases are added up and everything is divided by that sum. What
+             comes out is the same formula a glaze chemist would write down.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Throw it out if it is wrong</h3>
+          <p>Alumina, silica, the ratio between them and the melt all have to land
+             inside the box for that cone. If any of them misses, the draft is binned
+             and another is written. You only ever see one that passed.</p>
+        </li>
+      </ol>
+
+      <p class="sub" style="margin-top:34px">
+        Three tables are doing the real work and none of them was invented here:
+        fifteen raw materials with their oxide analyses, twenty oxides with their
+        molecular weights, and a set of linear expansion factors. The unity formula,
+        the silica-to-alumina ratio and the expansion figure are arithmetic on those,
+        and the fit — glaze against clay body, crazing above, shivering below — falls
+        out of the expansion difference. The melt model is the one honest fudge on the
+        page: fluxing power weighed against alumina and silica and scaled by what the
+        cone is worth. It behaves, but it is a heuristic, not chemistry, and it is
+        only ever asked whether a glaze melts, not exactly how.
+      </p>
+
+      <p class="sub" id="benchOut">—</p>
+
+      <p class="sub afterword">
+        The same date integer that drifts the field on the <a href="./">front page</a>
+        also seeds <a href="garden.html">the Garden</a>, writes
+        <a href="chimes.html">the Chimes</a>, deals <a href="lattice.html">the
+        Lattice</a>, names the town in <a href="almanac.html">the Almanac</a>,
+        scatters <a href="observatory.html">the Observatory</a>, raises the coast in
+        <a href="atlas.html">the Atlas</a>, breeds
+        <a href="menagerie.html">the Menagerie</a>, lights the star in
+        <a href="orrery.html">the Orrery</a>, invents the alphabet in
+        <a href="codex.html">the Codex</a>, founds the countries in
+        <a href="chronicle.html">the Chronicle</a>, designs the building in
+        <a href="folly.html">the Folly</a>, cuts the gears in
+        <a href="engine.html">the Engine</a>, threads the warp in
+        <a href="loom.html">the Loom</a>, prices the goods in
+        <a href="exchange.html">the Exchange</a>, writes the rules in
+        <a href="gambit.html">the Gambit</a>, locks the doors in
+        <a href="warren.html">the Warren</a>, hides the thief in
+        <a href="inquest.html">the Inquest</a>, cuts the gorge in
+        <a href="span.html">the Span</a>, writes the timetable in
+        <a href="junction.html">the Junction</a>, enciphers the dispatch in
+        <a href="bureau.html">the Bureau</a> and cuts the letters in
+        <a href="foundry.html">the Foundry</a> — and here it mixes something that has
+        to pass a chemistry check before anyone is allowed to look at it. The Foundry
+        makes a thing you can read. This makes a thing you could drop.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="kiln.js"></script>
+</body>
+</html>
