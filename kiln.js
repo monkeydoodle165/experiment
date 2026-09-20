@@ -262,8 +262,6 @@
   }
 
   /* colour is a lookup of what these oxides actually do, not a calculation */
-  var POTENCY = { iron: 1.4, cob: 12, cop: 4, man: 1.2, rut: 0.8, chr: 8 };
-
   function colourOf(colKey, amt, opacKey, opacAmt, atm, u, surf) {
     var tint = [238, 236, 228], power = 0.30, name = 'clear';
     var t = clamp(amt / 6, 0, 1);
@@ -474,20 +472,16 @@
     var H = S.form.h, wall = 0.045, floorT = 0.16;
     var verts = [], faces = [], i, j;
     var cosT = [], sinT = [];
-    for (j = 0; j <= SEG; j++) { cosT.push(Math.cos(j / SEG * Math.PI * 2)); sinT.push(Math.sin(j / SEG * Math.PI * 2)); }
+    for (j = 0; j < SEG; j++) { cosT.push(Math.cos(j / SEG * Math.PI * 2)); sinT.push(Math.sin(j / SEG * Math.PI * 2)); }
 
-    /* curvature per ring, for where the glaze runs thin */
+    /* curvature per ring, for where the glaze runs thin over a sharp turn */
     var edge = [];
     for (i = 0; i < RINGS; i++) {
       var a = prof[Math.max(0, i - 1)], b = prof[i], d = prof[Math.min(RINGS - 1, i + 1)];
-      var k = Math.abs((d[1] - b[1]) - (b[1] - a[1])) / 0.02;
-      edge.push(clamp(k, 0, 1));
+      edge.push(clamp(Math.abs((d[1] - b[1]) - (b[1] - a[1])) / 0.02, 0, 1));
     }
     edge[RINGS - 1] = 1;
 
-    function vert(r, t) { var id = verts.length; verts.push([r, t * H, 0]); return id; }
-    /* store as (radius, height, angleIndex) and expand on transform instead */
-    verts.length = 0;
     var outIdx = [], inIdx = [];
     for (i = 0; i < RINGS; i++) {
       var row = [];
@@ -503,14 +497,16 @@
       inIdx.push(row2);
     }
 
-    function quad(a, b, c, d, kind, ring) { faces.push({ v: [a, b, c, d], k: kind, r: ring }); }
+    function quad(a2, b2, c2, d2, kind, ring) { faces.push({ v: [a2, b2, c2, d2], k: kind, r: ring }); }
 
+    /* outer wall: wound so the normal points away from the axis */
     for (i = 0; i < RINGS - 1; i++) {
       for (j = 0; j < SEG; j++) {
         var j2 = (j + 1) % SEG;
         quad(outIdx[i][j], outIdx[i + 1][j], outIdx[i + 1][j2], outIdx[i][j2], 'out', i);
       }
     }
+    /* inner wall: same quads wound the other way, so the normal points inward */
     for (i = firstIn; i >= 0 && i < RINGS - 1; i++) {
       if (!inIdx[i] || !inIdx[i + 1]) continue;
       for (j = 0; j < SEG; j++) {
@@ -518,7 +514,7 @@
         quad(inIdx[i][j], inIdx[i][j3], inIdx[i + 1][j3], inIdx[i + 1][j], 'in', i);
       }
     }
-    /* lip */
+    /* the lip, an annulus between the two walls */
     var top = RINGS - 1;
     if (inIdx[top]) {
       for (j = 0; j < SEG; j++) {
@@ -526,26 +522,31 @@
         quad(outIdx[top][j], inIdx[top][j], inIdx[top][j4], outIdx[top][j4], 'lip', top);
       }
     }
-    /* inner floor and outer base as fans */
+    /* the floor inside and the base underneath, as fans.
+       The face normal is cross(v1-v0, v3-v0), so the centre vertex can only be
+       used once: closing the fan back on it makes the normal zero and the face
+       is dropped as a backface. Each wedge therefore ends on a real vertex. */
     if (firstIn >= 0) {
       var cIn = verts.length; verts.push([0, prof[firstIn][0] * H, 0]);
       for (j = 0; j < SEG; j++) {
         var j5 = (j + 1) % SEG;
-        quad(cIn, inIdx[firstIn][j], inIdx[firstIn][j5], cIn, 'floor', firstIn);
+        quad(cIn, inIdx[firstIn][j5], inIdx[firstIn][j], inIdx[firstIn][j], 'floor', firstIn);
       }
     }
     var cB = verts.length; verts.push([0, 0, 0]);
     for (j = 0; j < SEG; j++) {
       var j6 = (j + 1) % SEG;
-      quad(cB, outIdx[0][j6], outIdx[0][j], cB, 'base', 0);
+      quad(cB, outIdx[0][j], outIdx[0][j6], outIdx[0][j6], 'base', 0);
     }
 
-    GEO = { verts: verts, faces: faces, prof: prof, edge: edge, H: H, maxR: Math.max.apply(null, prof.map(function (p) { return p[1]; })) };
+    var maxR = 0;
+    for (i = 0; i < prof.length; i++) if (prof[i][1] > maxR) maxR = prof[i][1];
+    GEO = { verts: verts, faces: faces, prof: prof, edge: edge, H: H, maxR: maxR };
   }
 
   /* ================= the pot canvas ================= */
 
-  var potC, potX, profC, profX, schC, schX;
+  var potC, profC, schC;
 
   function fitCanvas(c) {
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -567,7 +568,7 @@
 
     var body = BODIES[S.body].col, fin = E.finish, col = E.colour;
     var fire = S.fire, cryst = S.cryst;
-    /* before the glaze melts it is a pale dusty coat */
+    /* before it melts the glaze is a pale dusty coat */
     var raw = mix3(col.tint, [226, 222, 214], 0.75);
     var tint = mix3(raw, col.tint, smooth(fire));
     var shin = lerp(2.5, fin.shin, smooth(fire));
@@ -576,28 +577,31 @@
     var H = GEO.H, maxR = GEO.maxR;
     var scale = Math.min(w * 0.80 / (2 * maxR), h * 0.80 / H);
     var cx = w * 0.5, cyPix = h * 0.56, cyObj = H * 0.5, D = 4.2;
-    var cy2 = Math.cos(S.yaw), sy2 = Math.sin(S.yaw), cp = Math.cos(S.pitch), sp = Math.sin(S.pitch);
+    var cyw = Math.cos(S.yaw), syw = Math.sin(S.yaw), cp = Math.cos(S.pitch), sp = Math.sin(S.pitch);
 
-    var V = GEO.verts, n = V.length, vx = new Float64Array(n), vy = new Float64Array(n), vz = new Float64Array(n);
-    var sx = new Float64Array(n), sy3 = new Float64Array(n);
+    var V = GEO.verts, n = V.length;
+    var vx = new Float64Array(n), vy = new Float64Array(n), vz = new Float64Array(n);
+    var sx = new Float64Array(n), sy = new Float64Array(n);
     for (var i = 0; i < n; i++) {
-      var p = V[i], X = p[0] * cy2 + p[2] * sy2, Z = -p[0] * sy2 + p[2] * cy2, Yo = p[1] - cyObj;
+      var p = V[i];
+      var X = p[0] * cyw + p[2] * syw, Z = -p[0] * syw + p[2] * cyw, Yo = p[1] - cyObj;
       var Y = Yo * cp - Z * sp, Z2 = Yo * sp + Z * cp;
       vx[i] = X; vy[i] = Y; vz[i] = Z2;
       var f = D / (D - Z2);
-      sx[i] = cx + X * scale * f; sy3[i] = cyPix - Y * scale * f;
+      sx[i] = cx + X * scale * f; sy[i] = cyPix - Y * scale * f;
     }
 
-    /* shadow */
-    var sh = x.createRadialGradient(cx, cyPix + H * 0.5 * scale * 0.92, 2, cx, cyPix + H * 0.5 * scale * 0.92, maxR * scale * 1.7);
+    /* the ground shadow */
+    var gy = cyPix + H * 0.5 * scale * 0.94, gr = maxR * scale * 1.7;
+    var sh = x.createRadialGradient(cx, gy, 2, cx, gy, gr);
     sh.addColorStop(0, 'rgba(0,0,0,.55)'); sh.addColorStop(1, 'rgba(0,0,0,0)');
-    x.save(); x.translate(cx, cyPix + H * 0.5 * scale * 0.94); x.scale(1, 0.26); x.translate(-cx, -(cyPix + H * 0.5 * scale * 0.94));
-    x.fillStyle = sh; x.beginPath(); x.arc(cx, cyPix + H * 0.5 * scale * 0.94, maxR * scale * 1.7, 0, 6.2832); x.fill(); x.restore();
+    x.save(); x.translate(cx, gy); x.scale(1, 0.26); x.translate(-cx, -gy);
+    x.fillStyle = sh; x.beginPath(); x.arc(cx, gy, gr, 0, 6.2832); x.fill(); x.restore();
 
     var L = [-0.40, 0.74, 0.54], ll = Math.sqrt(L[0] * L[0] + L[1] * L[1] + L[2] * L[2]);
     L[0] /= ll; L[1] /= ll; L[2] /= ll;
-    var Hx = L[0], Hy = L[1], Hz = L[2] + 1, hl = Math.sqrt(Hx * Hx + Hy * Hy + Hz * Hz);
-    Hx /= hl; Hy /= hl; Hz /= hl;
+    var hx = L[0], hy = L[1], hz = L[2] + 1, hl = Math.sqrt(hx * hx + hy * hy + hz * hz);
+    hx /= hl; hy /= hl; hz /= hl;
 
     var F = GEO.faces, list = [], k;
     for (k = 0; k < F.length; k++) {
@@ -615,29 +619,27 @@
 
     var run = clamp((E.chem.melt - 1.0) * 1.4, 0, 1) * smooth(fire);
     for (k = 0; k < list.length; k++) {
-      var it = list[k], f = it.f, ring = f.r;
+      var it = list[k], ff = it.f, ring = ff.r;
       var t01 = GEO.prof[ring][0];
-      var thin = GEO.edge[ring];
-      var thickness = S.thick * (1 + run * 1.5 * (1 - t01) * (1 - t01)) * (1 - 0.55 * thin);
+      var thickness = S.thick * (1 + run * 1.5 * (1 - t01) * (1 - t01)) * (1 - 0.55 * GEO.edge[ring]);
       var cover = 1 - Math.exp(-col.power * thickness * 3.4);
       var base = mix3(body, tint, clamp(cover, 0, 1));
-      if (f.k === 'in') base = mix3(base, [0, 0, 0], 0.30 + 0.35 * (1 - t01));
-      if (f.k === 'base' || f.k === 'floor') base = mix3(base, [0, 0, 0], 0.45);
+      if (ff.k === 'in') base = mix3(base, [0, 0, 0], 0.30 + 0.35 * (1 - t01));
+      if (ff.k === 'base' || ff.k === 'floor') base = mix3(base, [0, 0, 0], 0.42);
 
       var lam = Math.max(0, it.nx * L[0] + it.ny * L[1] + it.nz * L[2]);
-      var sp2 = Math.pow(Math.max(0, it.nx * Hx + it.ny * Hy + it.nz * Hz), shin) * spec;
+      var sp2 = Math.pow(Math.max(0, it.nx * hx + it.ny * hy + it.nz * hz), shin) * spec;
       var rim = Math.pow(1 - it.nz, 3) * 0.20;
       var sk = ((hash32(ring * 73856093 ^ k * 19349663) >>> 8) / 16777216 - 0.5);
       var grain = 1 + sk * (E.surface === 'crystalline' ? 0.20 * cryst : 0.055);
       var shade = (0.16 + 0.84 * lam) * grain + rim;
-      var cc = [base[0] * shade + sp2 * 245, base[1] * shade + sp2 * 248, base[2] * shade + sp2 * 252];
 
-      x.fillStyle = css(cc);
+      x.fillStyle = css([base[0] * shade + sp2 * 245, base[1] * shade + sp2 * 248, base[2] * shade + sp2 * 252]);
       x.beginPath();
-      x.moveTo(sx[f.v[0]], sy3[f.v[0]]);
-      x.lineTo(sx[f.v[1]], sy3[f.v[1]]);
-      x.lineTo(sx[f.v[2]], sy3[f.v[2]]);
-      x.lineTo(sx[f.v[3]], sy3[f.v[3]]);
+      x.moveTo(sx[ff.v[0]], sy[ff.v[0]]);
+      x.lineTo(sx[ff.v[1]], sy[ff.v[1]]);
+      x.lineTo(sx[ff.v[2]], sy[ff.v[2]]);
+      x.lineTo(sx[ff.v[3]], sy[ff.v[3]]);
       x.closePath();
       x.fill();
       x.strokeStyle = x.fillStyle; x.lineWidth = 0.6; x.stroke();
@@ -652,59 +654,58 @@
   /* ================= profile editor ================= */
 
   var drag = -1;
-  function profMap(s) {
-    return { ax: s.w * 0.30, rs: s.w * 0.60, by: s.h * 0.94, hs: s.h * 0.86 };
-  }
+  function profMap(w, h) { return { ax: w * 0.30, rs: w * 0.60, by: h * 0.94, hs: h * 0.86 }; }
+  function profY(m, t) { return m.by - t * (S.form.h / 1.1) * m.hs; }
+
   function drawProfile() {
     var s = fitCanvas(profC); if (!s) return;
-    var x = s.x, w = s.w, h = s.h, m = profMap(s);
+    var x = s.x, w = s.w, h = s.h, m = profMap(w, h), i;
     x.fillStyle = 'rgba(11,15,22,.6)'; x.fillRect(0, 0, w, h);
     x.strokeStyle = 'rgba(255,255,255,.10)'; x.lineWidth = 1;
     x.beginPath(); x.moveTo(m.ax, h * 0.04); x.lineTo(m.ax, m.by); x.stroke();
     x.beginPath(); x.moveTo(w * 0.04, m.by); x.lineTo(w * 0.96, m.by); x.stroke();
 
-    var prof = sampleProfile(S.form.pts, 80), i;
+    var prof = sampleProfile(S.form.pts, 80);
     x.beginPath();
     x.moveTo(m.ax, m.by);
-    for (i = 0; i < prof.length; i++) x.lineTo(m.ax + prof[i][1] * m.rs, m.by - prof[i][0] * S.form.h / 1.1 * m.hs);
-    x.lineTo(m.ax, m.by - prof[prof.length - 1][0] * S.form.h / 1.1 * m.hs);
+    for (i = 0; i < prof.length; i++) x.lineTo(m.ax + prof[i][1] * m.rs, profY(m, prof[i][0]));
+    x.lineTo(m.ax, profY(m, prof[prof.length - 1][0]));
     x.closePath();
     x.fillStyle = 'rgba(100,240,200,.14)'; x.fill();
+
     x.strokeStyle = '#64f0c8'; x.lineWidth = 1.6;
     x.beginPath();
     for (i = 0; i < prof.length; i++) {
-      var px = m.ax + prof[i][1] * m.rs, py = m.by - prof[i][0] * S.form.h / 1.1 * m.hs;
+      var px = m.ax + prof[i][1] * m.rs, py = profY(m, prof[i][0]);
       if (i === 0) x.moveTo(px, py); else x.lineTo(px, py);
     }
     x.stroke();
-    /* mirrored ghost */
+
     x.strokeStyle = 'rgba(122,162,255,.28)';
     x.beginPath();
     for (i = 0; i < prof.length; i++) {
-      var px2 = m.ax - prof[i][1] * m.rs * 0.62, py2 = m.by - prof[i][0] * S.form.h / 1.1 * m.hs;
+      var px2 = m.ax - prof[i][1] * m.rs * 0.62, py2 = profY(m, prof[i][0]);
       if (i === 0) x.moveTo(px2, py2); else x.lineTo(px2, py2);
     }
     x.stroke();
 
     for (i = 0; i < S.form.pts.length; i++) {
       var q = S.form.pts[i];
-      var hx = m.ax + q[1] * m.rs, hy = m.by - q[0] * S.form.h / 1.1 * m.hs;
-      x.beginPath(); x.arc(hx, hy, i === drag ? 8 : 6, 0, 6.2832);
-      x.fillStyle = i === drag ? '#64f0c8' : 'rgba(7,9,13,.9)';
-      x.fill();
+      x.beginPath(); x.arc(m.ax + q[1] * m.rs, profY(m, q[0]), i === drag ? 8 : 6, 0, 6.2832);
+      x.fillStyle = i === drag ? '#64f0c8' : 'rgba(7,9,13,.9)'; x.fill();
       x.strokeStyle = '#64f0c8'; x.lineWidth = 1.6; x.stroke();
     }
   }
 
   function profPointAt(ev) {
-    var s = { w: profC.clientWidth, h: profC.clientHeight };
-    var rect = profC.getBoundingClientRect(), m = profMap(s);
+    var rect = profC.getBoundingClientRect();
+    var m = profMap(profC.clientWidth, profC.clientHeight);
     var px = ev.clientX - rect.left, py = ev.clientY - rect.top;
     var best = -1, bd = 26 * 26;
     for (var i = 0; i < S.form.pts.length; i++) {
       var q = S.form.pts[i];
-      var hx = m.ax + q[1] * m.rs, hy = m.by - q[0] * S.form.h / 1.1 * m.hs;
-      var d2 = (px - hx) * (px - hx) + (py - hy) * (py - hy);
+      var dx = px - (m.ax + q[1] * m.rs), dy = py - profY(m, q[0]);
+      var d2 = dx * dx + dy * dy;
       if (d2 < bd) { bd = d2; best = i; }
     }
     return { i: best, px: px, py: py, m: m };
@@ -717,8 +718,8 @@
     function ramp(to, rate) { var l = pts[pts.length - 1]; pts.push([l[0] + (to - l[1]) / rate, to]); }
     ramp(600, 140); ramp(1000, 110); ramp(cone.temp, 70);
     pts.push([pts[pts.length - 1][0] + 0.33, cone.temp]);
-    var rate = S.cool === 'fast' ? 260 : (S.cool === 'slow' ? 45 : 130);
-    var l1 = pts[pts.length - 1]; pts.push([l1[0] + (cone.temp - 900) / rate, 900]);
+    var rate2 = S.cool === 'fast' ? 260 : (S.cool === 'slow' ? 45 : 130);
+    var l1 = pts[pts.length - 1]; pts.push([l1[0] + (cone.temp - 900) / rate2, 900]);
     var l2 = pts[pts.length - 1]; pts.push([l2[0] + 800 / 300, 100]);
     return pts;
   }
@@ -737,66 +738,63 @@
     var s = fitCanvas(schC); if (!s) return;
     var x = s.x, w = s.w, h = s.h, pts = schedule();
     var total = pts[pts.length - 1][0], peak = CONES[S.cone].temp;
-    var L = 46, R = w - 14, T = 14, B = h - 26;
-    function px(t) { return L + (t / total) * (R - L); }
-    function py(v) { return B - (v / 1400) * (B - T); }
+    var LX = 46, RX = w - 14, TY = 14, BY = h - 26;
+    function px(t) { return LX + (t / total) * (RX - LX); }
+    function py(v) { return BY - (v / 1400) * (BY - TY); }
     x.fillStyle = 'rgba(11,15,22,.6)'; x.fillRect(0, 0, w, h);
-    x.strokeStyle = 'rgba(255,255,255,.08)'; x.lineWidth = 1;
-    x.font = '10px ui-monospace,Menlo,monospace'; x.fillStyle = '#8b97ab';
+    x.font = '10px ui-monospace,Menlo,monospace';
+    x.strokeStyle = 'rgba(255,255,255,.08)'; x.lineWidth = 1; x.fillStyle = '#8b97ab';
     for (var v = 0; v <= 1200; v += 400) {
-      x.beginPath(); x.moveTo(L, py(v)); x.lineTo(R, py(v)); x.stroke();
+      x.beginPath(); x.moveTo(LX, py(v)); x.lineTo(RX, py(v)); x.stroke();
       x.fillText(v + '°', 6, py(v) + 3);
     }
-    x.strokeStyle = 'rgba(122,162,255,.5)';
-    x.setLineDash([3, 4]);
-    x.beginPath(); x.moveTo(L, py(peak)); x.lineTo(R, py(peak)); x.stroke();
+    x.strokeStyle = 'rgba(122,162,255,.5)'; x.setLineDash([3, 4]);
+    x.beginPath(); x.moveTo(LX, py(peak)); x.lineTo(RX, py(peak)); x.stroke();
     x.setLineDash([]);
     x.strokeStyle = '#64f0c8'; x.lineWidth = 2;
     x.beginPath();
-    for (var i = 0; i < pts.length; i++) { if (i === 0) x.moveTo(px(pts[i][0]), py(pts[i][1])); else x.lineTo(px(pts[i][0]), py(pts[i][1])); }
+    for (var i = 0; i < pts.length; i++) {
+      if (i === 0) x.moveTo(px(pts[i][0]), py(pts[i][1])); else x.lineTo(px(pts[i][0]), py(pts[i][1]));
+    }
     x.stroke();
     x.fillStyle = '#8b97ab';
-    x.fillText(total.toFixed(1) + ' h', R - 34, B + 16);
-    x.fillText(CONES[S.cone].label + ' · ' + peak + '°C · ' + S.cool + ' cool', L, B + 16);
+    x.fillText(CONES[S.cone].label + ' · ' + peak + '°C · ' + S.cool + ' cool', LX, BY + 16);
+    x.fillText(total.toFixed(1) + ' h', RX - 34, BY + 16);
     if (marker !== null && marker !== undefined) {
       var t = tempAt(pts, marker);
       x.fillStyle = '#ffce6a';
       x.beginPath(); x.arc(px(marker), py(t), 4.5, 0, 6.2832); x.fill();
-      x.fillStyle = '#ffce6a';
-      x.fillText(Math.round(t) + '°C', clamp(px(marker) - 16, L, R - 40), py(t) - 9);
+      x.fillText(Math.round(t) + '°C', clamp(px(marker) - 16, LX, RX - 40), py(t) - 9);
     }
   }
 
   /* ================= firing ================= */
 
-  var fireRaf = null;
+  function now() { return (window.performance && performance.now) ? performance.now() : Date.now(); }
+
   function startFiring() {
     if (S.firing) return;
     var pts = schedule(), total = pts[pts.length - 1][0], peak = CONES[S.cone].temp;
-    var t0 = (window.performance && performance.now) ? performance.now() : Date.now();
-    var dur = 5200, maxT = 0;
+    var t0 = now(), dur = 5200, maxT = 0;
     S.firing = true; S.fire = 0; S.cryst = 0;
-    $('btnFire').disabled = true;
-    function frame(now) {
-      var p = clamp(((now || Date.now()) - t0) / dur, 0, 1);
-      var hours = p * total;
-      var T = tempAt(pts, hours);
+    var btn = $('btnFire'); if (btn) btn.disabled = true;
+    function frame() {
+      var p = clamp((now() - t0) / dur, 0, 1);
+      var hours = p * total, T = tempAt(pts, hours);
       maxT = Math.max(maxT, T);
       S.fireT = T;
       S.fire = smooth(step01(peak - 210, peak - 25, maxT));
-      if (maxT >= peak - 25 && T < maxT - 40) {
-        S.cryst = smooth(step01(peak - 30, 960, T));
-      }
+      if (maxT >= peak - 25 && T < maxT - 40) S.cryst = smooth(step01(peak - 30, 960, T));
       drawSchedule(hours);
       drawPot();
-      if (p < 1) { fireRaf = requestAnimationFrame(frame); }
+      if (p < 1) requestAnimationFrame(frame);
       else {
         S.firing = false; S.fire = 1; S.cryst = 1;
-        $('btnFire').disabled = false;
+        if (btn) btn.disabled = false;
         drawSchedule(null); drawPot(); report();
       }
     }
-    fireRaf = requestAnimationFrame(frame);
+    requestAnimationFrame(frame);
   }
 
   /* ================= readouts ================= */
@@ -817,22 +815,29 @@
 
   function setText(id, v) { var el = $(id); if (el) el.textContent = v; }
 
+  function updateRecipeLabels() {
+    var n = normRecipe(S.recipe);
+    for (var k in S.recipe) {
+      var el = $('rv_' + k);
+      if (el) el.textContent = fx(n[k] || 0, 1) + '%';
+    }
+  }
+
   function report() {
-    var c = E.chem, u = c.unity;
-    setText('formula', formulaText(u));
+    var c = E.chem;
+    setText('formula', formulaText(c.unity));
     setText('factCone', CONES[S.cone].label + ' · ' + CONES[S.cone].temp + '°C');
     setText('factBody', BODIES[S.body].name);
     setText('factAtm', S.atm);
     setText('factCool', S.cool + ' cool');
     setText('factRatio', fx(c.ratio) + ' : 1');
     setText('factCte', fx(c.cte) + ' ×10⁻⁶/°C');
-    var d = E.fit;
-    setText('factFit', (d > 0 ? '+' : '') + fx(d) + ' against the body');
+    setText('factFit', (E.fit > 0 ? '+' : '') + fx(E.fit) + ' against the body');
     setText('factMelt', fx(c.melt) + ' × what the cone wants');
     setText('factSurface', E.surface);
     setText('factColour', E.colour.name);
     setText('factForm', S.form.name);
-    setText('factSeed', String(S.seed).padStart(10, '0'));
+    setText('factSeed', String(S.seed));
     setText('factTries', S.tries === 1 ? 'first draft' : S.tries + ' drafts');
     setText('nameOut', S.glazeName);
     setText('potterOut', S.plaque.house + ', ' + S.plaque.year);
@@ -876,7 +881,7 @@
     Object.keys(S.recipe).forEach(function (k) {
       var lab = document.createElement('label');
       lab.appendChild(document.createTextNode(MAT[k].name + ' '));
-      var b = document.createElement('b'); b.id = 'rv_' + k; b.textContent = '';
+      var b = document.createElement('b'); b.id = 'rv_' + k;
       lab.appendChild(b);
       var inp = document.createElement('input');
       inp.type = 'range'; inp.min = '0'; inp.max = '70'; inp.step = '0.5';
@@ -890,30 +895,22 @@
     });
   }
 
-  function updateRecipeLabels() {
-    var n = normRecipe(S.recipe);
-    for (var k in S.recipe) {
-      var el = $('rv_' + k);
-      if (el) el.textContent = fx(n[k] || 0, 1) + '%';
-    }
-  }
-
   function refreshChips() {
     chipRow('forms', FORMKEYS.map(function (k) { return { key: k, label: FORMS[k].name.replace(/^an? /, '') }; }), S.form.key, function (k) {
       S.form = dealForm(rng(hash32(S.seed ^ (k.length * 7919))), k);
       buildGeometry(); refreshChips(); report(); drawPot(); drawProfile();
     });
     chipRow('cones', CONEKEYS.map(function (k) { return { key: k, label: CONES[k].label }; }), S.cone, function (k) {
-      S.cone = k; evaluate(); report(); drawPot(); drawSchedule(null);
+      S.cone = k; evaluate(); refreshChips(); report(); drawPot(); drawSchedule(null);
     });
     chipRow('bodies', BODYKEYS.map(function (k) { return { key: k, label: BODIES[k].name }; }), S.body, function (k) {
-      S.body = k; evaluate(); report(); drawPot();
+      S.body = k; evaluate(); refreshChips(); report(); drawPot();
     });
     chipRow('atms', [{ key: 'oxidation', label: 'oxidation' }, { key: 'reduction', label: 'reduction' }], S.atm, function (k) {
-      S.atm = k; evaluate(); report(); drawPot();
+      S.atm = k; evaluate(); refreshChips(); report(); drawPot();
     });
     chipRow('cools', [{ key: 'fast', label: 'fast cool' }, { key: 'normal', label: 'normal' }, { key: 'slow', label: 'slow cool' }], S.cool, function (k) {
-      S.cool = k; evaluate(); report(); drawPot(); drawSchedule(null);
+      S.cool = k; evaluate(); refreshChips(); report(); drawPot(); drawSchedule(null);
     });
     chipRow('colorchips', ['none', 'iron', 'cob', 'cop', 'rut', 'man', 'chr'].map(function (k) {
       return { key: k, label: k === 'none' ? 'no colour' : COL[k].name };
@@ -921,7 +918,7 @@
       S.colKey = k;
       if (k !== 'none' && S.colAmt <= 0) S.colAmt = 2;
       var sl = $('colAmt'); if (sl) sl.value = String(S.colAmt);
-      evaluate(); report(); drawPot();
+      evaluate(); refreshChips(); report(); drawPot();
     });
     chipRow('opacchips', ['none', 'tin', 'zir'].map(function (k) {
       return { key: k, label: k === 'none' ? 'transparent' : COL[k].name };
@@ -929,39 +926,40 @@
       S.opacKey = k;
       if (k !== 'none' && S.opacAmt <= 0) S.opacAmt = 6;
       var sl = $('opacAmt'); if (sl) sl.value = String(S.opacAmt);
-      evaluate(); report(); drawPot();
+      evaluate(); refreshChips(); report(); drawPot();
     });
   }
 
   /* ================= benchmark, run once at load ================= */
 
   function benchmark() {
-    var t0 = (window.performance && performance.now) ? performance.now() : Date.now();
-    var n = 240, sum = 0, worst = 0, fails = 0;
+    var t0 = now(), n = 240, sum = 0, worst = 0, fails = 0;
     for (var i = 0; i < n; i++) {
-      var rand = rng(hash32(i * 2654435761));
-      var ck = CONEKEYS[i % 3];
-      var g = dealGlaze(rand, ck);
+      var g = dealGlaze(rng(hash32(i * 2654435761)), CONEKEYS[i % 3]);
       sum += g.tries;
       if (g.tries > worst) worst = g.tries;
       if (!g.ok) fails++;
     }
-    var ms = ((window.performance && performance.now) ? performance.now() : Date.now()) - t0;
-    return { n: n, avg: sum / n, worst: worst, fails: fails, ms: ms };
+    return { n: n, avg: sum / n, worst: worst, fails: fails, ms: now() - t0 };
   }
 
   /* ================= wiring ================= */
 
   function redrawAll() { buildGeometry(); report(); drawPot(); drawProfile(); drawSchedule(null); }
 
+  function syncSliders() {
+    var t = $('thickRange'); if (t) t.value = String(S.thick);
+    var c = $('colAmt'); if (c) c.value = String(S.colAmt);
+    var o = $('opacAmt'); if (o) o.value = String(S.opacAmt);
+  }
+
   function dealDay(offset) {
     S.dayOffset = offset;
     var d = new Date();
     d.setDate(d.getDate() + offset);
     S.date = d;
-    var ymd = d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
-    deal(hash32(ymd));
-    buildRecipeUI(); refreshChips(); redrawAll();
+    deal(hash32(d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate()));
+    buildRecipeUI(); refreshChips(); redrawAll(); syncSliders();
   }
 
   function init() {
@@ -970,20 +968,18 @@
 
     dealDay(0);
 
-    var b = benchmark();
-    var el = $('benchOut');
+    var b = benchmark(), el = $('benchOut');
     if (el) {
-      el.textContent = 'Dealt ' + b.n + ' glazes at load, eighty at each cone: ' +
-        b.avg.toFixed(2) + ' drafts on average before the formula landed in the box, ' +
-        'worst ' + b.worst + ', ' + (b.fails === 0 ? 'none gave up' : b.fails + ' gave up') +
+      el.textContent = 'Dealt ' + b.n + ' glazes while this page was loading, eighty at each cone: ' +
+        b.avg.toFixed(2) + ' drafts on average before the formula landed inside the box, worst ' +
+        b.worst + ', ' + (b.fails === 0 ? 'none of them gave up' : b.fails + ' gave up') +
         ', ' + b.ms.toFixed(1) + ' ms for the lot.';
     }
 
-    /* rotate the pot */
     var last = null;
     potC.addEventListener('pointerdown', function (e) {
       last = { x: e.clientX, y: e.clientY };
-      potC.setPointerCapture(e.pointerId);
+      if (potC.setPointerCapture) potC.setPointerCapture(e.pointerId);
     });
     potC.addEventListener('pointermove', function (e) {
       if (!last) return;
@@ -995,10 +991,13 @@
     potC.addEventListener('pointerup', function () { last = null; });
     potC.addEventListener('pointercancel', function () { last = null; });
 
-    /* drag the profile */
     profC.addEventListener('pointerdown', function (e) {
       var p = profPointAt(e);
-      if (p.i >= 0) { drag = p.i; profC.setPointerCapture(e.pointerId); drawProfile(); }
+      if (p.i >= 0) {
+        drag = p.i;
+        if (profC.setPointerCapture) profC.setPointerCapture(e.pointerId);
+        drawProfile();
+      }
     });
     profC.addEventListener('pointermove', function (e) {
       if (drag < 0) return;
@@ -1013,48 +1012,37 @@
     profC.addEventListener('pointerup', function () { drag = -1; drawProfile(); });
     profC.addEventListener('pointercancel', function () { drag = -1; drawProfile(); });
 
-    function slider(id, get, set) {
+    function slider(id, set) {
       var s = $(id); if (!s) return;
-      s.value = String(get());
       s.addEventListener('input', function () { set(parseFloat(s.value)); evaluate(); report(); drawPot(); });
     }
-    slider('thickRange', function () { return S.thick; }, function (v) { S.thick = v; });
-    slider('colAmt', function () { return S.colAmt; }, function (v) { S.colAmt = v; });
-    slider('opacAmt', function () { return S.opacAmt; }, function (v) { S.opacAmt = v; });
+    slider('thickRange', function (v) { S.thick = v; });
+    slider('colAmt', function (v) { S.colAmt = v; });
+    slider('opacAmt', function (v) { S.opacAmt = v; });
 
-    function wire(id, fn) { var n2 = $(id); if (n2) n2.addEventListener('click', fn); }
+    function wire(id, fn) { var el2 = $(id); if (el2) el2.addEventListener('click', fn); }
     wire('btnFire', startFiring);
     wire('btnNew', function () {
       deal((Math.random() * 4294967295) >>> 0);
-      buildRecipeUI(); refreshChips(); redrawAll();
-      var t = $('thickRange'); if (t) t.value = String(S.thick);
-      var c = $('colAmt'); if (c) c.value = String(S.colAmt);
-      var o = $('opacAmt'); if (o) o.value = String(S.opacAmt);
+      buildRecipeUI(); refreshChips(); redrawAll(); syncSliders();
     });
-    wire('btnToday', function () {
-      dealDay(0);
-      var t = $('thickRange'); if (t) t.value = String(S.thick);
-      var c = $('colAmt'); if (c) c.value = String(S.colAmt);
-      var o = $('opacAmt'); if (o) o.value = String(S.opacAmt);
-    });
+    wire('btnToday', function () { dealDay(0); });
     wire('btnCopy', function () {
-      var n3 = normRecipe(S.recipe), lines = [];
+      var nr = normRecipe(S.recipe), lines = [], self = this;
       lines.push(S.glazeName + ' — ' + CONES[S.cone].label + ', ' + S.atm);
-      for (var k in n3) lines.push(MAT[k].name + '  ' + fx(n3[k], 1));
+      for (var k in nr) lines.push(MAT[k].name + '  ' + fx(nr[k], 1));
       if (S.colKey !== 'none') lines.push('+ ' + COL[S.colKey].name + '  ' + fx(S.colAmt, 2));
       if (S.opacKey !== 'none') lines.push('+ ' + COL[S.opacKey].name + '  ' + fx(S.opacAmt, 1));
       lines.push('unity: ' + formulaText(E.chem.unity).replace(/\s+/g, ' '));
-      var txt = lines.join('\n');
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(txt);
-        this.textContent = 'Copied';
-        var self = this;
+        navigator.clipboard.writeText(lines.join('\n'));
+        self.textContent = 'Copied';
         setTimeout(function () { self.textContent = 'Copy the recipe'; }, 1400);
       }
     });
 
     document.addEventListener('keydown', function (e) {
-      if (e.target && /input|textarea|button/i.test(e.target.tagName)) return;
+      if (e.target && /input|textarea|button|select/i.test(e.target.tagName)) return;
       if (e.key === 'ArrowLeft') { dealDay(S.dayOffset - 1); e.preventDefault(); }
       else if (e.key === 'ArrowRight') { dealDay(S.dayOffset + 1); e.preventDefault(); }
     });
