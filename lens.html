@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Lens — Drift</title>
+<meta name="description" content="A lens commissioned, cut out of real catalogue glass and then ruined by today's date. Trace the rays, read the spot, and look through it.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  #bench{
+    display:block;width:100%;aspect-ratio:16/7;
+    border-radius:16px;border:1px solid var(--line);
+    background:#080b11;cursor:ns-resize;touch-action:none;
+  }
+  #spots{
+    display:block;width:100%;aspect-ratio:3/1;
+    border-radius:14px;border:1px solid var(--line);background:#080b11;
+  }
+  #fan{
+    display:block;width:100%;aspect-ratio:5/2;margin-top:18px;
+    border-radius:14px;border:1px solid var(--line);background:#080b11;
+  }
+  #seen{
+    display:block;width:100%;aspect-ratio:2/1;
+    border-radius:14px;border:1px solid var(--line);background:#080b11;
+  }
+
+  .rx{
+    margin:0 0 20px;padding:16px 18px;
+    border-radius:14px;border:1px dashed var(--line);
+    color:var(--accent2);
+    font:.82rem/1.75 ui-monospace,SFMono-Regular,Menlo,monospace;
+    white-space:pre;overflow-x:auto;
+  }
+  .verdict{
+    margin:0 0 24px;padding:14px 18px;
+    border-radius:14px;border:1px solid var(--line);
+    font-size:.94rem;color:var(--dim);
+  }
+  .verdict b{color:var(--ink);font-weight:650}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  .verdict.bad{border-color:rgba(255,120,120,.45);background:rgba(255,120,120,.06)}
+
+  .facts{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin:0}
+  .facts dt{
+    font:600 10px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:7px;
+  }
+  .facts dd{margin:0;font-size:.98rem;color:var(--ink)}
+  .plaque{
+    border:1px solid var(--line);border-radius:16px;padding:26px 28px;
+    background:linear-gradient(160deg,rgba(100,240,200,.06),rgba(122,162,255,.04));
+  }
+  .plaque h3{margin:0 0 6px;font-size:1.5rem;letter-spacing:-.01em}
+  .plaque .who{
+    font:600 11px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--accent2);
+  }
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .sliders label b{color:var(--accent);font-weight:700;font-size:.85rem}
+  .gsel{
+    background:rgba(11,15,22,.92);color:var(--ink);
+    border:1px solid var(--line);border-radius:999px;
+    padding:6px 12px;font:inherit;font-size:.8rem;margin-left:8px;
+  }
+  .gsel:focus{outline:none;border-color:var(--accent)}
+  #glassRow{display:flex;flex-wrap:wrap;gap:12px}
+  #glassRow label{font-size:.8rem;color:var(--dim);display:flex;align-items:center}
+  .legend{
+    display:flex;gap:16px;flex-wrap:wrap;margin:12px 0 0;
+    font:600 10px/1.6 ui-monospace,Menlo,monospace;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--dim);
+  }
+  .legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html" class="on">Lens</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page twenty-four</p>
+    <h1>The Lens</h1>
+    <p class="lede">
+      Twenty-three rooms, and every picture any of them ever drew arrived perfectly
+      sharp. The Observatory pins a star to a point. The Atlas inks a coastline with a
+      pen of no width. Nothing on this site had ever had to actually form an image out
+      of light that has to get through something first. Today's number writes a
+      commission, picks glass out of a catalogue it did not invent, cuts a lens to fill
+      the order, and traces every ray through it. Then it hands you the curvatures.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <h2>The bench</h2>
+      <p class="sub">
+        The whole system to scale, with rays. Drag up or down anywhere near a surface
+        and that surface recurves under your hand — or use the sliders, which say what
+        the radius actually is. Everything downstream recomputes as you go.
+      </p>
+
+      <canvas id="bench" aria-label="Today's lens with rays traced through it"></canvas>
+      <div class="legend">
+        <span><i style="background:#ff7d7d"></i>C line, 656 nm</span>
+        <span><i style="background:#ffe08a"></i>d line, 588 nm</span>
+        <span><i style="background:#7cabff"></i>F line, 486 nm</span>
+      </div>
+      <p class="hint canvas-hint">Left and right arrow keys walk to other days.</p>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Rays</span>
+          <div class="chips" id="fieldChips"></div>
+        </div>
+        <div class="rack-row">
+          <span class="rack-label">Light</span>
+          <div class="chips" id="waveChips"></div>
+        </div>
+        <div class="sliders" id="radii"></div>
+        <div class="sliders" id="gaps"></div>
+        <div class="sliders">
+          <label>Aperture <b id="apOut">—</b>
+            <input type="range" id="apRange" min="2" max="22" step="0.1" value="8">
+          </label>
+          <label>Focal plane <b id="focusOut">—</b>
+            <input type="range" id="focusRange" min="-8" max="8" step="0.1" value="0">
+          </label>
+        </div>
+        <div class="rack-row">
+          <span class="rack-label">Glass</span>
+          <div id="glassRow"></div>
+        </div>
+        <div class="rack-row">
+          <div class="controls">
+            <button class="btn small" id="btnRecut">Re-cut for these glasses</button>
+            <button class="btn small ghost" id="btnRestore">The design as drawn</button>
+            <button class="btn small ghost" id="btnNew">Another commission</button>
+            <button class="btn small ghost" id="btnToday">Today's lens</button>
+            <button class="btn small ghost" id="btnCopy">Copy the prescription</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="plaque" style="margin-top:26px">
+        <span class="who" id="comWho">—</span>
+        <h3 id="comTitle">—</h3>
+        <p id="comPurpose">—</p>
+        <p id="comFate">—</p>
+        <p id="cutNote">—</p>
+        <p class="dim" style="font-size:.85rem" id="comMeta">—</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What it does to a point</h2>
+      <p class="sub">
+        A lens is judged by what it makes of something that has no size. Every ray of
+        three colours across the whole pupil, landed on the focal plane, at the centre
+        of the field and two-thirds out and right in the corner. The dashed circle is
+        the Airy disc: the blur that diffraction alone would give a perfect lens at this
+        aperture. Anything inside it is as good as glass can be.
+      </p>
+
+      <canvas id="spots" aria-label="Spot diagrams at three field points"></canvas>
+      <canvas id="fan" aria-label="Transverse ray aberration fans"></canvas>
+
+      <div class="verdict" id="verdict" style="margin-top:24px">—</div>
+
+      <h3 style="font-size:1.05rem;margin:0 0 12px">The prescription</h3>
+      <pre class="rx" id="rx">—</pre>
+
+      <dl class="facts" style="margin-top:34px">
+        <div><dt>Focal length</dt><dd id="fEfl">—</dd></div>
+        <div><dt>Speed</dt><dd id="fFno">—</dd></div>
+        <div><dt>Clear aperture</dt><dd id="fAper">—</dd></div>
+        <div><dt>Field</dt><dd id="fField">—</dd></div>
+        <div><dt>On axis</dt><dd id="fAxis">—</dd></div>
+        <div><dt>In the corner</dt><dd id="fCorner">—</dd></div>
+        <div><dt>Airy disc</dt><dd id="fAiry">—</dd></div>
+        <div><dt>Spot against it</dt><dd id="fRatio">—</dd></div>
+        <div><dt>Blue against red focus</dt><dd id="fChroma">—</dd></div>
+        <div><dt>Thinnest edge</dt><dd id="fRim">—</dd></div>
+        <div><dt>Work done</dt><dd id="fWork">—</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="wrap">
+      <h2>What it sees</h2>
+      <p class="sub">
+        The same chart, twice. On the left as it is; on the right as it arrives, every
+        point in it spread out by the rays this lens actually traces. Swap the flint for
+        a crown and the colour fringes appear along every edge. Open the aperture two
+        stops and watch the middle go first.
+      </p>
+
+      <canvas id="seen" aria-label="A test chart imaged through today's lens"></canvas>
+      <p class="hint canvas-hint" id="seenNote">—</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>How a lens gets cut here</h2>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Take the order</h3>
+          <p>The day's number decides who wants a lens and what for, and that decides
+             the form — a singlet behind a stop, a cemented achromat, an air-spaced
+             doublet, a Cooke triplet, a Petzval — along with the focal length, the
+             speed and how much of the world it has to cover.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Split the power</h3>
+          <p>Glasses are drawn from the catalogue and each element is given its share
+             of the total power by thin-lens arithmetic — for a doublet, the split that
+             makes the red and the blue focus in the same place — and then bent into a
+             starting shape.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Push every number until it stops helping</h3>
+          <p>Each curvature, each airspace and the focal plane are nudged one at a time,
+             the step halving whenever a whole pass fails to improve anything. Between
+             every trial the system is rescaled so the focal length comes out exactly as
+             ordered, which is why it is never a compromise.</p>
+        </li>
+      </ol>
+
+      <p class="sub" style="margin-top:34px">
+        Two things here were not invented on the premises. The first is the glass:
+        sixteen catalogue types, each stored as its index at the yellow helium line and
+        its Abbe number, which is the trade's one-figure summary of how badly a glass
+        splits colour. The dispersion in between is reconstructed as a two-term Cauchy
+        curve fitted to those two figures, which by construction passes exactly through
+        the red, yellow and blue lines a catalogue quotes and tracks the published curve
+        to about a unit in the fifth decimal across the visible. The second is Snell's
+        law, applied as a vector at every surface — rays are intersected with real
+        spheres by solving a quadratic, refracted in three dimensions, and dropped
+        entirely if they miss the glass or turn round in total internal reflection,
+        which is exactly what you will see happen if you push a surface far enough.
+      </p>
+
+      <p class="sub">
+        What is simplified, said plainly. The stop sits at the front surface of every
+        design, and moving it is one of the strongest tools a real designer has — this
+        bench does not hand you that one. Distortion is measured but taken out of the
+        picture above, which shows blur and not shape. The surfaces are spherical, with
+        no aspherics and no cemented-surface tolerance. The diffraction blur folded into
+        the picture is a Gaussian standing in for an Airy pattern, so there are no rings
+        around a bright point. And the optimiser is coordinate descent, which is a
+        plodding thing next to the damped least squares a real design program uses: it
+        finds a good lens near the form it was given and it does not go looking for a
+        better form.
+      </p>
+
+      <p class="sub" id="benchOut">—</p>
+
+      <p class="sub afterword">
+        The same date integer that drifts the field on the <a href="./">front page</a>
+        also seeds <a href="garden.html">the Garden</a>, writes
+        <a href="chimes.html">the Chimes</a>, deals <a href="lattice.html">the
+        Lattice</a>, names the town in <a href="almanac.html">the Almanac</a>,
+        scatters <a href="observatory.html">the Observatory</a>, raises the coast in
+        <a href="atlas.html">the Atlas</a>, breeds
+        <a href="menagerie.html">the Menagerie</a>, lights the star in
+        <a href="orrery.html">the Orrery</a>, invents the alphabet in
+        <a href="codex.html">the Codex</a>, founds the countries in
+        <a href="chronicle.html">the Chronicle</a>, designs the building in
+        <a href="folly.html">the Folly</a>, cuts the gears in
+        <a href="engine.html">the Engine</a>, threads the warp in
+        <a href="loom.html">the Loom</a>, prices the goods in
+        <a href="exchange.html">the Exchange</a>, writes the rules in
+        <a href="gambit.html">the Gambit</a>, locks the doors in
+        <a href="warren.html">the Warren</a>, hides the thief in
+        <a href="inquest.html">the Inquest</a>, cuts the gorge in
+        <a href="span.html">the Span</a>, writes the timetable in
+        <a href="junction.html">the Junction</a>, enciphers the dispatch in
+        <a href="bureau.html">the Bureau</a>, cuts the letters in
+        <a href="foundry.html">the Foundry</a> and mixes the glaze in
+        <a href="kiln.html">the Kiln</a> — and here it grinds something you are meant
+        to look through rather than at. The Observatory hands you a sky already in
+        focus. This is the instrument that would have had to bring it there.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="lens-optics.js"></script>
+<script src="lens-draw.js"></script>
+<script src="lens.js"></script>
+</body>
+</html>
