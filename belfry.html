@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Belfry — Drift</title>
+<meta name="description" content="A bell tower invented by today's date, a real change-ringing method rung on its bells, and a rope for you to take hold of.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  #ringing{
+    display:block;width:100%;height:420px;
+    border-radius:16px;border:1px solid var(--line);
+    background:#080b11;touch-action:manipulation;cursor:pointer;
+  }
+  #blueline{
+    display:block;width:100%;height:360px;
+    border-radius:14px;border:1px solid var(--line);background:#080b11;
+  }
+
+  .belfry-row{display:flex;gap:18px;align-items:stretch;margin-top:18px;flex-wrap:wrap}
+  .belfry-row .rack{flex:1 1 420px;margin:0}
+  #rope{
+    flex:0 0 150px;min-height:150px;
+    border-radius:16px;border:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(122,162,255,.10),rgba(122,162,255,.02));
+    color:var(--ink);cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+    font:600 11px/1.4 ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;
+  }
+  #rope .sally{
+    width:22px;height:64px;border-radius:11px;
+    background:repeating-linear-gradient(45deg,#c84b4b 0 6px,#e8edf5 6px 10px,#3c6ad8 10px 16px);
+    box-shadow:0 0 0 2px rgba(255,255,255,.08);
+    transition:transform .12s ease-out;
+  }
+  #rope.pulled .sally{animation:pull .32s ease-out}
+  @keyframes pull{0%{transform:translateY(0)}35%{transform:translateY(16px)}100%{transform:translateY(0)}}
+  #rope:hover{border-color:var(--accent2)}
+
+  .status{margin:14px 0 0;color:var(--dim);font-size:.92rem}
+  .placeout{margin:10px 0 0;text-align:center;
+    font:600 11px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--accent2)}
+
+  .verdict{
+    margin:24px 0;padding:14px 18px;
+    border-radius:14px;border:1px solid var(--line);
+    font-size:.94rem;color:var(--dim);
+  }
+  .verdict b{color:var(--ink);font-weight:650}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  .verdict.bad{border-color:rgba(255,120,120,.45);background:rgba(255,120,120,.06)}
+
+  .facts{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin:0}
+  .facts dt{
+    font:600 10px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:7px;
+  }
+  .facts dd{margin:0;font-size:.98rem;color:var(--ink);word-break:break-word}
+
+  .plaque{
+    border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:26px;
+    background:linear-gradient(160deg,rgba(122,162,255,.07),rgba(255,206,106,.04));
+  }
+  .plaque h3{margin:0 0 6px;font-size:1.5rem;letter-spacing:-.01em}
+  .plaque .who{
+    margin:0;
+    font:600 11px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--accent2);
+  }
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .sliders label b{color:var(--accent);font-weight:700;font-size:.85rem}
+  .daybar{font-size:.9rem;color:var(--dim)}
+  .speak{display:inline-flex;gap:8px;align-items:center;color:var(--dim);font-size:.88rem}
+
+  .rows{display:flex;flex-wrap:wrap;gap:22px;margin:0}
+  .rows pre{
+    margin:0;padding:12px 14px;border-radius:12px;border:1px solid var(--line);
+    font:.86rem/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;color:rgba(232,237,245,.6);
+    letter-spacing:.18em;
+  }
+  .rows pre b{color:#7aa2ff;font-weight:700}
+  .rows pre .lh{color:var(--ink);text-decoration:underline;text-decoration-color:rgba(255,206,106,.6);text-underline-offset:3px}
+
+  #compBox{
+    width:100%;min-height:64px;padding:12px 14px;border-radius:12px;
+    border:1px solid var(--line);background:#080b11;color:var(--ink);
+    font:.95rem/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.14em;resize:vertical;
+  }
+  #compBox:disabled{opacity:.5}
+  .heads{
+    width:100%;border-collapse:collapse;margin:8px 0 0;
+    font:.86rem/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  .heads th{
+    text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);
+    font:600 10px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
+  }
+  .heads td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.05);color:var(--ink);letter-spacing:.12em}
+  .heads td:first-child{color:var(--dim)}
+  .heads-wrap{max-height:320px;overflow:auto}
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html" class="on">Belfry</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page twenty-six</p>
+    <h1>The Belfry</h1>
+    <p class="lede">
+      Twenty-five rooms, and every one of them is a solo. You solve the Lattice on your
+      own, you signal the Junction on your own, you even wait for the Tide on your own.
+      Nothing on this site has ever needed you to fit in with anybody. Change ringing
+      needs nothing else: six people, six ropes, no tune, and the one rule that each
+      bell may only move one place at a time. Today's number builds a tower, hangs
+      its bells, picks a real method off the list and gives you one rope. Everybody
+      else is already waiting.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="towerWho">—</p>
+        <h3 id="towerName">—</h3>
+        <p id="towerBlurb">—</p>
+        <p class="dim" id="towerMeta">—</p>
+      </div>
+
+      <h2>Take hold</h2>
+      <p class="sub">
+        Each line of numbers is a row: every bell struck once, in that order. Your bell
+        is blue and the treble is red; the lines show how each one works its way through
+        the rows. Listen first. Then press Ring, and strike your bell with the space bar
+        (or tap the rope) whenever the blue line reaches the lit position. The band does
+        not wait.
+      </p>
+
+      <canvas id="ringing" aria-label="The rows being rung, with your bell's path drawn in blue"></canvas>
+      <p class="placeout" id="placeOut">—</p>
+
+      <div class="belfry-row">
+        <div class="rack">
+          <div class="rack-row">
+            <div class="controls">
+              <button class="btn small" id="btnListen">Listen to the band</button>
+              <button class="btn small" id="btnRing">Ring</button>
+              <button class="btn small ghost" id="btnStand">Stand</button>
+            </div>
+            <label class="speak"><input type="checkbox" id="speak" checked> conductor speaks</label>
+          </div>
+          <div class="rack-row">
+            <span class="rack-label">Method</span>
+            <div class="chips" id="methodChips"></div>
+          </div>
+          <div class="rack-row">
+            <span class="rack-label">Your rope</span>
+            <div class="chips" id="bellChips"></div>
+          </div>
+          <div class="sliders">
+            <label>Pace <b id="paceOut">—</b>
+              <input type="range" id="paceRange" min="150" max="380" step="5" value="230">
+            </label>
+          </div>
+          <div class="rack-row">
+            <span class="rack-label">Day</span>
+            <div class="controls">
+              <button class="btn small ghost" id="btnPrev">← Yesterday</button>
+              <button class="btn small ghost" id="btnToday">Today</button>
+              <button class="btn small ghost" id="btnNext">Tomorrow →</button>
+            </div>
+            <span class="daybar" id="dayOut">—</span>
+          </div>
+        </div>
+        <button id="rope" type="button" aria-label="Pull your rope"><span class="sally"></span>Pull · Space</button>
+      </div>
+      <p class="status" id="status">—</p>
+
+      <div class="verdict" id="verdict">—</div>
+      <p class="hint canvas-hint">Left and right arrow keys walk to other days. Every day is a different tower.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>Your blue line</h2>
+      <p class="sub">
+        Nobody memorises the rows. What a ringer learns is the path of one bell through
+        a plain course, lead by lead, and which bit of it they start from — the place
+        bell they become at each lead head. That path is traditionally printed in blue,
+        which is why ringers call it the blue line. Here it is for your rope, with the
+        treble in red and each lead head written across the top.
+      </p>
+      <canvas id="blueline" aria-label="The path of your bell through a plain course"></canvas>
+
+      <p class="sub" id="noteOut" style="margin-top:28px">—</p>
+      <dl class="facts">
+        <div><dt>Method</dt><dd id="fMethod">—</dd></div>
+        <div><dt>Place notation</dt><dd id="fPn">—</dd></div>
+        <div><dt>Lead</dt><dd id="fLead">—</dd></div>
+        <div><dt>Plain course</dt><dd id="fCourse">—</dd></div>
+        <div><dt>Extent</dt><dd id="fExtent">—</dd></div>
+        <div><dt>A peal at this pace</dt><dd id="fPeal">—</dd></div>
+        <div><dt>Your place bells</dt><dd id="fPlace">—</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="wrap">
+      <h2>Call a touch</h2>
+      <p class="sub">
+        Left alone, a method comes back to rounds after its plain course. To ring longer
+        without ringing any row twice, a conductor calls bobs and singles, each of which
+        swaps a different pair at one lead end and sends the bells off into rows they have
+        not rung yet. Write one letter per lead — p for plain, b (or -) for a bob, s for a
+        single — and the room proves it. Or ask it to find one; then ring it above.
+      </p>
+      <textarea id="compBox" spellcheck="false" aria-label="The calling, one letter per lead"></textarea>
+      <div class="rack-row" style="margin-top:14px">
+        <div class="controls"><button class="btn small ghost" id="btnPlain">Plain course</button></div>
+        <div class="chips" id="lenChips"></div>
+      </div>
+      <div class="verdict" id="compOut">—</div>
+      <div class="heads-wrap">
+        <table class="heads">
+          <thead><tr><th>Lead</th><th>Call</th><th>Lead head</th></tr></thead>
+          <tbody id="heads"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>The plain course, written out</h2>
+      <p class="sub">
+        Every row of the plain course, one lead to a column, lead heads underlined and
+        your bell in blue. This is what the whole band is producing together; each of
+        them only has to know their own line through it.
+      </p>
+      <div class="rows" id="rows"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The ringing is the genuine article. The tower, and everyone in it, is not anywhere.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>The methods are real</h3>
+          <p>Every method in the list is rung in towers today, and is stored here the way
+             ringers write them down: place notation, where x means every pair swaps and
+             a number means that place stays put. Nothing else is given. Every row on this
+             page is generated from that one string, and every plain course is checked to
+             come back to rounds without repeating itself.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Truth is real</h3>
+          <p>A touch is true if no row appears twice. Six bells can be arranged 720 ways,
+             so 720 is the most you can ring on six without repeating — the extent. The
+             prover above checks every row against every other; the composer is a blind
+             depth-first search that backs out the moment it meets a row it has already
+             used. It is slow and stupid next to a real composer, but what it finds is true.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>The rhythm is real</h3>
+          <p>A bell swings a full circle each blow, so the rope alternates handstroke and
+             backstroke. Before every handstroke there is a gap exactly one blow long — the
+             open handstroke lead — and it is in here. Real bands strike to within a few
+             hundredths of a second; the band here is allowed a small, fixed wobble of its
+             own, and so, for scoring, are you.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>The bells are approximations</h3>
+          <p>A tuned bell rings with a hum, a prime, a tierce a minor third above it, a quint
+             and a nominal — the partials are at those ratios here, which is why it sounds
+             like a bell and not an organ. But they are clean sine waves, and a real bell's
+             partials beat, warble and are never quite where the tuner meant them. The tenor
+             weight and key follow a rough cube-root rule, and are invented.</p>
+        </li>
+        <li>
+          <span class="step-n">05</span>
+          <h3>Some calls are missing</h3>
+          <p>Bobs and singles are modelled only for methods where a call changes the one
+             change at the lead end. Grandsire and Stedman calls reach into the rows around
+             the lead end too, and this room does not attempt them, so for those the plain
+             course is all there is. A blind search also will not turn up the 720 of Plain
+             Bob Minor in time, although it exists and bands ring it every week.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Twenty-six rooms and the number is still the only thing doing any work. Here it
+        consecrates a church, weighs a tenor, picks a method off the list and puts a rope
+        in your hands — and for once, whether it goes well depends on you keeping up with
+        everybody else.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="belfry.js"></script>
+</body>
+</html>
