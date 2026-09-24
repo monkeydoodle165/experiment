@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Apiary — Drift</title>
+<meta name="description" content="An observation hive, a stretch of country invented by today's date, and foragers dancing the way to the flowers in it. Read the waggle dance and send a scout.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .hive-row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+  .hive-row .col{flex:1 1 400px;min-width:0}
+  .hive-row .col.map{flex:1 1 340px}
+  #comb{
+    display:block;width:100%;height:460px;
+    border-radius:16px;border:1px solid var(--line);background:#100c07;
+  }
+  #map{
+    display:block;width:100%;height:auto;aspect-ratio:1/1;
+    border-radius:16px;border:1px solid var(--line);background:#080b11;
+    cursor:crosshair;touch-action:none;
+  }
+  .readout{margin:10px 0 0;text-align:center;
+    font:600 11px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--accent2)}
+  .readout.dimmer{color:var(--dim);text-transform:none;letter-spacing:.04em}
+
+  .notebook{
+    margin-top:18px;padding:14px 18px;border-radius:14px;
+    border:1px dashed rgba(255,206,106,.35);background:rgba(255,206,106,.03);
+    font:.86rem/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--dim);
+  }
+  .notebook h4{margin:0 0 6px;font:600 10px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:#ffce6a}
+  .notebook b{color:var(--ink);font-weight:650}
+
+  .status{margin:14px 0 0;color:var(--dim);font-size:.92rem}
+  .verdict{
+    margin:20px 0 0;padding:14px 18px;
+    border-radius:14px;border:1px solid var(--line);
+    font-size:.94rem;color:var(--dim);
+  }
+  .verdict b{color:var(--ink);font-weight:650}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  .verdict.bad{border-color:rgba(255,120,120,.45);background:rgba(255,120,120,.06)}
+
+  .plaque{
+    border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:26px;
+    background:linear-gradient(160deg,rgba(255,206,106,.08),rgba(100,240,200,.03));
+  }
+  .plaque h3{margin:0 0 6px;font-size:1.5rem;letter-spacing:-.01em}
+  .plaque .who{
+    margin:0;
+    font:600 11px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:#ffce6a;
+  }
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .daybar{font-size:.9rem;color:var(--dim)}
+  .speak{display:inline-flex;gap:8px;align-items:center;color:var(--dim);font-size:.88rem}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+  .sky-row{display:flex;gap:18px;flex-wrap:wrap}
+  #sky{flex:1 1 280px;min-width:0;height:340px;border-radius:14px;border:1px solid var(--line);background:#080b11}
+  #angles{flex:2 1 420px;min-width:0;height:340px;border-radius:14px;border:1px solid var(--line);background:#080b11}
+  #colony{display:block;width:100%;height:320px;border-radius:14px;border:1px solid var(--line);background:#080b11}
+  .legend{display:flex;flex-wrap:wrap;gap:10px 20px;margin:14px 0 0;font-size:.86rem;color:var(--dim)}
+  .legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:7px;vertical-align:-1px}
+
+  .facts{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin:30px 0 0}
+  .facts dt{
+    font:600 10px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:7px;
+  }
+  .facts dd{margin:0;font-size:.98rem;color:var(--ink);word-break:break-word}
+  .sliders label b{color:var(--accent);font-weight:700;font-size:.85rem}
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html" class="on">Apiary</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page twenty-seven</p>
+    <h1>The Apiary</h1>
+    <p class="lede">
+      Twenty-six rooms, and every one of them was built to be read by people. The
+      Almanac is written for you, the Bureau's cipher was meant for somebody's eyes,
+      even the Belfry rings for a village to hear. This room is not for you. Behind
+      the glass of an observation hive, a forager has come home from a patch of
+      flowers and is telling her sisters where it is, in a language that takes the
+      sun for north and gravity for paper. Today's number lays out the country round
+      the hive and puts the flowers in it. You are only listening in. Work out where
+      she has been, then send a scout.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="hiveWho">—</p>
+        <h3 id="hiveName">—</h3>
+        <p id="hiveBlurb">—</p>
+        <p class="dim" id="hiveMeta">—</p>
+      </div>
+
+      <h2>Watch the dance floor</h2>
+      <p class="sub">
+        The forager with the green paint dot is dancing. In the straight run she
+        waggles her body from side to side, and that run carries the message. Its
+        angle from straight up is the angle between the sun and the flowers. How long
+        it lasts tells the distance. Then she loops back, once to the left and once to
+        the right, and runs it again. Read her, click the map where you think the
+        flowers are, and send a scout.
+      </p>
+
+      <div class="hive-row">
+        <div class="col">
+          <canvas id="comb" aria-label="The comb in the observation hive, with a forager dancing on it"></canvas>
+          <p class="readout" id="combOut">—</p>
+        </div>
+        <div class="col map">
+          <canvas id="map" aria-label="Map of the country around the hive. Click to place a scout."></canvas>
+          <p class="readout dimmer" id="mapOut">Move over the map for a bearing and distance from the hive.</p>
+        </div>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <div class="controls">
+            <button class="btn small" id="btnScout" disabled>Send a scout</button>
+            <button class="btn small ghost" id="btnDancer">Next dancer</button>
+            <button class="btn small ghost" id="btnWork">Show the working</button>
+          </div>
+        </div>
+        <div class="rack-row">
+          <label class="speak"><input type="checkbox" id="notesChk" checked> keep a field notebook</label>
+          <label class="speak"><input type="checkbox" id="protChk" checked> protractor on the glass</label>
+          <label class="speak"><input type="checkbox" id="hearChk"> hear the waggle</label>
+        </div>
+        <div class="sliders">
+          <label>Time of day <b id="clockOut">—</b>
+            <input type="range" id="clock" min="7" max="17" step="0.05" value="12">
+          </label>
+        </div>
+        <div class="rack-row">
+          <div class="controls"><button class="btn small ghost" id="btnPlay">Run the day</button></div>
+          <span class="daybar" id="sunOut">—</span>
+        </div>
+        <div class="rack-row">
+          <span class="rack-label">Day</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev">← Yesterday</button>
+            <button class="btn small ghost" id="btnDayToday">Today</button>
+            <button class="btn small ghost" id="btnDayNext">Tomorrow →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+
+      <div class="notebook" id="notes">—</div>
+      <p class="status" id="status">—</p>
+      <div class="verdict" id="verdict">—</div>
+      <p class="hint canvas-hint">Left and right arrow keys walk to other days, and N brings in the next dancer. Every day is a different hive.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>The sun in the hive</h2>
+      <p class="sub">
+        It is dark inside a hive, and the dancer can't see the sun. She dances against
+        gravity, and every bee that follows her knows that up means the sun's bearing.
+        The sun keeps moving, though, so a forager who goes back to the same flowers all
+        day has to turn her dance with it: about as far as the sun moves, and fastest
+        around noon. Drag the time of day or run the day, and watch the dances turn.
+      </p>
+      <div class="sky-row">
+        <canvas id="sky" aria-label="The sun's path across today's sky"></canvas>
+        <canvas id="angles" aria-label="How the dance for each patch you have found turns through the day"></canvas>
+      </div>
+      <dl class="facts">
+        <div><dt>Hive</dt><dd id="fPlace">—</dd></div>
+        <div><dt>Date</dt><dd id="fDate">—</dd></div>
+        <div><dt>Sun's declination</dt><dd id="fDecl">—</dd></div>
+        <div><dt>Sunrise to sunset</dt><dd id="fDay">—</dd></div>
+        <div><dt>Sun now</dt><dd id="fSun">—</dd></div>
+        <div><dt>Sun is turning</dt><dd id="fTurn">—</dd></div>
+        <div><dt>This colony's distance code</dt><dd id="fCal">—</dd></div>
+        <div><dt>Foraging force</dt><dd id="fColony">—</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="wrap">
+      <h2>Where the colony is working</h2>
+      <p class="sub">
+        No bee compares one patch of flowers with another. A forager coming back from a
+        rich patch dances longer and harder than one coming back from a poor one. More
+        of the bees waiting to go out follow her, and within a couple of hours most of
+        the workforce has shifted to the better flowers, though not one bee made that
+        decision. Here is today's colony working through the day, patch by patch. You
+        can't see what a patch is until you have read its dance.
+      </p>
+      <canvas id="colony" aria-label="Foragers at each patch through the day"></canvas>
+      <div class="legend" id="legend"></div>
+      <p class="status" id="colonyOut">—</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The dance language is real, and so is the sun. The hive and the country around
+        it are made up.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>The code is real</h3>
+          <p>Karl von Frisch worked it out in the 1940s and shared a Nobel prize for it
+             in 1973. The angle of the waggle run from straight up is the angle of the
+             food from the sun, measured clockwise. The length of the run grows with
+             distance. For flowers right beside the hive the dancer just circles, and
+             that round dance says little more than “near”.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>The sun is real</h3>
+          <p>The sun's bearing and height come from the standard formulas for the
+             declination and hour angle, at this hive's latitude, for the actual date.
+             Clock time here is local solar time, so the sun is due south at noon.
+             Leave the dancer alone for an hour and her runs turn to follow it, as real
+             foragers' do.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>The scatter is real</h3>
+          <p>A real dancer doesn't repeat herself exactly. Her runs spread either side
+             of the true direction, and they spread wider for nearby flowers than for
+             distant ones. Her followers average the runs, and that's why you get a
+             notebook. The spread here is about the right size, though the exact figures
+             are invented.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>The distance code is approximate</h3>
+          <p>A bee doesn't measure metres. She measures how much of the world has slid
+             past her eyes on the way out. So published figures for how far one second
+             of waggling means vary between colonies and landscapes, from roughly
+             three quarters of a kilometre to well over one. Each day's colony gets its
+             own figure from inside that range, and it is shown above. Real runs also
+             have a small offset that isn't modelled here.</p>
+        </li>
+        <li>
+          <span class="step-n">05</span>
+          <h3>The colony is a sketch</h3>
+          <p>The flowers are ones bees really work in that month, but the hours they
+             give nectar and how rewarding they are have been rounded off. The chart of
+             where the foragers go is a simple model of recruitment and abandonment, in
+             the spirit of Thomas Seeley's experiments with feeders. It is not a record
+             of any real hive. The comb, the fields, the village and the river are all
+             invented.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Twenty-seven rooms and the number is still the only thing doing any work. Here it
+        plants a hedge, digs a river, settles when the lime trees give nectar and which
+        side of the village the ivy grows on. Then it hands the news to an insect, who
+        passes it on in a language nobody on this site ever wrote down.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="apiary.js"></script>
+</body>
+</html>
