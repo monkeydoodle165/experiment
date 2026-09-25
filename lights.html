@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Lights — Drift</title>
+<meta name="description" content="A coast invented by today's date, at night, with the navigation gone dark. Time the lighthouses, work out which is which, take bearings and fix your position on the chart.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  #horizon{
+    display:block;width:100%;height:230px;
+    border-radius:16px 16px 0 0;border:1px solid var(--line);border-bottom:none;
+    background:#03050a;cursor:crosshair;touch-action:none;
+  }
+  #trace{
+    display:block;width:100%;height:92px;
+    border-radius:0 0 16px 16px;border:1px solid var(--line);
+    background:#05070c;
+  }
+  .readout{margin:10px 0 0;text-align:center;
+    font:600 11px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--accent2)}
+  .readout.dimmer{color:var(--dim);text-transform:none;letter-spacing:.04em}
+
+  .nav-row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;margin-top:26px}
+  .nav-row .col{flex:1 1 420px;min-width:0}
+  .nav-row .col.side{flex:1 1 300px}
+  #chart{
+    display:block;width:100%;height:auto;aspect-ratio:1/1;
+    border-radius:16px;border:1px solid var(--line);background:#0a1422;
+    cursor:crosshair;touch-action:none;
+  }
+
+  .notebook{
+    padding:14px 18px;border-radius:14px;
+    border:1px dashed rgba(122,162,255,.4);background:rgba(122,162,255,.03);
+    font:.84rem/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--dim);
+  }
+  .notebook h4{margin:0 0 8px;font:600 10px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .notebook b{color:var(--ink);font-weight:650}
+  .brg{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 0;border-top:1px solid var(--line)}
+  .brg:first-of-type{border-top:none}
+  .brg i{display:inline-block;width:10px;height:10px;border-radius:50%}
+  .brg select{
+    flex:1 1 150px;min-width:0;
+    background:#0b0f16;color:var(--ink);border:1px solid var(--line);border-radius:8px;
+    font:inherit;font-size:.8rem;padding:4px 6px;
+  }
+  .brg button{
+    background:none;border:1px solid var(--line);color:var(--dim);border-radius:8px;
+    font:inherit;font-size:.78rem;padding:3px 8px;cursor:pointer;
+  }
+  .brg button:hover{color:var(--ink);border-color:rgba(255,255,255,.3)}
+
+  .status{margin:14px 0 0;color:var(--dim);font-size:.92rem}
+  .verdict{
+    margin:20px 0 0;padding:14px 18px;
+    border-radius:14px;border:1px solid var(--line);
+    font-size:.94rem;color:var(--dim);
+  }
+  .verdict b{color:var(--ink);font-weight:650}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  .verdict.bad{border-color:rgba(255,120,120,.45);background:rgba(255,120,120,.06)}
+
+  .plaque{
+    border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:26px;
+    background:linear-gradient(160deg,rgba(122,162,255,.08),rgba(255,246,216,.03));
+  }
+  .plaque h3{margin:0 0 6px;font-size:1.5rem;letter-spacing:-.01em}
+  .plaque .who{
+    margin:0;
+    font:600 11px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:#ffe9a8;
+  }
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .daybar{font-size:.9rem;color:var(--dim)}
+  .speak{display:inline-flex;gap:8px;align-items:center;color:var(--dim);font-size:.88rem}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+  .listwrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+  table.lol{border-collapse:collapse;width:100%;min-width:720px;font-size:.88rem}
+  table.lol th{
+    text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);
+    font:600 10px/1.4 ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
+  }
+  table.lol td{padding:10px 12px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:middle}
+  table.lol tr:last-child td{border-bottom:none}
+  table.lol td.m{font-family:ui-monospace,Menlo,monospace;font-size:.82rem}
+  table.lol td.d{color:var(--dim)}
+  table.lol canvas{display:block;width:170px;height:22px}
+
+  .facts{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin:30px 0 0}
+  .facts dt{
+    font:600 10px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:7px;
+  }
+  .facts dd{margin:0;font-size:.98rem;color:var(--ink);word-break:break-word}
+  @media (max-width:640px){
+    .wrap{padding:0 16px}
+    #horizon{height:200px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html" class="on">Lights</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page twenty-eight</p>
+    <h1>The Lights</h1>
+    <p class="lede">
+      Twenty-seven rooms, and every one of them started by showing you the whole
+      thing: the whole map, the whole board, the whole tower. This one starts in the
+      dark. You are on a small boat off a coast that today's number drew, it is night,
+      and the electronics have gone dead. All you have is the chart, a hand-bearing
+      compass and a black horizon with a few lights winking on it. Every lighthouse on
+      that chart flashes in its own rhythm. Time them, work out which is which, take
+      their bearings, and find out where you are.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="coastWho">—</p>
+        <h3 id="coastName">—</h3>
+        <p id="coastBlurb">—</p>
+      </div>
+
+      <h2>On deck</h2>
+      <p class="sub">
+        This is the whole horizon, all the way round, with the compass bearing along
+        the bottom. Click a light to put the stopwatch on it. The strip underneath
+        records the last twenty-four seconds of it, so you can count the flashes and
+        time the gap. When you're ready, take a bearing on it.
+      </p>
+
+      <canvas id="horizon" aria-label="The horizon at night, all the way round. Click a light to watch it."></canvas>
+      <canvas id="trace" aria-label="The last twenty-four seconds of the light you are watching"></canvas>
+      <p class="readout" id="watchOut">No light selected. Click one on the horizon.</p>
+
+      <div class="rack">
+        <div class="rack-row">
+          <div class="controls">
+            <button class="btn small" id="btnBearing" disabled>Take a bearing</button>
+            <button class="btn small ghost" id="btnReveal" disabled>Reveal where I am</button>
+            <button class="btn small ghost" id="btnAnother">Another position</button>
+          </div>
+        </div>
+        <div class="rack-row">
+          <label class="speak"><input type="checkbox" id="rangeChk"> show ranges of the lights on the chart</label>
+          <label class="speak"><input type="checkbox" id="labelChk" checked> label the chart</label>
+        </div>
+        <div class="rack-row">
+          <span class="rack-label">Night</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev">← Last night</button>
+            <button class="btn small ghost" id="btnDayToday">Tonight</button>
+            <button class="btn small ghost" id="btnDayNext">Tomorrow night →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <div class="col">
+          <canvas id="chart" aria-label="The chart. Click to mark your fix."></canvas>
+          <p class="readout dimmer" id="chartOut">Move over the chart for a position. Click to mark your fix.</p>
+        </div>
+        <div class="col side">
+          <div class="notebook" id="book">—</div>
+          <p class="status" id="status">—</p>
+        </div>
+      </div>
+
+      <div class="verdict" id="verdict">—</div>
+      <p class="hint canvas-hint">B takes a bearing on the light you're watching, N moves the boat somewhere else, and the left and right arrow keys walk to other nights. Every night is a different coast.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>Tonight's light list</h2>
+      <p class="sub">
+        Every light is written down twice: once on the chart in shorthand, and once in
+        an official list with more detail. The shorthand gives the rhythm, the colour,
+        the period, the height and the range, in that order, so
+        <code>Fl(3) 15s 38m 19M</code> means three white flashes every fifteen seconds,
+        from a lamp thirty-eight metres above high water, seen nineteen miles off on a
+        clear night. The strips show one full period of each, with light as bright and
+        dark as dark.
+      </p>
+      <div class="listwrap">
+        <table class="lol">
+          <thead><tr><th>Light</th><th>Chart</th><th>One period</th><th>Height</th><th>Nominal</th><th>Tonight</th><th>Dips at</th></tr></thead>
+          <tbody id="lol"></tbody>
+        </table>
+      </div>
+      <dl class="facts">
+        <div><dt>Date</dt><dd id="fDate">—</dd></div>
+        <div><dt>Visibility</dt><dd id="fVis">—</dd></div>
+        <div><dt>Height of eye</dt><dd id="fEye">—</dd></div>
+        <div><dt>Ship's head</dt><dd id="fHead">—</dd></div>
+        <div><dt>Lights in direct sight</dt><dd id="fSeen">—</dd></div>
+        <div><dt>Lights you can't see</dt><dd id="fHidden">—</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The rules are real, the coast is not. Nobody should take a boat anywhere
+        near this chart.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>The rhythms are real</h3>
+          <p>Every light carries a characteristic from the international system:
+             flashing, group flashing, long flash, occulting (more light than dark),
+             isophase (equal light and dark), quick, and Morse. Neighbouring lights are
+             given different ones on purpose so a navigator can tell them apart. That
+             is the whole point of them. The cardinal buoys here flash the real
+             codes for north, east, south and west of a danger.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>The ranges are real</h3>
+          <p>A light's nominal range is how far it carries in ten miles of
+             visibility. Tonight's range comes from Allard's law with the IALA
+             threshold for night, run against tonight's visibility. Whether the lamp is
+             above your horizon at all comes from the standard geographic range rule,
+             2.03&nbsp;×&nbsp;(√height + √eye) miles. Beyond that you may still see its
+             <em>loom</em>, the beam sweeping the haze above the horizon, which is
+             real and much less exact to take a bearing on.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>The fix is real</h3>
+          <p>Each bearing puts you somewhere on one line through that light. Two lines
+             cross at a point, and three nearly never meet exactly. They leave a small
+             triangle, the <em>cocked hat</em>, and its size tells you how much to
+             trust the fix. A bearing plotted from the wrong light doesn't warn you. It
+             just draws a confident line in the wrong place, and that is why timing
+             the light comes first.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>The sector light is real</h3>
+          <p>The harbour light shows white only in a narrow slice along the safe way
+             in, red to one side and green to the other. On this chart, coming in from
+             seaward, red is on your left. The colour you see tells you which slice you
+             are in before you've taken a single bearing.</p>
+        </li>
+        <li>
+          <span class="step-n">05</span>
+          <h3>The rest is invented</h3>
+          <p>The coast, its heights, its names and every light on it are made up by the
+             day's number, and so is the dead reckoning position. The compass has no
+             deviation, and each bearing you take is off by about a degree, as a
+             hand-bearing compass on a moving deck would be. The land in the view is
+             drawn several times taller than it would really look so that it can be seen
+             at all.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Twenty-eight rooms, and one number doing all the work. Tonight it draws a coast,
+        puts a lamp on each headland, gives every lamp its own rhythm so nobody could
+        mistake one for another, and then leaves a boat out in the dark and doesn't tell
+        you where.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="lights.js"></script>
+</body>
+</html>
