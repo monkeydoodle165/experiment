@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Trench — Drift</title>
+<meta name="description" content="A strip of ground laid down by today's date, event by event. Take it apart latest first, keep the finds from each deposit separate, and date what you find by what it sits on.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  #section{
+    display:block;width:100%;height:300px;
+    border-radius:16px;border:1px solid var(--line);
+    background:#06080c;cursor:pointer;touch-action:manipulation;
+  }
+  .readout{margin:10px 0 0;height:4.8em;overflow:auto;
+    font:.84rem/1.6 ui-monospace,Menlo,monospace;color:var(--dim)}
+
+  .dig-row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;margin-top:26px}
+  .dig-row .col{flex:1 1 420px;min-width:0}
+  .dig-row .col.side{flex:1 1 280px}
+  .mbox{border:1px solid var(--line);border-radius:16px;padding:12px 10px 6px;background:rgba(255,255,255,.015)}
+  .mbox h4,.notebook h4,.hist h4{margin:0 0 8px;font:600 10px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .mbox h4{padding-left:6px}
+  #matrix svg{display:block}
+  #matrix .mn{cursor:pointer}
+  #matrix .mn rect{fill:#0b0f16;stroke:rgba(255,255,255,.28);stroke-width:1.2}
+  #matrix .mn text{fill:var(--dim);font:600 11px ui-monospace,Menlo,monospace;text-anchor:middle}
+  #matrix .mn.cut rect{stroke-dasharray:3 2;stroke:rgba(255,233,168,.5)}
+  #matrix .mn.cut text{fill:#ffe9a8}
+  #matrix .mn.ready rect{stroke:var(--accent2);stroke-width:1.8}
+  #matrix .mn.ready text{fill:var(--ink)}
+  #matrix .mn.dug rect{fill:rgba(100,240,200,.14);stroke:rgba(100,240,200,.55);stroke-dasharray:none}
+  #matrix .mn.dug text{fill:var(--accent)}
+  #matrix .mn.nat rect{fill:rgba(255,255,255,.05);stroke:rgba(255,255,255,.2)}
+  #matrix .mn.hov rect{stroke:#ffe9a8;stroke-width:2.2}
+  .mkey{display:flex;gap:14px;flex-wrap:wrap;padding:6px 6px 4px;font-size:.78rem;color:var(--dim)}
+  .mkey i{display:inline-block;width:12px;height:9px;border-radius:3px;margin-right:5px;vertical-align:-1px;border:1.4px solid}
+
+  .notebook{
+    padding:14px 18px;border-radius:14px;
+    border:1px dashed rgba(122,162,255,.4);background:rgba(122,162,255,.03);
+    font:.84rem/1.8 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--dim);
+  }
+  .notebook b{color:var(--ink);font-weight:650}
+  .notebook .last{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);color:#c3ccdb;line-height:1.6}
+
+  .verdict{
+    margin:20px 0 0;padding:14px 18px;
+    border-radius:14px;border:1px solid var(--line);
+    font-size:.94rem;color:var(--dim);
+  }
+  .verdict b{color:var(--ink);font-weight:650}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  .opts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .hist{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+  .hist ol{margin:0;padding:0;list-style:none}
+  .hist li{padding:3px 0;font-size:.9rem}
+  .hist li span{display:inline-block;min-width:8.5em;font:600 .8rem ui-monospace,Menlo,monospace;color:#ffe9a8}
+  .hist p{margin:10px 0 0;font-size:.9rem}
+
+  .plaque{
+    border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:26px;
+    background:linear-gradient(160deg,rgba(196,158,96,.10),rgba(122,162,255,.03));
+  }
+  .plaque h3{margin:0 0 6px;font-size:1.5rem;letter-spacing:-.01em}
+  .plaque .who{
+    margin:0;
+    font:600 11px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:#ffe9a8;
+  }
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .daybar{font-size:.9rem;color:var(--dim)}
+  .speak{display:inline-flex;gap:8px;align-items:center;color:var(--dim);font-size:.88rem}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+  .listwrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;max-height:420px;overflow-y:auto}
+  table.lol{border-collapse:collapse;width:100%;min-width:520px;font-size:.88rem}
+  table.lol th{
+    position:sticky;top:0;background:#0b0f16;
+    text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);
+    font:600 10px/1.4 ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
+  }
+  table.lol td{padding:8px 12px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  table.lol tr:last-child td{border-bottom:none}
+  table.lol td.m{font-family:ui-monospace,Menlo,monospace;font-size:.82rem;white-space:nowrap}
+  table.lol .d,table.lol td.d{color:var(--dim)}
+
+  .facts{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin:30px 0 0}
+  .facts dt{
+    font:600 10px/1 ui-monospace,Menlo,monospace;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:7px;
+  }
+  .facts dd{margin:0;font-size:.98rem;color:var(--ink);word-break:break-word}
+  @media (max-width:640px){
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .readout{height:9.6em}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html" class="on">Trench</a>
+    </div>
+  </div>
+</nav>
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page twenty-nine</p>
+    <h1>The Trench</h1>
+    <p class="lede">
+      Twenty-eight rooms, and every one of them made something: a map, a tune, a bridge,
+      a pot, a coast. This one takes something apart, and the order matters. The day's
+      number has spent a few thousand years on a strip of ground. People dug pits in it,
+      put up posts, cut a ditch, laid a floor, knocked a building down, and each of those
+      things left a deposit on top of or cut into the ones before it. Now there is a trench
+      through it and a clean section on the side. Take it apart latest first, one deposit
+      at a time, and keep what comes out of each one in its own bag. Then use the bags
+      to say when things happened.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="siteWho">—</p>
+        <h3 id="siteName">—</h3>
+        <p id="siteBlurb">—</p>
+      </div>
+
+      <h2>The section</h2>
+      <p class="sub">
+        This is the side of the trench, drawn to scale. Deposits are numbered in round
+        brackets and cuts in square ones, the way they are on a real site. The numbers
+        were handed out left to right as it was drawn, so they won't tell you the order.
+        Click a deposit to dig it. You can only take out something that nothing later
+        still lies on or cuts into. Being at the top of the section isn't enough.
+        Heights are drawn half as tall again as they really are, so the thin layers
+        can be seen.
+      </p>
+
+      <canvas id="section" aria-label="The trench section. Click a deposit to dig it."></canvas>
+      <p class="readout" id="readout">Move over the section to read a context. Click one to dig it.</p>
+
+      <div class="rack">
+        <div class="rack-row">
+          <div class="controls">
+            <button class="btn small ghost" id="btnUndo" disabled>Put the last one back</button>
+            <button class="btn small ghost" id="btnRestart">Backfill and start again</button>
+          </div>
+          <label class="speak"><input type="checkbox" id="labelChk" checked> number the section</label>
+        </div>
+        <div class="rack-row">
+          <span class="rack-label">Site</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev">← Yesterday's</button>
+            <button class="btn small ghost" id="btnDayToday">Today's</button>
+            <button class="btn small ghost" id="btnDayNext">Tomorrow's →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+
+      <div class="dig-row">
+        <div class="col">
+          <div class="mbox">
+            <h4>Harris matrix</h4>
+            <div id="matrix"></div>
+            <div class="mkey">
+              <span><i style="border-color:#7aa2ff"></i>can come out now</span>
+              <span><i style="border-color:rgba(100,240,200,.6);background:rgba(100,240,200,.14)"></i>dug</span>
+              <span><i style="border-color:rgba(255,233,168,.6);border-style:dashed"></i>cut</span>
+            </div>
+          </div>
+        </div>
+        <div class="col side">
+          <div class="notebook" id="book">—</div>
+        </div>
+      </div>
+
+      <div class="verdict" id="verdict">—</div>
+      <p class="hint canvas-hint">U puts the last deposit back, and the left and right arrow keys walk to other days. Every day is a different site.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>Finds register</h2>
+      <p class="sub">
+        Everything that came out, bagged by the deposit it came from, newest dig at the top.
+        The date beside a find is when that kind of object was being made, not when it was
+        dropped. A coin can lie about for centuries before it goes in the ground, but it
+        can't go in before it was struck.
+      </p>
+      <div class="listwrap">
+        <table class="lol">
+          <thead><tr><th>Context</th><th>Find</th><th>Made</th></tr></thead>
+          <tbody id="reg"></tbody>
+        </table>
+      </div>
+      <dl class="facts">
+        <div><dt>Date</dt><dd id="fDate">—</dd></div>
+        <div><dt>Site code</dt><dd id="fCode">—</dd></div>
+        <div><dt>Natural</dt><dd id="fNat">—</dd></div>
+        <div><dt>Contexts</dt><dd id="fCtx">—</dd></div>
+        <div><dt>Deepest feature</dt><dd id="fDeep">—</dd></div>
+        <div><dt>Periods</dt><dd id="fPer">—</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The method is real, and so are the finds. The site isn't. Nobody should go
+        looking for it.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>The order is real</h3>
+          <p>This is single-context excavation, the way most British urban sites have
+             been dug since the 1970s. Every deposit and every cut gets a number, and each
+             one comes out whole before anything under it is touched. A layer that runs
+             across the top of a pit is later than the pit, and it comes out first. A
+             pit that cuts a layer is later than the layer, even though the layer is
+             higher up on both sides of it. Most beginners get this one wrong.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>The matrix is real</h3>
+          <p>Edward Harris drew the first of these diagrams at Winchester in 1973. Each box
+             is a context, and each line says the one above is later than the one below.
+             Only direct relationships are drawn. If A is over B and B is over C, the line
+             from A to C is left off. The matrix here is worked out from what touches what
+             in the section, and it fills in as you dig.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>The dating is real</h3>
+          <p>A deposit can't be older than the newest thing in it. That date is its
+             <em>terminus post quem</em>, the date after which it must have formed. The
+             rule also works through the matrix. A deposit is later than everything under
+             it, so the newest find anywhere below it counts too, even if the deposit
+             itself holds nothing but a flint that is three thousand years older.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>The finds are real</h3>
+          <p>Samian from South Gaul before Central Gaul, black-burnished ware from the
+             120s, a radiate of Tetricus struck in the 270s, Ipswich ware, long-cross
+             pennies of Henry III, clay pipe stems from the 1580s, creamware, ring-pulls.
+             Every one carries the date range the reference collections give it. Old
+             things turn up in later deposits too, as they do on real sites, where
+             residual finds are everywhere.</p>
+        </li>
+        <li>
+          <span class="step-n">05</span>
+          <h3>The rest is invented</h3>
+          <p>The town, the street, the site code and everything that happened on the site
+             are made up by the day's number, including the true dates the page shows you
+             at the end. Real sites also have intrusive finds, which are later things that
+             worked their way down a root hole or a rabbit burrow and give a false date.
+             None have been planted here. On a real site, you would have to watch for
+             them.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Twenty-nine rooms, and one number doing all the work. Today it spends a few
+        thousand years on one strip of ground, digging and filling and building and
+        pulling down. Then it hands you a trowel and asks you to undo all of it in the
+        right order.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="trench.js"></script>
+</body>
+</html>
