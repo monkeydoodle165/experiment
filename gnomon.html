@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Gnomon — Drift</title>
+<meta name="description" content="A sundial laid out by today's date for a town that isn't anywhere, lit by the real sun. Read the shadow, then work out what the town clock says.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  #dial{display:block;width:100%;height:480px;border-radius:16px;border:1px solid var(--line);background:#06080c;touch-action:manipulation}
+  .readout{margin:10px 0 0;min-height:3.2em;font:.84rem/1.6 ui-monospace,Menlo,monospace;color:var(--dim)}
+  .dial-row{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+  .dial-row .col{flex:1 1 440px;min-width:0}
+  .dial-row .col.side{flex:1 1 260px}
+  .clockcard{display:flex;gap:16px;align-items:center;border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:14px;background:rgba(255,255,255,.015)}
+  .clockcard h4,.notebook h4{margin:0 0 6px;font:600 10px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .clockcard .dig{font:700 1.5rem/1.1 ui-monospace,Menlo,monospace;color:var(--ink)}
+  .notebook{padding:14px 18px;border-radius:14px;border:1px dashed rgba(122,162,255,.4);background:rgba(122,162,255,.03);
+    font:.84rem/1.8 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--dim)}
+  .notebook b{color:var(--ink);font-weight:650}
+  .notebook .last{margin-top:10px;padding-top:10px;border-top:1px solid var(--line);color:#c3ccdb;line-height:1.6}
+  .ansform{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}
+  .ansform input{font:600 1rem ui-monospace,Menlo,monospace;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:#0b0f16;color:var(--ink);color-scheme:dark}
+  .ansform label{font-size:.88rem;color:var(--dim)}
+  .rack input[type=range]{flex:1 1 220px;accent-color:var(--accent)}
+  .verdict{margin:20px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict b{color:var(--ink);font-weight:650}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  .opts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:26px;
+    background:linear-gradient(160deg,rgba(196,158,96,.10),rgba(122,162,255,.03))}
+  .plaque h3{margin:0 0 6px;font-size:1.5rem;letter-spacing:-.01em}
+  .plaque .who{margin:0;font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:#ffe9a8}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque em{color:#ffe9a8;font-style:italic}
+  .daybar,.sliderout{font-size:.9rem;color:var(--dim)}
+  .chartbox{border:1px solid var(--line);border-radius:16px;padding:14px 12px 6px;background:rgba(255,255,255,.015)}
+  .chartbox svg{display:block}
+  .facts{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin:30px 0 0}
+  .facts dt{font:600 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:7px}
+  .facts dd{margin:0;font-size:.98rem;color:var(--ink);word-break:break-word}
+  @media (max-width:640px){
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html" class="on">Gnomon</a>
+    </div>
+  </div>
+</nav>
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page thirty</p>
+    <h1>The Gnomon</h1>
+    <p class="lede">
+      Twenty-nine rooms, and every one of them took the time from the clock in the corner
+      of your screen. This one takes it from the sun, and then has to argue with the clock
+      about it. The day's number picks a town, puts it on a latitude, and sets a sundial
+      in it with the hour lines cut for that latitude and no other. The sun that lights it
+      is the real sun for the real date. Read the shadow. Then work out why the clock on
+      the town hall disagrees with it, and by how much.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="plWho">—</p>
+        <h3 id="plName">—</h3>
+        <p id="plBlurb">—</p>
+      </div>
+
+      <h2>The dial</h2>
+      <p class="sub">
+        Seen from above, with north at the top. The bar is the gnomon, and the shadow of its
+        sloping edge falls on the hour line for the sun's time, the time a sundial keeps. The
+        hour lines are not evenly spaced; they bunch around noon by exactly as much as this
+        latitude asks. The dot at the tip of the shadow walks the green line today. The
+        dashed lines are the tip's path at midsummer, the equinoxes and midwinter. The gold
+        figure of eight is where it falls at noon by the clock, through the year.
+      </p>
+
+      <div class="dial-row">
+        <div class="col">
+          <canvas id="dial" aria-label="A horizontal sundial, lit by the sun at the time being read."></canvas>
+          <p class="readout" id="readout">—</p>
+        </div>
+        <div class="col side">
+          <div class="clockcard">
+            <div id="clockBox"></div>
+            <div>
+              <h4>Town hall clock</h4>
+              <div class="dig" id="clockDigits">—:—</div>
+            </div>
+          </div>
+          <div class="notebook" id="book">—</div>
+          <form class="ansform" id="ansForm">
+            <div id="answerRow" style="display:contents">
+              <label for="ansIn">The clock says</label>
+              <input type="time" id="ansIn" step="60" required>
+              <button class="btn small" type="submit">Check</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Mode</span>
+          <div class="chips">
+            <button class="chip on" data-mode="read" type="button">Read the dial</button>
+            <button class="chip" data-mode="move" type="button">Move the sun</button>
+          </div>
+        </div>
+        <div class="rack-row" id="moveRow" style="display:none">
+          <span class="rack-label">Clock</span>
+          <input type="range" id="slider" min="0" max="1439" step="1" value="720" aria-label="Time by the town clock">
+          <span class="sliderout" id="sliderOut">—</span>
+          <button class="btn small ghost" id="btnPlay" type="button">Let the day run</button>
+        </div>
+        <div class="rack-row">
+          <span class="rack-label">Town</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday's</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today's</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow's →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+
+      <div class="verdict" id="verdict">—</div>
+      <p class="hint canvas-hint">P lets the day run, and the left and right arrow keys walk to other days. Every day is a different town, and the sun moves on with the date.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>Why the sun keeps bad time</h2>
+      <p class="sub">
+        The sun is not a good clock. Earth's orbit is an ellipse, so it moves faster in
+        January than in July, and its axis is tilted, so the sun's eastward drift along
+        the sky is foreshortened near the equinoxes. Put the two together and a sundial
+        runs up to sixteen minutes ahead of a clock in early November and fourteen behind
+        in February. That difference is the equation of time. Dials used to carry a table of
+        it engraved on the plate.
+      </p>
+      <div class="chartbox" id="eot"></div>
+      <dl class="facts">
+        <div><dt>Date</dt><dd id="fDate">—</dd></div>
+        <div><dt>Latitude</dt><dd id="fLat">—</dd></div>
+        <div><dt>Longitude</dt><dd id="fLon">—</dd></div>
+        <div><dt>Sun's declination</dt><dd id="fDec">—</dd></div>
+        <div><dt>Equation of time</dt><dd id="fEot">—</dd></div>
+        <div><dt>Sun due south</dt><dd id="fNoon">—</dd></div>
+        <div><dt>Sunrise – sunset</dt><dd id="fSun">—</dd></div>
+        <div><dt>Summer time</dt><dd id="fDst">—</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The sun, the geometry and the arithmetic are real. The town is not, and nor is
+        its dial. Nobody should go looking for either.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>The hour lines are real</h3>
+          <p>A horizontal dial's style has to point at the celestial pole, so it leans at
+             the latitude. The hour line for an hour angle H then sits at an angle θ from
+             the noon line with tan θ = sin(latitude) × tan H. That is why a dial is only
+             right in one latitude, and why the lines crowd round noon. Every line and every
+             ten-minute tick on this dial comes from that formula.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>The sun is real</h3>
+          <p>The sun's declination and the equation of time come from the NOAA solar
+             equations for the real date, good to a few seconds, and the shadow is cast by
+             projecting the tip of the gnomon along the sun's direction onto the plate. The
+             curves the tip draws through the year are real conic sections, and the figure of
+             eight is the analemma a dial maker would cut for a noon mark.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>The corrections are real</h3>
+          <p>A dial keeps local sun time. The clock keeps the mean time of a meridian that
+             is a whole number of hours from Greenwich, so a town west of it sees the sun
+             late, four minutes for every degree. Add the equation of time, then the hour for
+             summer time, which here follows the European rule of the last Sundays in March
+             and October. That sum is the whole argument between dial and clock.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>The mottos are real</h3>
+          <p><em>Horas non numero nisi serenas</em>, <em>Umbra sumus</em>, <em>Sine sole
+             sileo</em>, <em>Ultima latet</em>: all of them are cut into real dials across
+             Europe, many of them hundreds of times over. Sundial mottos have mostly been
+             about death, which you might expect of an instrument that goes quiet
+             every evening.</p>
+        </li>
+        <li>
+          <span class="step-n">05</span>
+          <h3>The rest is invented</h3>
+          <p>The town, its coordinates, the dial's maker and the year it was made are all
+             the day's number. Every town sits in the northern hemisphere. Refraction is
+             left out of the shadow, which only matters when the sun is very low. A real
+             dial is also only as good as the mason who levelled it and turned it to true
+             north, and that is usually a few minutes' worth of error that no table
+             corrects.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Thirty rooms, and one number doing all the work. Today it builds a town, puts a
+        stone in its square with a bar of bronze on top, and then lets the sun, which
+        nobody can seed, do the rest.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="gnomon.js"></script>
+</body>
+</html>
