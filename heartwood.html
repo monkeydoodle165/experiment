@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Heartwood — Drift</title>
+<meta name="description" content="Tree-ring dating. Slide cores from an old oak building along a regional chronology until the rings agree, turn them into felling dates, and say when the roof went up.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  #bench{display:block;width:100%;height:330px;border-radius:16px;border:1px solid var(--line);background:#06080c;touch-action:pan-y;cursor:ew-resize}
+  #bench:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  #tplot{display:block;width:100%;height:120px;border-radius:12px;border:1px solid var(--line);background:#06080c;cursor:pointer}
+  #tbox{display:none;margin-top:14px}
+  #tbox p{margin:0 0 8px;font-size:.84rem;color:var(--dim)}
+  .readout{margin:10px 0 0;min-height:1.6em;font:.84rem/1.6 ui-monospace,Menlo,monospace;color:var(--dim)}
+  .readout b{color:var(--ink);font-weight:650}
+  .cores{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));margin:0 0 22px}
+  .core{display:flex;flex-direction:column;gap:6px;text-align:left;font:inherit;color:inherit;cursor:pointer;
+    border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:rgba(255,255,255,.015);transition:border-color .18s ease}
+  .core:hover{border-color:rgba(255,255,255,.24)}
+  .core.on{border-color:#ffce6a;background:rgba(255,206,106,.04)}
+  .core.done{border-style:solid}
+  .core.done .core-id{color:var(--accent)}
+  .core-id{font:600 10px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:#ffce6a}
+  .core-part{font-weight:650;font-size:1rem;color:var(--ink)}
+  .core-meta{font:.78rem/1.5 ui-monospace,Menlo,monospace;color:var(--dim)}
+  .core-note{font-size:.84rem;color:#c3ccdb;line-height:1.5}
+  .core-date{font:600 .8rem/1.5 ui-monospace,Menlo,monospace;color:var(--accent)}
+  .progress{font:600 10px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin:0 0 10px}
+  .btn[disabled]{opacity:.4;cursor:not-allowed;transform:none}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict b{color:var(--ink);font-weight:650}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:26px;
+    background:linear-gradient(160deg,rgba(201,163,107,.12),rgba(122,162,255,.03))}
+  .plaque h3{margin:0 0 6px;font-size:1.5rem;letter-spacing:-.01em}
+  .plaque .who{margin:0;font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:#e2c08d}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque em{color:#e2c08d;font-style:italic}
+  .daybar{font-size:.9rem;color:var(--dim)}
+  .chartbox{border:1px solid var(--line);border-radius:16px;padding:16px 14px 8px;background:rgba(255,255,255,.015);overflow:hidden}
+  .chartbox svg{display:block}
+  .key{display:flex;flex-wrap:wrap;gap:16px;margin:12px 0 0;font-size:.82rem;color:var(--dim)}
+  .key i{display:inline-block;width:18px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+  .ansform{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:18px}
+  .ansform input{font:600 1rem ui-monospace,Menlo,monospace;width:7.5em;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:#0b0f16;color:var(--ink);color-scheme:dark}
+  .ansform input:disabled{opacity:.45}
+  .ansform label{font-size:.9rem;color:var(--dim)}
+  .qhint{margin:10px 0 0;font-size:.86rem;color:var(--dim);font-style:italic}
+  .facts{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin:30px 0 0}
+  .facts dt{font:600 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:7px}
+  .facts dd{margin:0;font-size:.98rem;color:var(--ink);word-break:break-word}
+  @media (max-width:640px){
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html" class="on">Heartwood</a>
+    </div>
+  </div>
+</nav>
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page thirty-one</p>
+    <h1>The Heartwood</h1>
+    <p class="lede">
+      The Trench could only ever say <em>after</em>: this pit is later than that floor, this
+      coin gives a floor to the date. Every oak keeps a better record. It lays down one ring a
+      year, fat in a good summer and thin in a bad one, and every oak in the region lived
+      through the same summers. The day's number grows a few centuries of those summers, puts
+      up an old building out of the trees, and hands you the cores drilled from its beams.
+      Find where each one fits, and the building gives you a year.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="plWho">—</p>
+        <h3 id="plName">—</h3>
+        <p id="plBlurb">—</p>
+      </div>
+
+      <h2>The bench</h2>
+      <p class="sub">
+        The blue line is the regional master chronology: every year's growth, averaged over
+        many dated timbers, with the slow age trend taken out so only the year-to-year signal
+        is left. The gold line is one core, treated the same way. Slide the core along until
+        the two lines move together. The t-value below measures how well they agree. At 3.5 or
+        more the match is worth checking, and the real one usually stands well clear of that.
+        The red ticks mark the region's worst years, which are the easiest to spot.
+      </p>
+
+      <p class="progress" id="progress">—</p>
+      <div class="cores" id="cores"></div>
+
+      <canvas id="bench" tabindex="0" aria-label="The master chronology with the selected core laid over it. Drag, or use the arrow keys, to slide the core."></canvas>
+      <p class="readout" id="readout">—</p>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Slide</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnL10" type="button">« 10 yrs</button>
+            <button class="btn small ghost" id="btnL1" type="button">‹ 1</button>
+            <button class="btn small ghost" id="btnR1" type="button">1 ›</button>
+            <button class="btn small ghost" id="btnR10" type="button">10 yrs »</button>
+          </div>
+        </div>
+        <div class="rack-row">
+          <span class="rack-label">Lab</span>
+          <div class="controls">
+            <button class="btn small" id="btnDate" type="button">Date it here</button>
+            <button class="btn small ghost" id="btnRun" type="button">Run the correlation</button>
+          </div>
+        </div>
+        <div class="rack-row">
+          <span class="rack-label">Building</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday's</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today's</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow's →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+
+      <div id="tbox">
+        <p>The computer's way: t at every possible position, the way the CROS program has done
+           it since the 1970s. Click a peak to put the core there. The tallest peak is usually
+           the answer. The others are coincidences, and some of them are over 3.5.</p>
+        <canvas id="tplot" aria-label="t-value at every position of the core"></canvas>
+      </div>
+
+      <div class="verdict" id="msg">—</div>
+      <p class="hint canvas-hint">Click the bench, then use the arrow keys to slide a ring at a time (Shift for ten) and Enter to date it. Elsewhere on the page the arrow keys walk to other days, and every day is a different building.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>The bar diagram</h2>
+      <p class="sub">
+        Every dated core as a bar across the calendar, the way a lab report draws them.
+        Heartwood is dark, sapwood pale. Oak's sapwood is the living outer band, and a
+        beetle's favourite meal, so carpenters often trimmed it off. Where it has gone, the
+        felling date has to be estimated from how many sapwood rings an oak normally has.
+      </p>
+      <div class="chartbox" id="bars"></div>
+      <div class="key">
+        <span><i style="background:#7a5530"></i>heartwood</span>
+        <span><i style="background:#c9a36b"></i>sapwood</span>
+        <span><i style="background:#e8edf5;width:4px"></i>bark edge: felling date known</span>
+        <span><i style="background:repeating-linear-gradient(45deg,rgba(201,163,107,.6) 0 2px,transparent 2px 5px)"></i>felling range from the sapwood estimate</span>
+        <span><i style="background:linear-gradient(90deg,rgba(201,163,107,.6),transparent)"></i>felled after this, perhaps long after</span>
+      </div>
+
+      <form class="ansform" id="ansForm">
+        <label for="ansIn">The building went up in</label>
+        <input type="number" id="ansIn" min="1000" max="2100" step="1" inputmode="numeric" placeholder="year" disabled>
+        <button class="btn small" type="submit" id="btnAns" disabled>Write the report</button>
+      </form>
+      <p class="qhint" id="qhint">—</p>
+      <div class="verdict" id="verdict">—</div>
+
+      <dl class="facts">
+        <div><dt>Master chronology</dt><dd id="fSpan">—</dd></div>
+        <div><dt>Length</dt><dd id="fLen">—</dd></div>
+        <div><dt>Built from</dt><dd id="fTrees">—</dd></div>
+        <div><dt>Worst years</dt><dd id="fPtr">—</dd></div>
+        <div><dt>Cores taken</dt><dd id="fCores">—</dd></div>
+        <div><dt>Listing date</dt><dd id="fListed">—</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The method, the statistics and the rules of thumb are the ones labs use. The
+        chronology, the building and its trees are the day's number, so nobody should go
+        looking for any of them.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Cross-dating is real</h3>
+          <p>Trees that grow in the same region through the same run of summers share a
+             pattern of wide and narrow rings, and a long enough run of it only fits the
+             calendar in one place. Overlapping timbers from living trees, old buildings, bogs
+             and river gravels have extended European oak and pine chronologies back more than
+             twelve thousand years.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>The statistics are real</h3>
+          <p>Each series is standardised the Baillie–Pilcher way: every ring as a ratio of the
+             five-year mean around it, then logged, so only the year-to-year signal is left.
+             The correlation is turned into Student's t, and 3.5 is the conventional line for
+             a match worth considering. Gleichläufigkeit, the share of years in which both
+             series go up or down together, is the German labs' second opinion. Labs only
+             accept a match when it replicates against several independent chronologies.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>The felling rules are real</h3>
+          <p>With the bark edge on, the last ring is the tree's last summer. A complete ring
+             means it was felled in winter, and earlywood alone means spring. Where sapwood
+             survives but the edge is lost, the page uses 9 to 41 sapwood rings, the 95% range
+             used for English oak. With no sapwood at all you only get a floor, which is the
+             last ring plus nine.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>So is the carpentry</h3>
+          <p>Oak was framed green, usually within a year or so of felling, because seasoned
+             oak is miserable to cut by hand. That is why a felling date is a building date.
+             Timber was also reused all the time, and an empty mortice or a stray carpenter's
+             mark is the usual giveaway. Buildings dated by their style alone have often been
+             out by decades when the tree rings came in.</p>
+        </li>
+        <li>
+          <span class="step-n">05</span>
+          <h3>The rest is invented</h3>
+          <p>The climate behind the chronology is a random series with a few very bad years
+             dropped in, and each tree's rings are its age trend, a slow wander of its own, that
+             shared climate and its own noise. Real series are messier. Trees get suppressed by
+             neighbours, lose rings in hard years and pick up local signals, and real cores
+             crumble. Every core here can be dated, and in a real lab some cannot.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Thirty-one rooms, and one number doing all the work. Today it grows a few hundred
+        summers, cuts down some oaks, frames a building from them, and then leaves it to
+        you to count back to the year it all happened.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="heartwood.js"></script>
+</body>
+</html>
