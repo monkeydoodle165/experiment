@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Benchmark — Drift</title>
+<meta name="description" content="Levelling. Run a line of levels from an Ordnance Survey benchmark across a hillside, read the staff through the telescope, book it rise-and-fall, close on the far mark and tell the parish whether the spring can feed the trough.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  #profile{display:block;width:100%;height:260px;border-radius:16px;border:1px solid var(--line);background:#06080c}
+  .station{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:26px;align-items:start;margin-top:24px}
+  #scope{display:block;width:100%;max-width:340px;aspect-ratio:1/1;border-radius:50%;background:#000}
+  .sinfo{margin:0 0 14px;font-size:.95rem;color:var(--dim)}
+  .sinfo b{color:var(--ink);font-weight:650}
+  .scount{font:600 10px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin:0 0 10px}
+  .rdform{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .rdform input,.ansform input{font:600 1.05rem ui-monospace,Menlo,monospace;width:7.5em;padding:8px 12px;border-radius:10px;border:1px solid var(--line);background:#0b0f16;color:var(--ink);color-scheme:dark}
+  .rdform input:disabled,.ansform input:disabled{opacity:.45}
+  .rdform label,.ansform label{font-size:.9rem;color:var(--dim)}
+  .howto{margin:16px 0 0;font-size:.86rem;color:var(--dim);line-height:1.55}
+  .howto b{color:#e2c08d;font-weight:650}
+  .btn[disabled]{opacity:.4;cursor:not-allowed;transform:none}
+  .verdict{margin:16px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict b{color:var(--ink);font-weight:650}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:26px;
+    background:linear-gradient(160deg,rgba(122,162,255,.10),rgba(100,240,200,.03))}
+  .plaque h3{margin:0 0 6px;font-size:1.5rem;letter-spacing:-.01em}
+  .plaque .who{margin:0;font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:#9fb8ff}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque em{color:#9fb8ff;font-style:normal;font-family:ui-monospace,Menlo,monospace}
+  .daybar{font-size:.9rem;color:var(--dim)}
+  .bookwrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:#f1ecdc;margin-top:6px}
+  .lbook{border-collapse:collapse;width:100%;min-width:760px;font:.8rem/1.4 ui-monospace,Menlo,monospace;color:#23262c}
+  .lbook th{font-weight:700;text-align:right;padding:8px 9px;border-bottom:2px solid #b8222b;color:#6b2a2a;white-space:nowrap}
+  .lbook td{text-align:right;padding:5px 9px;border-bottom:1px solid rgba(60,80,140,.18);border-left:1px solid rgba(184,34,43,.2);white-space:nowrap}
+  .lbook th:first-child,.lbook td:first-child,.lbook td.rm,.lbook th:last-child{text-align:left}
+  .lbook td.rm{font-family:Georgia,serif;font-style:italic;color:#555;white-space:normal;min-width:180px}
+  .lbook td.cur{background:#ffce6a;color:#000;font-weight:700}
+  .lbook tr.sp td{background:rgba(122,162,255,.14)}
+  .lbook tr.bm td:first-child{color:#b8222b;font-weight:700}
+  .lbook tr.sum td{border-top:2px solid #23262c;font-weight:700}
+  .lbook b{font-weight:700}
+  .ansform{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:18px}
+  .qhint{margin:10px 0 0;font-size:.86rem;color:var(--dim);font-style:italic}
+  .facts{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin:30px 0 0}
+  .facts.tight{margin:18px 0 14px}
+  .facts dt{font:600 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:7px}
+  .facts dd{margin:0;font-size:.98rem;color:var(--ink);word-break:break-word;font-family:ui-monospace,Menlo,monospace}
+  .facts .ok{display:block;color:var(--accent);font:.8rem/1.4 ui-sans-serif,system-ui,sans-serif}
+  @media (max-width:720px){
+    .station{grid-template-columns:1fr}
+    #scope{margin:0 auto}
+  }
+  @media (max-width:640px){
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    #profile{height:210px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html" class="on">Benchmark</a>
+    </div>
+  </div>
+</nav>
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page thirty-two</p>
+    <h1>The Benchmark</h1>
+    <p class="lede">
+      The Heartwood found a year. This room finds a height. Every hillside hides the one
+      question a village needs answered before it spends money on a water pipe: is the spring
+      really higher than the place the water has to reach, and by how much? The eye is no
+      good at it. Measuring it means a level, a staff, a notebook and a morning of walking.
+      The day's number lays out the village and the hill, and hands you the telescope.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="plWho">—</p>
+        <h3 id="plName">—</h3>
+        <p id="plBlurb">—</p>
+      </div>
+
+      <h2>The line</h2>
+      <p class="sub">
+        You start with the staff on the benchmark, whose height is published, and walk the
+        level up the hill in short hops. At each set-up you take a <b>back sight</b> to the
+        staff where you have just been, <b>intermediate sights</b> to anything you want the
+        height of, and a <b>fore sight</b> to a change point, where the staff stays while the
+        level moves on past it. The last fore sight lands on a second mark of known height, and
+        that is your check.
+      </p>
+      <canvas id="profile" aria-label="Side view of the route: benchmark on the church, spring, trough and closing mark, with the level's set-ups so far"></canvas>
+
+      <div class="station">
+        <canvas id="scope" aria-label="The view through the level's telescope: the staff, with the horizontal hair across it"></canvas>
+        <div>
+          <p class="scount" id="sCount">—</p>
+          <p class="sinfo" id="sInfo">—</p>
+          <form class="rdform" id="rdForm" autocomplete="off">
+            <label for="rdIn">The hair reads</label>
+            <input type="text" id="rdIn" inputmode="decimal" placeholder="0.000" aria-label="Staff reading in metres">
+            <span class="daybar">m</span>
+            <button class="btn small" type="submit" id="btnBook">Book it</button>
+          </form>
+          <div class="verdict" id="rdMsg">—</div>
+          <p class="howto">
+            <b>Reading an E staff.</b> The big figure is the decimetre, and the small red one
+            beside it is the metre, so a big 4 with a little red 1 is 1.4 m, printed just above
+            the 1.400 line. Each black band and each white band is one centimetre: the E fills
+            the bottom half of every decimetre, and two loose bars fill the top half. Find the
+            figure just below the horizontal hair, count the bands up to the hair, and estimate
+            the millimetres. The short hairs above and below are stadia hairs, for measuring
+            distance, and you can ignore them here.
+          </p>
+          <div class="controls" style="margin-top:12px">
+            <button class="btn small ghost" id="btnRest" type="button">Let the staffman read the rest</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Village</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday's</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today's</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow's →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">Away from the reading box, the arrow keys walk to other days. Every day is a different village and a different hill.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>The level book</h2>
+      <p class="sub">
+        Booked the rise-and-fall way. Each reading is compared with the one before it in the
+        same set-up: a smaller reading means the ground has risen, a bigger one that it has
+        fallen. The reduced levels are carried along from the benchmark. The yellow cell is the
+        sight in the telescope now.
+      </p>
+      <div class="bookwrap" id="book"></div>
+
+      <h2 style="margin-top:34px">Closing the loop</h2>
+      <div id="close"></div>
+
+      <form class="ansform" id="ansForm">
+        <label for="ansIn">Adjusted fall, spring to trough</label>
+        <input type="text" id="ansIn" inputmode="decimal" placeholder="0.000" disabled>
+        <span class="daybar">m</span>
+        <button class="btn small" type="submit" id="btnAns" disabled>Report to the parish</button>
+        <button class="btn small ghost" type="button" id="btnShow" disabled>Show the working</button>
+      </form>
+      <p class="qhint" id="qhint">—</p>
+      <div class="verdict" id="verdict">—</div>
+
+      <dl class="facts">
+        <div><dt>Route</dt><dd id="fLen">—</dd></div>
+        <div><dt>Set-ups</dt><dd id="fSet">—</dd></div>
+        <div><dt>Sights</dt><dd id="fSights">—</dd></div>
+        <div><dt>Pipe run</dt><dd id="fPipe">—</dd></div>
+        <div><dt>Allowed misclosure</dt><dd id="fAllow">—</dd></div>
+        <div><dt>Instrument</dt><dd id="fInst">—</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The method, the booking and the tolerances are the ones surveyors are taught. The
+        village, its hill, its well and its benchmarks are the day's number, so nobody should
+        go looking for any of them.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Benchmarks are real</h3>
+          <p>Britain is scattered with them: a horizontal bar cut into a church, a bridge or
+             a milestone with a broad arrow, the crow's foot, pointing up at it, and flush
+             brackets set into walls. Their heights are above Ordnance Datum Newlyn, which is
+             mean sea level at the Newlyn tide gauge in Cornwall from 1915 to 1921. The
+             Ordnance Survey stopped maintaining most of them decades ago, but hundreds of
+             thousands are still there.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>So is the staff</h3>
+          <p>The E-pattern staff, with centimetre bands grouped into an E over each half
+             decimetre and figures at every decimetre, is the standard British levelling
+             staff. Readings are taken to the millimetre by estimating inside the centimetre
+             band, and good observers agree to within a millimetre or two at these distances.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>The booking is real</h3>
+          <p>Rise-and-fall booking, with the three-way check that the sum of back sights minus
+             fore sights, the sum of rises minus falls, and the last reduced level minus the
+             first all agree, is how levels have been booked for more than a century. It only
+             checks the arithmetic. Closing on a second known mark is what checks the readings.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>So are the errors</h3>
+          <p>A level whose line of sight is not quite horizontal adds an error in proportion to
+             the sight length, so it cancels when back and fore sights are equal. That is why
+             surveyors pace them out, and why the two-peg test exists. 12√K mm, with K in
+             kilometres, is a common allowance for ordinary engineering levelling. Sharing the
+             misclosure out in proportion to the set-ups is the usual adjustment.</p>
+        </li>
+        <li>
+          <span class="step-n">05</span>
+          <h3>The rest is invented</h3>
+          <p>The hill is a sum of smooth waves, and the reading errors are a tidy normal
+             millimetre. The real field is worse. Heat shimmer makes the staff dance, the
+             staffman does not hold it quite upright, sinking tripods and soft change points
+             creep, and long sights near the ground bend with refraction. The 1 in 200 the
+             parish wants is a rule of thumb for this page, not a water engineer's design.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Thirty-two rooms, and one number doing all the work. Today it raises a hill, lets a
+        spring out halfway up it, puts a village at the bottom and leaves you a telescope to
+        find out whether the water can get down on its own.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="benchmark.js"></script>
+</body>
+</html>
