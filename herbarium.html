@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Herbarium — Drift</title>
+<meta name="description" content="Identification. The day's number invents a flora and writes a dichotomous key to it. Key out six pressed specimens with a hand lens, check each against the species account, and spot the one that is not in the book.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:26px;
+    background:linear-gradient(160deg,rgba(150,190,110,.12),rgba(100,240,200,.03))}
+  .plaque h3{margin:0 0 6px;font-size:1.5rem;letter-spacing:-.01em}
+  .plaque .who{margin:0;font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:#b5d48a}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  #tabs{margin:0 0 18px}
+  .chip.ok{color:var(--accent)}
+  .chip.bad{color:#ffce6a}
+  .bench{display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:28px;align-items:start}
+  #sheet{position:relative;border-radius:6px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.5);cursor:none;touch-action:none;background:#efe8d2}
+  #sheet.nolens{cursor:default;touch-action:auto}
+  #sheet svg.main{display:block;width:100%;height:auto}
+  .lens{position:absolute;display:none;width:150px;height:150px;border-radius:50%;overflow:hidden;pointer-events:none;
+    border:3px solid #2a2418;box-shadow:0 0 0 2px rgba(255,255,255,.35),0 8px 26px rgba(0,0,0,.55);background:#efe8d2}
+  .lens svg{position:absolute;left:0;top:0;transform-origin:0 0}
+  .scount{font:600 10px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin:0 0 10px}
+  .cnum{margin:0 0 12px;font-size:1.1rem}
+  .leadbtn{display:flex;gap:12px;align-items:baseline;width:100%;text-align:left;margin:0 0 10px;padding:14px 16px;border-radius:12px;
+    border:1px solid var(--line);background:rgba(255,255,255,.02);color:var(--ink);font:inherit;font-size:.96rem;cursor:pointer;transition:border-color .15s ease,background .15s ease}
+  .leadbtn:hover,.leadbtn:focus-visible{border-color:var(--accent);background:rgba(100,240,200,.05);outline:none}
+  .leadbtn .ll{font:700 .8rem ui-monospace,Menlo,monospace;color:var(--accent);min-width:2.4em}
+  .arrive{margin:0;font:600 10px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+  .spname{margin:4px 0 0;font-size:1.45rem;font-family:Georgia,serif;font-weight:400}
+  .common{margin:2px 0 0;color:var(--dim);font-size:.9rem}
+  .acct{margin:14px 0 0;padding:14px 16px;border-radius:12px;background:#f1ecdc;color:#2b2a24;font:.92rem/1.55 Georgia,serif}
+  .acct b{font-weight:700}
+  .qhint{margin:12px 0 0;font-size:.86rem;color:var(--dim);font-style:italic}
+  .verdict{margin:6px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict b,.verdict i{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  .score{margin:22px 0 0;font-size:.92rem;color:var(--dim)}
+  .score b,.score i{color:var(--ink)}
+  .daybar{font-size:.9rem;color:var(--dim)}
+  .keybox{border:1px solid var(--line);border-radius:14px;background:#f1ecdc;color:#2b2a24;padding:18px 20px;font:.9rem/1.5 Georgia,serif;overflow-x:auto}
+  .kl{display:grid;grid-template-columns:2.2em 1.4em minmax(0,1fr) auto;gap:6px;padding:3px 6px;border-radius:6px;align-items:baseline}
+  .kl.b{margin-bottom:8px}
+  .kl .kn{font-weight:700}
+  .kl .kx{color:#7a6a4a}
+  .kl .kt{border-bottom:1px dotted rgba(60,50,30,.35);padding-bottom:1px}
+  .kl .kd{text-align:right;font-weight:700;white-space:nowrap;padding-left:8px}
+  .kl.here{background:rgba(255,206,106,.35)}
+  .kl.on{background:rgba(100,180,140,.3)}
+  .gloss{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:12px;margin:0 0 8px}
+  .gloss figure{margin:0;padding:10px 6px 8px;border:1px solid var(--line);border-radius:12px;background:#f1ecdc;text-align:center}
+  .gloss svg{width:64px;height:64px;display:block;margin:0 auto}
+  .gloss figcaption{font-size:.78rem;color:#4a4436;margin-top:4px}
+  .flora{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+  .acc{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:rgba(255,255,255,.02)}
+  .acc h4{margin:0;font:400 1.08rem Georgia,serif}
+  .acc p{margin:6px 0 0;color:var(--dim);font-size:.86rem}
+  .acc p.common{margin-top:0}
+  @media (max-width:760px){
+    .bench{grid-template-columns:1fr}
+    #sheet{max-width:420px;margin:0 auto;width:100%}
+  }
+  @media (max-width:640px){
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .keybox{padding:14px 10px;font-size:.84rem}
+    .kl{grid-template-columns:1.8em 1.1em minmax(0,1fr);}
+    .kl .kd{grid-column:3;text-align:left;padding-left:0}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html" class="on">Herbarium</a>
+    </div>
+  </div>
+</nav>
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page thirty-three</p>
+    <h1>The Herbarium</h1>
+    <p class="lede">
+      Thirty-two rooms have measured, dated, built and found things. None of them has asked
+      the oldest question in the field: what is this? Botanists answer it with a key, a
+      ladder of two-way choices that ends at a name. Today's number invents a flora, writes
+      the key to it, and leaves six unnamed sheets of pressed plants on the bench. One of
+      them is not in the book.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="plWho">—</p>
+        <h3 id="plName">—</h3>
+        <p id="plBlurb">—</p>
+      </div>
+
+      <h2>The bench</h2>
+      <p class="sub">
+        Each couplet gives you two leads. Pick the one that is true of the sheet and follow it
+        to the next couplet, until the key gives you a name. Then read that species' account
+        and check it against the plant before you write the slip. Move over the sheet to look
+        through the hand lens.
+      </p>
+
+      <div class="chips" id="tabs"></div>
+      <div class="bench">
+        <div>
+          <div id="sheet" aria-label="A pressed herbarium specimen with its collector's label"></div>
+          <div class="controls" style="margin-top:12px;justify-content:center">
+            <button class="btn small ghost" type="button" id="btnLens">Hand lens: on</button>
+          </div>
+        </div>
+        <div id="walker" aria-live="polite"></div>
+      </div>
+      <p class="score" id="score">—</p>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Flora</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday's</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today's</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow's →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">The arrow keys walk to other days. Every day is a different country with different plants and a different key.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>The key</h2>
+      <p class="sub">
+        The whole key, as it would be printed in the flora. The number on the right says where
+        each lead goes next: another couplet, or a name. Your path through it for the sheet on
+        the bench is shaded green, and the couplet you are on is yellow. The page wrote this key
+        itself, choosing at every couplet the character that splits the remaining plants most
+        evenly.
+      </p>
+      <div class="keybox" id="key"></div>
+
+      <h2 style="margin-top:40px">Terms</h2>
+      <p class="sub">What the words in the leads mean.</p>
+      <div class="gloss" id="gloss"></div>
+
+      <h2 style="margin-top:40px">The flora</h2>
+      <p class="sub">The species accounts, in alphabetical order. A key gets you to a name, and the account is how you check it.</p>
+      <div class="flora" id="flora"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The method is the one botanists use. The plants are not: every genus, species,
+        society and collector here is the day's number, so do not go looking for them.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Keys are real</h3>
+          <p>Dichotomous keys go back to Lamarck's Flore françoise of 1778, and nearly every
+             field flora still uses them. Each couplet is a pair of contradictory statements,
+             numbered so you can jump around a printed page. A good key leans on characters you
+             can see on most specimens most of the year, and a balanced one gets you to a name
+             in as few steps as possible.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>So are the sheets</h3>
+          <p>Herbarium specimens are pressed, dried and strapped to stiff paper, with a label
+             giving the place, the date, the collector and their running number. Flower colours
+             fade, so collectors write the colour in life on the label. Determination slips are
+             added over the years, and the latest one is the name the plant currently goes by.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>So is the trap</h3>
+          <p>A key only uses the characters it needs to separate the species it covers, so a
+             plant from outside the flora will often key out smoothly to the wrong name.
+             Checking the result against a full description is standard practice for that
+             reason, and new species do still turn up in old herbarium cupboards, sometimes
+             decades after they were collected.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>The rest is simplified</h3>
+          <p>Real plants have dozens of useful characters, from stipules and fruit shape to
+             leaf-base hairs seen only at ×20, and they vary. Real keys often have to cope with
+             specimens that have no flowers. Here every plant has eight clean characters and no
+             variation, and genera are simply the plants that share a petal number.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Thirty-three rooms, and one number doing all the work. Today it invents a country's
+        flowers, presses six of them and writes the book you need to name them, leaving out
+        one plant on purpose.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="herbarium.js"></script>
+</body>
+</html>
