@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Seismograph — Drift</title>
+<meta name="description" content="Location. The day's number sets off a small earthquake under an invented country. Pick the P and S waves on each station's record, draw the distance circles, pin the epicentre and read the magnitude off a Richter nomogram.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:26px;
+    background:linear-gradient(160deg,rgba(255,143,163,.10),rgba(122,162,255,.04))}
+  .plaque h3{margin:0 0 6px;font-size:1.5rem;letter-spacing:-.01em}
+  .plaque .who{margin:0;font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:#ff8fa3}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  .modebar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 16px}
+  .modebar .lab{font:600 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+  .trace{margin:0 0 18px}
+  .trhead{display:flex;align-items:center;gap:8px;margin:0 0 6px;font-size:.92rem}
+  .trhead b{font-family:ui-monospace,Menlo,monospace;letter-spacing:.06em}
+  .trnote{margin-left:auto;font:600 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+  .sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+  .trace canvas{display:block;width:100%;height:160px;border-radius:8px;cursor:crosshair;touch-action:pan-y;box-shadow:0 6px 24px rgba(0,0,0,.4)}
+  .nudge{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;font-size:.8rem;color:var(--dim)}
+  .nudge .chip{padding:5px 10px;font-size:.78rem}
+  .solve{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:start;margin-top:30px}
+  .solve h3{margin:0 0 6px;font-size:1.1rem}
+  .solve .sub{margin-bottom:14px}
+  #map{display:block;width:100%;height:auto;border-radius:12px;border:1px solid var(--line);cursor:crosshair;background:#0d2233}
+  #map .mt{font:9px ui-monospace,Menlo,monospace;fill:#c9d3c0}
+  #map .ms{font:bold 10px ui-monospace,Menlo,monospace;fill:#e8edf5;paint-order:stroke;stroke:#07090d;stroke-width:3px}
+  #nomo{display:block;width:100%;height:auto;border-radius:10px}
+  #nomo .na{stroke:#3a3428;stroke-width:1}
+  #nomo .nh{font:bold 10px ui-monospace,Menlo,monospace;fill:#3a3428}
+  #nomo .nt{font:9px ui-monospace,Menlo,monospace;fill:#3a3428}
+  #nomo .nk{font:8px ui-monospace,Menlo,monospace;fill:#8a7a5a}
+  .bookwrap{overflow-x:auto;margin-top:22px}
+  table.book{border-collapse:collapse;width:100%;font:.86rem ui-monospace,Menlo,monospace;min-width:560px}
+  table.book th,table.book td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+  table.book th:first-child,table.book td:first-child{text-align:left}
+  table.book th{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:600}
+  table.book tfoot td{color:var(--ink);font-weight:700;border-bottom:none}
+  table.book tfoot td:first-child{color:var(--dim);font-weight:400;text-align:right}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  pre.bull{margin:0;padding:14px 16px;border-radius:10px;background:#f3efe4;color:#22201a;font:.8rem/1.5 ui-monospace,Menlo,monospace;overflow-x:auto}
+  .daybar{font-size:.9rem;color:var(--dim)}
+  @media (max-width:820px){ .solve{grid-template-columns:1fr} }
+  @media (max-width:640px){
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .trace canvas{height:140px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html" class="on">Seismograph</a>
+    </div>
+  </div>
+</nav>
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page thirty-four</p>
+    <h1>The Seismograph</h1>
+    <p class="lede">
+      Thirty-three rooms, and the ground under all of them has kept still. Not today. The day's
+      number sets off a small earthquake somewhere under an invented country and lets a handful
+      of stations record it. Two kinds of wave leave the fault together and arrive apart, and
+      the gap between them is a distance. Three distances make a place.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="plWho">—</p>
+        <h3 id="plName">—</h3>
+        <p id="plBlurb">—</p>
+      </div>
+
+      <h2>The records</h2>
+      <p class="sub">
+        The P wave is the first thing to arrive: a small, quick flicker out of the noise. The S wave
+        comes later and much bigger. Choose what you are picking, then click on the record. The
+        loupe magnifies five seconds around the pointer (and triples the height for P and S), and
+        the buttons under each record move a pick by tenths of a second.
+      </p>
+      <div class="modebar"><span class="lab">Picking</span><div class="chips" id="modes"></div></div>
+      <div id="traces"></div>
+      <div class="bookwrap" id="book"></div>
+
+      <div class="solve">
+        <div>
+          <h3>The map</h3>
+          <p class="sub">Each station's circle is drawn at eight kilometres for every second of S − P. Click where you think they meet.</p>
+          <svg id="map" viewBox="0 0 320 320" role="img" aria-label="Map of the region with the seismic stations and your distance circles"></svg>
+        </div>
+        <div>
+          <h3>The nomogram</h3>
+          <p class="sub">Richter's chart. A line from the S − P interval to the amplitude crosses the middle scale at the local magnitude.</p>
+          <svg id="nomo" viewBox="0 0 420 330" role="img" aria-label="Richter local magnitude nomogram with a line for each station"></svg>
+        </div>
+      </div>
+
+      <div class="controls" style="margin-top:22px">
+        <button class="btn" type="button" id="btnFile">Issue the bulletin</button>
+      </div>
+      <div class="verdict" id="report" aria-live="polite"></div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Event</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday's</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today's</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow's →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">The arrow keys walk to other days. Every day is a different country, a different network and a different earthquake.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The method is the one seismologists used for most of the twentieth century, and still use
+        to check a computer's answer. The country, the stations and the service are the day's number.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Two waves, one gap</h3>
+          <p>An earthquake sends out compressional P waves and slower shear S waves at the same
+             moment. In the upper crust P travels at about 6 km/s and S at about 3.5, so the gap
+             between them grows by roughly a second for every eight kilometres. That rule of thumb
+             is real, and it is exact on this page.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Circles meet</h3>
+          <p>One station only knows how far away the earthquake was, so it could be anywhere on a
+             circle. Two circles cross in two places. A third settles it. Real networks use dozens
+             of stations and solve for depth and origin time too, but the idea is this one.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Richter's chart</h3>
+          <p>Charles Richter defined local magnitude in 1935 for southern California: the logarithm
+             of the largest swing, in millimetres, on a standard Wood-Anderson seismograph, corrected
+             for distance. The nomogram on this page uses the formula from his textbook,
+             M<sub>L</sub> = log A + 3 log(8 Δt) − 2.92. Each step of one is ten times the swing.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>The rest is simplified</h3>
+          <p>The crust here is one uniform layer, the focus is shallow enough to ignore, every
+             station is a vertical instrument already corrected to Wood-Anderson millimetres, and
+             there is no station-by-station correction beyond a little random scatter. Real records
+             come with refracted phases, aftershocks, lorries and wind.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Thirty-four rooms, and one number doing all the work. Today it breaks a fault under a
+        country nobody lives in and hands you the paper from the drums.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="seismograph.js"></script>
+</body>
+</html>
