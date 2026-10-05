@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Glass — Drift</title>
+<meta name="description" content="Weather. The day's number sends depressions across an invented sea. Read the isobars on the forecast chart, measure their spacing, and write the wind for every sea area of the shipping forecast.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:26px;
+    background:linear-gradient(160deg,rgba(122,162,255,.12),rgba(100,240,200,.04))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em}
+  .plaque .who{margin:0 0 8px;font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  .modebar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0 0 14px}
+  .modebar .lab{font:600 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+  #chart{display:block;width:100%;aspect-ratio:4/3;border-radius:12px;border:1px solid var(--line);cursor:crosshair;touch-action:none;background:#e6eff3;box-shadow:0 10px 40px rgba(0,0,0,.45)}
+  .rulerbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:10px 0 0;font-size:.88rem;color:var(--dim)}
+  .rulerbar #rulerOut{font-family:ui-monospace,Menlo,monospace}
+  .bookwrap{overflow-x:auto;margin-top:12px}
+  table.book{border-collapse:collapse;width:100%;font:.86rem ui-monospace,Menlo,monospace;min-width:520px}
+  table.book th,table.book td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+  table.book th{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:600}
+  table.book select{font:inherit;color:var(--ink);background:#0f141d;border:1px solid var(--line);border-radius:8px;padding:5px 8px;max-width:100%}
+  table.scale{min-width:720px}
+  table.scale td,table.scale th{text-align:center;padding:6px 6px}
+  table.scale td:first-child,table.scale th:first-child{text-align:left}
+  table.scale td b{display:block;color:var(--ink)}
+  table.scale td span{font-size:.72rem;color:var(--dim)}
+  table.scale .hl{background:rgba(217,80,108,.10)}
+  table.scale .hit{background:rgba(217,80,108,.28);outline:1px solid #d9506c}
+  table.scale tr.hlr td:first-child{color:#ff8fa3}
+  .tick{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid var(--line)}
+  .tick.y{color:var(--accent);border-color:rgba(100,240,200,.45)}
+  .tick.m{color:#ffce6a;border-color:rgba(255,206,106,.45)}
+  .tick.n{color:#ff8fa3;border-color:rgba(255,143,163,.45)}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  .verdict ul.per{margin:12px 0 0;padding-left:18px}
+  .verdict ul.per li{margin:0 0 8px}
+  .bulls{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;margin-top:20px}
+  .bulls:empty{display:none}
+  .bulls h3{margin:0 0 8px;font-size:1rem}
+  pre.bull{margin:0;padding:14px 16px;border-radius:10px;background:#f3efe4;color:#22201a;font:.8rem/1.55 ui-monospace,Menlo,monospace;white-space:pre-wrap}
+  .twocol{margin-top:34px}
+  .twocol h3{margin:0 0 6px;font-size:1.1rem}
+  .daybar{font-size:.9rem;color:var(--dim)}
+  @media (max-width:760px){ .bulls{grid-template-columns:1fr} }
+  @media (max-width:640px){
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html" class="on">Glass</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page thirty-five</p>
+    <h1>The Glass</h1>
+    <p class="lede">
+      Thirty-four rooms, and not one of them has had any weather. Today's number sends a
+      depression or two across an invented sea, draws the bureau's chart for midday tomorrow,
+      and leaves the shipping forecast unwritten. Sailors call the barometer the glass. Its
+      lines are all you get.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="plWho">—</p>
+        <h3 id="plName">—</h3>
+        <p id="plBlurb">—</p>
+      </div>
+
+      <h2>The chart</h2>
+      <p class="sub">
+        Isobars join places of equal pressure, every four hectopascals. The wind follows them:
+        stand with your back to it and the low is on your left. The closer the lines, the harder
+        it blows. Drag across the chart to measure. The forecast is checked at each area's white point.
+      </p>
+      <div class="modebar"><span class="lab">Chart</span><div class="chips" id="times"></div></div>
+      <canvas id="chart" role="img" aria-label="Weather chart of the sea areas with isobars, highs and lows"></canvas>
+      <div class="rulerbar"><span id="rulerOut">Drag across the chart to measure.</span><button class="btn small ghost" type="button" id="btnClearRuler">Clear the ruler</button></div>
+
+      <div class="twocol">
+        <h3>The geostrophic wind scale</h3>
+        <p class="sub" style="margin-bottom:10px">
+          Measure square across the isobars from one line to the next. Find that spacing along the
+          top and the latitude down the side. The figure is the wind over the sea: the speed that
+          balances the pressure gradient against the turning of the earth, cut to seven tenths for
+          friction. Your ruler lights up its column.
+        </p>
+        <div class="bookwrap" id="scale"></div>
+      </div>
+
+      <div class="twocol">
+        <h3>The forecast</h3>
+        <p class="sub" style="margin-bottom:10px">
+          A direction and a Beaufort force for every area, read off the forecast chart for midday
+          tomorrow. Direction is where the wind comes from. Within one compass point and one force
+          counts. Where the gradient is too slack for force 3, any direction will pass.
+        </p>
+        <div class="bookwrap" id="form"></div>
+      </div>
+
+      <div class="controls" style="margin-top:22px">
+        <button class="btn" type="button" id="btnFile">Read the forecast out</button>
+      </div>
+      <div class="verdict" id="report" aria-live="polite"></div>
+      <div class="bulls" id="bulls"></div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Forecast</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday's</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today's</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow's →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">The arrow keys walk to other days. Every day is a different sea, different areas and different weather.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        Forecasters read winds off charts like this one for a century before the computers took
+        over, and the rules still hold. The sea, the islands and the bureau are the day's number.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Buys Ballot's law</h3>
+          <p>Christophorus Buys Ballot set it down in 1857: in the northern hemisphere, with your
+             back to the wind, low pressure is on your left. Air pushed toward the low is turned to
+             the right by the earth's rotation until it runs along the isobars instead of across them.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>The geostrophic wind</h3>
+          <p>When that turning exactly balances the push, the wind speed is the pressure gradient
+             divided by the air's density and the Coriolis parameter, 2&Omega; sin(latitude). Tight
+             isobars mean strong wind, and the same spacing blows harder further south, where the
+             turning is weaker. The scale on this page is that formula.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Friction at the surface</h3>
+          <p>Near the sea the wind drags. Over open water it is usually taken as about seven tenths
+             of the geostrophic speed and backed some fifteen degrees, turned in a little toward the
+             low. The page's own answer uses exactly those figures, at each area's point.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>The rest is simplified</h3>
+          <p>No fronts, no curvature correction for winds around a tight low, no gusts, no squalls.
+             The systems are smooth bells of pressure that drift and deepen in a straight line, and
+             the weather and visibility in the bulletin are flavour, not graded. Real forecasters
+             also had the barograph, the ship reports and a lot of tea.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Thirty-five rooms, and one number doing all the work. Today it moves the air over a sea
+        nobody sails and leaves you to tell the boats.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="glass.js"></script>
+</body>
+</html>
