@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Cloister — Drift</title>
+<meta name="description" content="Heredity. The day's number hides the rules of inheritance in a drawer of garden peas. Cross them, count the children, and work out which forms win, which characters are linked and what the stray plant carries.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:26px;
+    background:linear-gradient(160deg,rgba(140,190,90,.13),rgba(138,88,214,.06))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em}
+  .plaque .who{margin:0 0 8px;font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  .store{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+  .packet{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:14px;padding:12px 14px;
+    background:linear-gradient(170deg,rgba(243,236,218,.07),rgba(243,236,218,.02))}
+  .packet.sel{border-color:var(--accent)}
+  .packet svg.pea{flex:none;background:#efe8d6;border-radius:10px}
+  .pk-body{min-width:0}
+  .pk-body h4{margin:2px 0 4px;font-size:1rem}
+  .pk-look{margin:0;font-size:.86rem;color:var(--ink)}
+  .pk-from{margin:4px 0 0;font-size:.78rem;color:var(--dim)}
+  .pk-btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .pk-btns .chip{padding:4px 10px;font-size:.76rem}
+  .sowbar{display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin:18px 0 0;padding:14px 18px;border:1px solid var(--line);border-radius:14px;background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .sowbar b{color:var(--ink)}
+  .sowbar .beds{font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase}
+  .sowbar .beds span{color:var(--accent)}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+  .chip:disabled{opacity:.35;cursor:not-allowed}
+  .bed{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:0 0 16px;background:rgba(11,15,22,.5)}
+  .bed header{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline}
+  .bed h4{margin:0;font-size:1.02rem}
+  .bed-no{font:600 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .bed-n{font-size:.82rem;color:var(--dim)}
+  .bookwrap{overflow-x:auto;margin-top:10px}
+  .bed .bookwrap{max-height:460px;overflow-y:auto}
+  table.book{border-collapse:collapse;width:100%;font:.86rem ui-monospace,Menlo,monospace}
+  table.book th,table.book td{padding:6px 10px;border-bottom:1px solid var(--line);text-align:left}
+  table.book th{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:600;white-space:nowrap}
+  table.book select{font:inherit;color:var(--ink);background:#0f141d;border:1px solid var(--line);border-radius:8px;padding:5px 8px;max-width:100%}
+  table.classes td.pic{width:40px;padding:2px 6px}
+  table.classes td.pic svg{background:#efe8d6;border-radius:6px;display:block}
+  table.classes td.lk{font-family:ui-sans-serif,-apple-system,"Segoe UI",Inter,Roboto,sans-serif;min-width:200px}
+  table.classes td.num{text-align:right;color:var(--ink);font-weight:650}
+  table.classes td.barc{width:28%;min-width:80px}
+  .bar{display:block;height:8px;border-radius:4px;background:linear-gradient(90deg,#6fae52,#c7a8ee)}
+  table.cont td,table.cont th{text-align:center}
+  table.cont td:first-child,table.cont th:first-child{text-align:left}
+  .split{display:flex;flex-wrap:wrap;gap:6px 18px;margin:10px 0 0;font-size:.82rem;color:var(--dim)}
+  .split b{color:var(--ink);font-weight:600;margin-right:4px}
+  .benchbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;font-size:.88rem;color:var(--dim)}
+  .benchbar select,.nbrow select,.nbrow input{font:inherit;font-size:.88rem;color:var(--ink);background:#0f141d;border:1px solid var(--line);border-radius:8px;padding:6px 8px;margin-left:6px;max-width:100%}
+  .nbrow input{width:90px}
+  .nbrow{display:flex;flex-wrap:wrap;gap:12px 22px;align-items:center;margin:16px 0 0;font-size:.92rem;color:var(--dim)}
+  .obs{margin:14px 0 0;font-size:.92rem;color:var(--dim)}
+  .obs b{color:var(--ink)}
+  .sub.small{font-size:.84rem;margin:10px 0 0}
+  .sub.empty{margin:0}
+  .tick{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
+  .tick.y{color:var(--accent);border-color:rgba(100,240,200,.45)}
+  .tick.m{color:#ffce6a;border-color:rgba(255,206,106,.45)}
+  .tick.n{color:#ff8fa3;border-color:rgba(255,143,163,.45)}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  .verdict ul.per{margin:12px 0 0;padding-left:18px}
+  .verdict ul.per li{margin:0 0 8px}
+  #reveal h3{margin:26px 0 4px;font-size:1.05rem}
+  .twocol{margin-top:40px}
+  .twocol h3{margin:0 0 6px;font-size:1.15rem}
+  .daybar{font-size:.9rem;color:var(--dim)}
+  @media (max-width:640px){
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .store{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html" class="on">Cloister</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page thirty-six</p>
+    <h1>The Cloister</h1>
+    <p class="lede">
+      Thirty-five rooms have measured, dated, named and forecast things, and none of them has
+      asked how anything gets from a parent to a child. Today's number fills a priory seed drawer
+      with two pure lines of garden pea and one stray, and hides the rules of inheritance inside
+      them. You have eight beds this summer, and a pencil.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="plWho">—</p>
+        <h3 id="plName">—</h3>
+        <p id="plBlurb">—</p>
+      </div>
+
+      <h2>The seed drawer</h2>
+      <p class="sub">
+        Every plant carries two copies of each character, one from each parent, and passes one of
+        them, chosen at random, to each seed. What you see is what the two copies make together.
+        Pick a seed parent and a pollen parent, then sow. Keep any plant you like from a bed and
+        it goes back in the drawer for the next cross.
+      </p>
+      <div class="store" id="store"></div>
+      <div class="sowbar">
+        <span class="beds">Beds left <span id="beds">8 of 8</span></span>
+        <span id="crossMsg">—</span>
+        <button class="btn small" type="button" id="btnSow">Sow the bed</button>
+      </div>
+
+      <div class="twocol">
+        <h3>The beds</h3>
+        <p class="sub" style="margin-bottom:10px">
+          Newest first. Every plant in the bed is counted and sorted by how it looks, and the line
+          underneath splits the bed one character at a time.
+        </p>
+        <div id="crosses"></div>
+      </div>
+
+      <div class="twocol">
+        <h3>The ratio bench</h3>
+        <p class="sub" style="margin-bottom:10px">
+          Pearson's chi-squared test on your own counts. One character at a time, it checks a bed
+          against the classic ratios. Two at a time, it asks whether they travel independently or
+          stick together.
+        </p>
+        <div id="bench"></div>
+      </div>
+
+      <div class="twocol">
+        <h3>The notebook</h3>
+        <p class="sub" style="margin-bottom:10px">
+          Which form wins in a plant that carries one of each? Or does neither, so it comes out in
+          between? What does the well plant carry? Then the hard one: two of today's characters sit
+          on the same chromosome. Name them, and say in what percentage of seeds a crossover splits them.
+        </p>
+        <div class="bookwrap" id="nbTable"></div>
+        <div class="nbrow">
+          <label>Linked: <select id="nbLink"></select></label>
+          <label>Come apart in <input id="nbRf" type="number" min="0" max="50" step="0.5" inputmode="decimal"> % of seeds</label>
+        </div>
+        <div class="nbrow"><span id="nbLinkRes"></span></div>
+      </div>
+
+      <div class="controls" style="margin-top:22px">
+        <button class="btn" type="button" id="btnFile">Send the notebook to the society</button>
+        <button class="btn ghost" type="button" id="btnReset">Clear the beds</button>
+      </div>
+      <div class="verdict" id="report" aria-live="polite"></div>
+      <div id="reveal"></div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Drawer</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday's</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today's</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow's →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">The arrow keys walk to other days. Every day is a different drawer, different rules and a different stray.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The rules are the ones a friar worked out with garden peas in Brno in the 1850s and 60s,
+        and the ones Thomas Hunt Morgan's fly room added fifty years later. The priory, the lines
+        and the rules of the day are the day's number.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Two copies, one passed on</h3>
+          <p>Gregor Mendel read his pea counts in 1865 as factors that come in pairs, separate when
+             seeds are made, and meet again at random. Cross two pure lines and the children all
+             look alike; let those self and the hidden form comes back in about a quarter of the
+             grandchildren. That 3 : 1 is the signature.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Not every form wins</h3>
+          <p>Sometimes a plant with one of each copy comes out in between, as Carl Correns found
+             with four o'clock flowers: red crossed with white made pink. Then 3 : 1 turns into 1 : 2 : 1, and
+             the look of a plant tells you exactly what it carries.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Linkage and crossing over</h3>
+          <p>Characters on different chromosomes assort independently, giving 9 : 3 : 3 : 1. Two on
+             the same chromosome stay together unless a crossover splits them, and the further apart
+             they sit, the more often it happens. In 1913 Alfred Sturtevant turned those percentages
+             into the first genetic map. The page's own estimate from your beds is the maximum-
+             likelihood one, the standard way to read any cross at all.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>The rest is simplified</h3>
+          <p>Every character here is one gene with two forms and complete penetrance. No plant
+             fails to germinate, no seed is miscounted, no bee gets into the bed. Real peas have
+             seven pairs of chromosomes, and a few of Mendel's own characters turned out to share one. The
+             counting is still what you would have to do.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Thirty-six rooms, and one number doing all the work. Today it writes the rules of
+        inheritance into a drawer of peas and lets you find them out the slow way.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="cloister.js"></script>
+</body>
+</html>
