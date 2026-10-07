@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Assay — Drift</title>
+<meta name="description" content="Chemistry. The day's number washes the labels off four bottles in an old chemist's cellar. Run flame tests, hydroxides, silver nitrate and the rest on a few portions each, and write the labels back.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:26px;
+    background:linear-gradient(160deg,rgba(79,155,232,.13),rgba(236,90,44,.06))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  .benchrow{display:grid;gap:12px;grid-template-columns:repeat(4,minmax(0,1fr))}
+  .bt{display:flex;gap:10px;align-items:center;text-align:left;cursor:pointer;color:var(--ink);font:inherit;
+    border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:linear-gradient(170deg,rgba(207,227,240,.06),rgba(207,227,240,.015))}
+  .bt:hover{border-color:rgba(255,255,255,.24)}
+  .bt.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .bt svg{flex:none}
+  .bt-body{display:flex;flex-direction:column;gap:3px;min-width:0}
+  .bt-l{font-weight:650}
+  .bt-look{font-size:.8rem;color:var(--dim)}
+  .dots{display:flex;gap:4px;margin-top:3px}
+  .dots i{width:9px;height:9px;border-radius:50%;border:1px solid rgba(255,255,255,.3)}
+  .dots i.full{background:var(--accent);border-color:var(--accent)}
+  .shelf{display:grid;gap:8px;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:18px}
+  .rg{display:flex;flex-direction:column;align-items:flex-start;gap:2px;cursor:pointer;font:inherit;color:var(--ink);
+    border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:rgba(11,15,22,.6);text-align:left}
+  .rg:hover:not(:disabled){border-color:var(--accent)}
+  .rg:disabled{opacity:.35;cursor:not-allowed}
+  .rg-s{font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;color:var(--accent)}
+  .rg-n{font-size:.85rem}
+  .shelfmsg{margin:12px 0 0;font-size:.9rem;color:var(--dim)}
+  .shelfmsg b{color:var(--ink)}
+  .row{border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:0 0 14px;background:rgba(11,15,22,.5)}
+  .row-h{font-size:.9rem;color:var(--dim)}
+  .row-h b{color:var(--ink);margin-right:6px}
+  .tubes{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));margin-top:10px}
+  figure.tb{display:flex;gap:10px;align-items:flex-start;margin:0}
+  figure.tb svg{flex:none;background:rgba(255,255,255,.02);border-radius:10px}
+  figure.tb figcaption{font-size:.84rem;color:var(--dim)}
+  figure.tb figcaption b{display:block;color:var(--ink);font-weight:600;margin-bottom:2px}
+  /* tube animations: only the newest tube plays */
+  .tb .deep{opacity:1}
+  .tb .ppt.gone{opacity:0}
+  .tb .ppt .cloud{opacity:0}
+  .tb .litmus.turn{fill:#3b6ee0}
+  .tb .lime.milky{fill:#f4f6f8;fill-opacity:.9}
+  .tb .bub{opacity:0}
+  .tb .fl{transform-origin:30px 95px;animation:flick 1.1s ease-in-out infinite alternate}
+  .tb.fresh .ppt{animation:pptIn 1s ease-out both}
+  .tb.fresh .ppt .cloud{animation:cloud 1.6s ease-out both}
+  .tb.fresh .ppt.gone{animation:pptGone 2.8s ease-in-out both}
+  .tb.fresh .deep{animation:deepIn 2.8s ease-in-out both}
+  .tb.fresh .litmus.turn{animation:litmus 1.8s ease-in both}
+  .tb.fresh .lime.milky{animation:milk 2s ease-in both}
+  .tb.fresh .bub{animation:bub 1.4s ease-in 3}
+  @keyframes flick{from{transform:scale(1,1)}to{transform:scale(.94,1.05)}}
+  @keyframes pptIn{from{opacity:0}to{opacity:1}}
+  @keyframes cloud{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
+  @keyframes pptGone{0%{opacity:0}25%{opacity:1}55%{opacity:1}100%{opacity:0}}
+  @keyframes deepIn{0%,55%{opacity:0}100%{opacity:1}}
+  @keyframes litmus{0%,30%{fill:#d9465a}100%{fill:#3b6ee0}}
+  @keyframes milk{0%,25%{fill:#cfe3f0;fill-opacity:.25}100%{fill:#f4f6f8;fill-opacity:.9}}
+  @keyframes bub{0%{opacity:0;transform:translateY(0)}15%{opacity:1}100%{opacity:0;transform:translateY(-58px)}}
+  @media (prefers-reduced-motion:reduce){.tb *{animation:none!important}}
+  .bookwrap{overflow-x:auto;margin-top:10px}
+  table.book{border-collapse:collapse;width:100%;font-size:.88rem}
+  table.book th,table.book td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  table.book th{font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);white-space:nowrap}
+  table.book td.no{font-family:ui-monospace,Menlo,monospace;color:var(--dim);width:2.5em}
+  table.book td.use{color:var(--dim);font-style:italic}
+  .fm{font-family:ui-monospace,Menlo,monospace;color:var(--accent);margin-right:6px}
+  table.card{margin-bottom:18px;font-size:.84rem}
+  table.card td{white-space:nowrap}
+  i.sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px;border:1px solid rgba(255,255,255,.2)}
+  details.cardbox{border:1px solid var(--line);border-radius:14px;padding:12px 16px;background:rgba(11,15,22,.5)}
+  details.cardbox summary{cursor:pointer;font-weight:600}
+  .labels{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .lab{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;font-size:.92rem;color:var(--dim)}
+  .lab-l{color:var(--ink);font-weight:650;min-width:5.5em}
+  .lab select{font:inherit;font-size:.88rem;color:var(--ink);background:#0f141d;border:1px solid var(--line);border-radius:8px;padding:6px 8px;max-width:100%;flex:1;min-width:0}
+  .lab-n{font-size:.76rem;width:100%;padding-left:calc(5.5em + 10px)}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+  .sub.small{font-size:.84rem;margin:12px 0 0}
+  .sub.empty{margin:0}
+  .tick{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
+  .tick.y{color:var(--accent);border-color:rgba(100,240,200,.45)}
+  .tick.n{color:#ff8fa3;border-color:rgba(255,143,163,.45)}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict b{color:var(--ink)}
+  .verdict .fm, .sub .fm{margin-right:0}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  .verdict ul.per{margin:12px 0 0;padding-left:18px}
+  .verdict ul.per li{margin:0 0 10px}
+  .twocol{margin-top:40px}
+  .twocol h3{margin:0 0 6px;font-size:1.15rem}
+  .daybar{font-size:.9rem;color:var(--dim)}
+  @media (max-width:760px){
+    .benchrow{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .shelf{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .labels{grid-template-columns:1fr}
+  }
+  @media (max-width:640px){
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .bt{flex-direction:column;align-items:flex-start}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html" class="on">Assay</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page thirty-seven</p>
+    <h1>The Assay</h1>
+    <p class="lede">
+      Thirty-six rooms have measured, dated, bred and forecast things, and not one of them has
+      ever asked what something is made of. Today's number washes the labels off four bottles in an
+      old chemist's cellar and leaves you the stock book, a rack of test tubes and very little to spare.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="plWho">—</p>
+        <h3 id="plName">—</h3>
+        <p id="plBlurb">—</p>
+      </div>
+
+      <h2>The bench</h2>
+      <p class="sub">
+        Pick a bottle, then a reagent. Every test takes one portion of that bottle for good, and each
+        bottle has four. The colour of the solution is free; everything else costs.
+      </p>
+      <div class="benchrow" id="bench"></div>
+      <div class="shelf" id="shelf"></div>
+      <p class="shelfmsg" id="shelfMsg">—</p>
+
+      <div class="twocol">
+        <h3>The rack</h3>
+        <p class="sub" style="margin-bottom:10px">Every tube you have run, bottle by bottle, with what the bench saw.</p>
+        <div id="rack"></div>
+      </div>
+
+      <div class="twocol">
+        <h3>The bench card</h3>
+        <p class="sub" style="margin-bottom:10px">
+          Pinned above every sink in the laboratory: what each ion does with each reagent. Each bottle
+          holds one salt, so one cation and one anion.
+        </p>
+        <details class="cardbox" open>
+          <summary>What the ions do</summary>
+          <div class="bookwrap" id="card"></div>
+        </details>
+      </div>
+
+      <div class="twocol">
+        <h3>The stock book</h3>
+        <p class="sub" style="margin-bottom:10px">Seven lines for the bottom shelf. Four are in the bottles; each line fills one bottle at most.</p>
+        <div class="bookwrap" id="book"></div>
+      </div>
+
+      <div class="twocol">
+        <h3>The labels</h3>
+        <p class="sub" style="margin-bottom:10px">Write each bottle back up from the stock book. The shop will dispense from them in the morning.</p>
+        <div class="labels" id="labels"></div>
+      </div>
+
+      <div class="controls" style="margin-top:22px">
+        <button class="btn" type="button" id="btnFile">Write the labels</button>
+        <button class="btn ghost" type="button" id="btnReset">Pour it all away</button>
+      </div>
+      <div class="verdict" id="report" aria-live="polite"></div>
+      <div id="reveal"></div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Shelf</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday's</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today's</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow's →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">The arrow keys walk to other days. Every day is a different shop, a different flood and a different shelf.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The tests are the ones still taught at school benches, most of them older than the shop. The
+        chemist, the town, the flood and the shelf are the day's number.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Colour in a flame</h3>
+          <p>Heat a metal's salt and its electrons give light back at wavelengths only that element
+             uses. Robert Bunsen and Gustav Kirchhoff turned the observation into spectroscopy in 1859
+             and found two new elements with it within two years. Sodium is the nuisance: a trace of it
+             swamps everything else in yellow.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Hydroxides</h3>
+          <p>Most metal hydroxides will not stay dissolved, and their colours give the metal away: blue
+             for copper, green for iron(II), rust for iron(III). Zinc and aluminium hydroxides are
+             amphoteric and dissolve again in excess alkali. Ammonia separates them, because zinc
+             forms a soluble complex with it and aluminium does not. Copper does too: that deep blue is
+             the tetraammine ion.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>The anions</h3>
+          <p>Silver halides come out white, cream and yellow; barium sulfate is one of the least
+             soluble salts there is; acid drives carbon dioxide out of a carbonate. Nitrates form no
+             precipitate with anything, so they are reduced to ammonia instead, here with aluminium
+             foil, classically with Devarda's alloy. Any ammonium has to be boiled off first, or it gives
+             a false positive.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>The rest is simplified</h3>
+          <p>Each bottle holds one pure salt at a sensible strength. Nothing is contaminated, every
+             precipitate is unmistakable and nobody has to tell cream from white by gaslight. A real
+             unknown is usually a mixture, and the order of tests starts to matter a great deal.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Thirty-seven rooms, and one number doing all the work. Today it floods a cellar, washes four
+        labels off and waits to see how few portions you can spend getting them back.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="assay.js"></script>
+</body>
+</html>
