@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Pump — Drift</title>
+<meta name="description" content="Epidemiology. The day's number lays out a crowded parish in a cholera year and poisons one of its street pumps. Interview households, sample the water, pace out the walks and get the right handle taken off before the outbreak runs its course.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>
+  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:26px;
+    background:linear-gradient(160deg,rgba(255,143,163,.10),rgba(122,162,255,.07))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  .statusbar{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline;justify-content:space-between;margin:0 0 12px;font-size:.92rem;color:var(--dim)}
+  .statusbar b{color:var(--ink)}
+  .statusbar .ok{color:var(--accent)}
+  .toll{font:600 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:#ff8fa3;white-space:nowrap}
+  .toll span{font-size:1.25rem;letter-spacing:0;margin-left:6px;color:var(--ink)}
+  .mapbox{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#0d121b}
+  #map{display:block;width:100%;height:auto;cursor:crosshair;touch-action:manipulation}
+  #map .sname{font:600 6.5px ui-monospace,Menlo,monospace;letter-spacing:.14em;fill:#5d6a80;text-anchor:middle;pointer-events:none}
+  #map .iname{font:700 7px ui-monospace,Menlo,monospace;letter-spacing:.16em;fill:#8b97ab;text-anchor:middle;pointer-events:none}
+  #map .pname{font:600 9px ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;fill:#e8edf5;paint-order:stroke;stroke:#0d121b;stroke-width:3px;pointer-events:none}
+  #map .pl{font:800 8px ui-monospace,Menlo,monospace;fill:#07090d;text-anchor:middle;pointer-events:none}
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .msg:empty{display:none}
+  .msg b{color:var(--ink)}
+  .tools{display:grid;gap:14px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);margin-top:16px}
+  .card{border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:rgba(11,15,22,.5)}
+  .card h4{margin:0 0 8px;font:600 .7rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .selh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  i.sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+  .sub.small{font-size:.84rem;margin:10px 0 0}
+  .sub.empty{margin:0;font-size:.9rem}
+  ul.notes{list-style:none;margin:0;padding:0;max-height:340px;overflow:auto}
+  ul.notes li{padding:9px 0;border-bottom:1px solid var(--line);font-size:.9rem;color:var(--dim)}
+  ul.notes li:last-child{border-bottom:0}
+  ul.notes li b{color:var(--ink)}
+  .nt{display:inline-block;font:600 .66rem ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--accent2);margin-right:8px}
+  .bookwrap{overflow-x:auto}
+  table.book{border-collapse:collapse;width:100%;font-size:.88rem}
+  table.book th,table.book td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+  table.book th{font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+  td.barcell{width:30%;min-width:80px}
+  .bar{display:block;height:8px;border-radius:4px;opacity:.85}
+  .curve{display:block;width:100%;height:auto;margin-top:6px}
+  .curve .cv{font:600 10px ui-monospace,Menlo,monospace;fill:#e8edf5;text-anchor:middle}
+  .curve .cd{font:500 10px ui-monospace,Menlo,monospace;fill:#8b97ab;text-anchor:middle}
+  .curve .cd.now{fill:var(--accent);font-size:8px;letter-spacing:.08em;text-transform:uppercase}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin:10px 0 0;font-size:.82rem;color:var(--dim)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .tick{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
+  .tick.y{color:var(--accent);border-color:rgba(100,240,200,.45)}
+  .tick.n{color:#ff8fa3;border-color:rgba(255,143,163,.45)}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  .verdict ul.per{margin:12px 0 0;padding-left:18px}
+  .verdict ul.per li{margin:0 0 10px}
+  .twocol{margin-top:34px}
+  .twocol h3{margin:0 0 6px;font-size:1.15rem}
+  .daybar{font-size:.9rem;color:var(--dim)}
+  @media (max-width:760px){ .tools{grid-template-columns:1fr} }
+  @media (max-width:640px){
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html" class="on">Pump</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page thirty-eight</p>
+    <h1>The Pump</h1>
+    <p class="lede">
+      Thirty-seven rooms have dug, bred, assayed and forecast, and nobody in any of them has ever
+      been ill. Today's number lays out a crowded parish in a cholera year, lets something into the
+      well under one of its street pumps, and gives you a few days to work out which.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="plWho">—</p>
+        <h3 id="plName">—</h3>
+        <p id="plBlurb">—</p>
+      </div>
+
+      <div class="statusbar">
+        <span id="when">—</span>
+        <span class="toll">Dead<span id="deadOut">0</span></span>
+      </div>
+      <div class="mapbox">
+        <svg id="map" viewBox="0 0 760 520" role="img" aria-label="Map of the parish: streets, houses, pumps and the deaths so far"></svg>
+      </div>
+      <div class="legend">
+        <span><svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="5.5" fill="#7aa2ff"/></svg>a pump</span>
+        <span><svg width="16" height="12" aria-hidden="true"><rect x="2" y="3" width="12" height="6" rx="1" fill="#2a3343"/></svg>a house</span>
+        <span><svg width="16" height="12" aria-hidden="true"><line x1="3" y1="4" x2="13" y2="4" stroke="#f2f4f8" stroke-width="1.6"/><line x1="3" y1="7" x2="13" y2="7" stroke="#f2f4f8" stroke-width="1.6"/></svg>one bar for each death in it</span>
+        <span><svg width="16" height="12" aria-hidden="true"><rect x="2" y="3" width="12" height="6" rx="1" fill="#2a3343" stroke="#64f0c8" stroke-width="1.4"/></svg>called at</span>
+      </div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+
+      <div class="controls" style="margin-top:16px">
+        <button class="btn small ghost" type="button" id="btnPace">Pace out the walks</button>
+        <button class="btn small" type="button" id="btnSleep">Go home until the morning's returns</button>
+        <button class="btn small ghost" type="button" id="btnEnd">Run on to the end</button>
+      </div>
+
+      <div class="tools">
+        <div class="card">
+          <h4>At the corner</h4>
+          <div id="selBox"></div>
+        </div>
+        <div class="card">
+          <h4>Notebook</h4>
+          <div id="notes"></div>
+        </div>
+      </div>
+
+      <div class="twocol">
+        <h3>The returns, day by day</h3>
+        <p class="sub" style="margin-bottom:6px">Deaths registered each day of the outbreak. A line marks each evening a handle came off: green for the right pump, amber for the wrong one.</p>
+        <div id="curve"></div>
+      </div>
+
+      <div class="twocol">
+        <h3>The dead by walk</h3>
+        <p class="sub" style="margin-bottom:10px">Every house counted under the pump nearest to it on foot, not as the crow flies.</p>
+        <div class="bookwrap" id="tally"></div>
+      </div>
+
+      <div class="verdict" id="report" aria-live="polite"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="btnReset">Start this parish again</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Parish</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday's</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today's</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow's →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">The arrow keys walk to other days. Every day is a different parish, a different set of pumps and a different bad well.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The method is John Snow's, from Soho in 1854. The parish, its streets, its pumps and its dead
+        are the day's number.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Broad Street</h3>
+          <p>Cholera broke out around the Broad Street pump on 31 August 1854 and killed more than
+             five hundred people within ten days. Snow, a physician who already held that the disease
+             travelled in water rather than bad air, took the registrar's list of deaths, went door to
+             door asking where people drew their water, and put it to the Board of Guardians of
+             St James's on the evening of 7 September. The handle came off the next day.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>The places that did not fit</h3>
+          <p>The Lion Brewery on Broad Street lost none of its seventy-odd workers: they drank beer and
+             the brewery had its own well. The Poland Street workhouse, with over five hundred inmates,
+             lost only a handful; it had its own well too. And a widow in Hampstead, miles away, died of
+             it: she had liked the Broad Street water so much that a cart brought her a bottle every day.
+             Her niece, visiting, drank it as well.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Walking distance</h3>
+          <p>For the parish inquiry the next year Snow drew a dotted line round the Broad Street pump
+             joining the points that were equally far, on foot through the actual streets, from it and
+             from the next nearest pump. Nearly all the deaths fell inside it. The curate Henry
+             Whitehead, who set out to disprove him, found the first case: a baby at 40 Broad Street,
+             whose nappies had been rinsed into a cesspool three feet from the well.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>Too late, and not the point</h3>
+          <p>By the time the handle came off the outbreak was already falling, partly because so many
+             people had fled. The page is honest about that: deaths already on their way still come. What
+             the handle proved was the mechanism. The microscopes of the day could not see the
+             organism; Filippo Pacini described it that same year and Robert Koch isolated it in 1884.
+             Here every household is one kind of person, nobody flees and nothing else is in the water.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Thirty-eight rooms, and one number doing all the work. Today it lays out a parish, poisons one
+        well in it and waits to see how quickly you can get a Board of sceptics to take a handle off.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="pump.js"></script>
+</body>
+</html>
