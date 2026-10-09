@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Pyx — Drift</title>
+<meta name="description" content="Metrology. The day's number founds a mint and sends its sample box to a jury of goldsmiths. Find the false coins with a beam balance and a steelyard in as few weighings as can be guaranteed.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:26px;
+    background:linear-gradient(160deg,rgba(255,143,163,.10),rgba(122,162,255,.07))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  .statusbar{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline;justify-content:space-between;margin:0 0 12px;font-size:.92rem;color:var(--dim)}
+  .statusbar b{color:var(--ink)}
+  .statusbar .ok{color:var(--accent)}
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .msg:empty{display:none}
+  .msg b{color:var(--ink)}
+  .tools{display:grid;gap:14px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);margin-top:16px}
+  .card{border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:rgba(11,15,22,.5)}
+  .card h4{margin:0 0 8px;font:600 .7rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .selh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  i.sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+  .sub.small{font-size:.84rem;margin:10px 0 0}
+  .sub.empty{margin:0;font-size:.9rem}
+  ul.notes{list-style:none;margin:0;padding:0;max-height:340px;overflow:auto}
+  ul.notes li{padding:9px 0;border-bottom:1px solid var(--line);font-size:.9rem;color:var(--dim)}
+  ul.notes li:last-child{border-bottom:0}
+  ul.notes li b{color:var(--ink)}
+  .nt{display:inline-block;font:600 .66rem ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--accent2);margin-right:8px}
+  .bookwrap{overflow-x:auto}
+  table.book{border-collapse:collapse;width:100%;font-size:.88rem}
+  table.book th,table.book td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+  table.book th{font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin:10px 0 0;font-size:.82rem;color:var(--dim)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .tick{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid var(--line);white-space:nowrap}
+  .tick.y{color:var(--accent);border-color:rgba(100,240,200,.45)}
+  .tick.n{color:#ff8fa3;border-color:rgba(255,143,163,.45)}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  .verdict ul.per{margin:12px 0 0;padding-left:18px}
+  .verdict ul.per li{margin:0 0 10px}
+  .twocol{margin-top:34px}
+  .twocol h3{margin:0 0 6px;font-size:1.15rem}
+  .daybar{font-size:.9rem;color:var(--dim)}
+
+  .tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 14px}
+  .tab{appearance:none;text-align:left;cursor:pointer;border:1px solid var(--line);border-radius:12px;background:rgba(11,15,22,.5);color:var(--ink);padding:10px 12px;font:600 .9rem/1.3 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .tab span{display:block;font:600 .64rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:3px}
+  .tab.on{border-color:var(--accent2);background:rgba(122,162,255,.08)}
+  .tab.y span{color:var(--accent)} .tab.w span{color:#ffce6a} .tab.n span{color:#ff8fa3}
+  .tab.y span::after{content:" \00b7 at par"} .tab.w span::after{content:" \00b7 right"} .tab.n span::after{content:" \00b7 wrong"}
+  .brief{margin:0 0 14px;color:var(--dim);font-size:.95rem}
+  .brief b{color:var(--ink)}
+  .beambox{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#0d121b}
+  #beam{display:block;width:100%;height:auto;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+  #beam .hit{cursor:pointer;outline:none}
+  #beam .hit:focus-visible circle{stroke:#64f0c8;stroke-width:3}
+  #beam .cl{font:800 12px ui-monospace,Menlo,monospace;fill:#0d121b;text-anchor:middle;pointer-events:none}
+  #beam .cl.ghost{fill:#5d6a80}
+  #beam .pn{font:600 9px ui-monospace,Menlo,monospace;letter-spacing:.16em;fill:#5d6a80;text-anchor:middle}
+  #beam .sl{font:600 10px ui-monospace,Menlo,monospace;fill:#ffce6a;text-anchor:middle}
+  #beam .sl.t{fill:#5d6a80}
+  .panstate{margin:10px 0 0;font-size:.9rem;color:var(--dim)}
+  .panstate b{color:var(--ink)}
+  .warnt{color:#ffce6a}
+  ol.wlog{list-style:none;margin:0;padding:0}
+  ol.wlog li{padding:8px 0;border-bottom:1px solid var(--line);font-size:.9rem;color:var(--dim)}
+  ol.wlog li:last-child{border-bottom:0}
+  ol.wlog b{color:var(--ink);font-family:ui-monospace,Menlo,monospace;letter-spacing:.06em}
+  .wn{display:inline-block;width:20px;font:600 .72rem ui-monospace,Menlo,monospace;color:var(--accent2)}
+  select,input.num{background:#0d121b;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:600 .9rem ui-monospace,Menlo,monospace}
+  input.num{width:76px}
+  .declare{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .yardbox{border:1px solid var(--line);border-radius:16px;background:#0d121b;padding:10px 12px;margin-bottom:12px}
+  #yardSvg{display:block;width:100%;height:auto}
+  #yardSvg .pn{font:600 9px ui-monospace,Menlo,monospace;letter-spacing:.16em;fill:#5d6a80;text-anchor:middle}
+  .chk{display:inline-flex;gap:6px;align-items:center;font-size:.86rem;color:var(--dim)}
+  @media (max-width:640px){ .tabs{grid-template-columns:repeat(2,minmax(0,1fr))} }
+  @media (max-width:760px){ .tools{grid-template-columns:1fr} }
+  @media (max-width:640px){
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html" class="on">Pyx</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page thirty-nine</p>
+    <h1>The Pyx</h1>
+    <p class="lede">
+      Thirty-eight rooms have counted the dead, dated the timbers and named the salts, and not one of
+      them has ever been paid. Today's number founds a mint, strikes a year of coin, and sends the
+      sample box up to a jury who want to know which of it is false, and how few weighings it takes to be sure.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="plWho">—</p>
+        <h3 id="plName">—</h3>
+        <p id="plBlurb">—</p>
+      </div>
+
+      <div class="tabs" id="tabs" role="tablist" aria-label="The four trials"></div>
+      <p class="brief" id="brief">—</p>
+
+      <div id="beamBox">
+        <div class="beambox">
+          <svg id="beam" viewBox="0 0 760 350" role="img" aria-label="A beam balance with two pans, and a tray of coins below it"></svg>
+        </div>
+        <p class="panstate" id="panState">—</p>
+        <div class="controls" style="margin-top:12px">
+          <button class="btn small" type="button" id="btnWeigh">Weigh</button>
+          <button class="btn small ghost" type="button" id="btnClear">Clear the pans</button>
+          <button class="btn small ghost" type="button" id="btnSlate">Show the slate</button>
+        </div>
+        <div class="msg" id="msg" aria-live="polite"></div>
+        <div class="tools">
+          <div class="card">
+            <h4>The weighings</h4>
+            <div id="wlog"></div>
+          </div>
+          <div class="card">
+            <h4>Put it to the jury</h4>
+            <div class="declare" id="declare"></div>
+            <p class="sub small">Say it as soon as you are sure, and not before. A guess that happens to be right is still a guess, and the jury will know.</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="sackBox" hidden>
+        <div class="yardbox">
+          <svg id="yardSvg" viewBox="0 0 740 120" role="img" aria-label="A steelyard with coins in its scale pan"></svg>
+        </div>
+        <p class="panstate" id="yardOut">—</p>
+        <div class="bookwrap" id="sackTable" style="margin-top:10px"></div>
+        <div class="controls" style="margin-top:14px">
+          <button class="btn small" type="button" id="btnHang">Hang them on the steelyard</button>
+          <button class="btn small ghost" type="button" id="btnSacks">Put the sacks to the jury</button>
+        </div>
+        <div class="msg" id="msgS" aria-live="polite"></div>
+      </div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="btnReset">Start this trial of the pyx again</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Mint</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday's</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today's</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow's →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">The arrow keys walk to other days. Every day is a different mint, a different coin and a different handful of false ones.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The trial and the puzzles are real. The mint, its year, its officers and its false coins are the day's number.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>The box</h3>
+          <p>A pyx is a box. Since at least 1282 the English Mint has set aside a few coins from every batch
+             it strikes and locked them in one, and once a year a jury of goldsmiths opens it and tests the
+             coins against trial plates of known fineness, kept apart from the Mint for exactly that reason.
+             Isaac Newton sat through it as Master of the Mint in 1710 and was accused of making the gold too
+             poor; he blamed the new plate. The trial is still held at Goldsmiths' Hall every year.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Three ways to fall</h3>
+          <p>A beam balance with nothing on it but coins has three answers: left, right, level. So
+             <i>n</i> weighings can tell apart at most 3<sup><i>n</i></sup> possibilities. Nine coins with one
+             known to be light are nine possibilities, so two weighings; thirteen are thirteen, so three.
+             A false coin of unknown sign doubles them, and that bound is what makes every trial here a real
+             question rather than a lucky one.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Twelve, and then thirteen</h3>
+          <p>The twelve-coin problem went round in the 1940s; one early printed version is E.&nbsp;D. Schell's,
+             in 1945. Freeman Dyson settled it in 1946: with <i>n</i> weighings and no true coin to hand you can
+             find the false one and its sign among (3<sup><i>n</i></sup>&nbsp;&minus;&nbsp;3)/2 coins, which is twelve
+             for three weighings, and among (3<sup><i>n</i></sup>&nbsp;&minus;&nbsp;1)/2 if one coin is known to be
+             true, which is thirteen. The plate in trial III is that one coin.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>The honest liar</h3>
+          <p>Here the false coin is not fixed in advance. The balance always answers truthfully, but among
+             all the coins it could be, the page lets it be whichever leaves you furthest from an answer, so no
+             one makes par by luck. A solver that counts the coins by what they could still be finds par for each
+             trial and marks each of your weighings. The sacks are the old steelyard trick: take a different
+             number from each, or powers of two when any number of sacks may be light, and one reading says it all.
+             Real light coins vary; these are all short by exactly the same weight.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Thirty-nine rooms, and one number doing all the work. Today it strikes a year of coin, slips the
+        false ones in and waits to see whether you can weigh as if the worst were always true.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="pyx.js"></script>
+</body>
+</html>
