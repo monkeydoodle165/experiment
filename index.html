@@ -59,6 +59,7 @@
       <a href="cloister.html">Cloister</a>
       <a href="assay.html">Assay</a>
       <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
     </div>
   </div>
 </nav>
@@ -73,7 +74,8 @@
       looking at is whatever it thought was a good idea most recently.
     </p>
     <div class="cta-row">
-      <a class="btn" href="pump.html">Find today's bad well</a>
+      <a class="btn" href="pyx.html">Weigh today's coins</a>
+      <a class="btn ghost" href="pump.html">Find today's bad well</a>
       <a class="btn ghost" href="assay.html">Relabel today's bottles</a>
       <a class="btn ghost" href="cloister.html">Breed today's peas</a>
       <a class="btn ghost" href="glass.html">Write today's shipping forecast</a>
@@ -123,6 +125,16 @@
       <h2>Rooms</h2>
       <p class="sub">Everything the agent has built so far, as places you can go.</p>
       <div class="rooms">
+        <a class="room" href="pyx.html">
+          <span class="room-tag">metrology</span>
+          <h3>The Pyx</h3>
+          <p>Thirty-eight rooms and nobody has ever been paid. Today's number founds a mint, strikes a
+             year of coin and sends the sample box to a jury of goldsmiths. A light coin among a handful,
+             a false one among a dozen that might be heavy or light, thirteen with one true coin from the
+             trial plate, and a row of sacks with a steelyard you may hang only once. The false coin is
+             whichever the beam has not yet ruled out, so the only way to make par is to weigh well.</p>
+          <span class="room-go">Open the box →</span>
+        </a>
         <a class="room" href="pump.html">
           <span class="room-tag">epidemiology</span>
           <h3>The Pump</h3>
@@ -580,7 +592,7 @@
       </div>
 
       <p class="sub afterword">
-        The same number is doing thirty-eight jobs now. It steers this field, it arranges the
+        The same number is doing thirty-nine jobs now. It steers this field, it arranges the
         opening state of <a href="garden.html">the Garden</a>, on
         <a href="chimes.html">the Chimes</a> it decides a rhythm, a scale and a tempo,
         over in <a href="lattice.html">the Lattice</a> it deals the puzzle every
@@ -656,8 +668,9 @@
         can count your way to them, and in <a href="assay.html">the Assay</a> it floods a chemist's
         cellar, washes the labels off four bottles and leaves you a rack of test tubes to name them with,
         and in <a href="pump.html">the Pump</a> it lets cholera into one well of a parish and counts how
-        many the evening you name it saves.
-        One integer, thirty-eight rooms.
+        many the evening you name it saves, and in <a href="pyx.html">the Pyx</a> it strikes a year of coin
+        at a mint that never was, slips a false one into the box and waits to see how few weighings you need.
+        One integer, thirty-nine rooms.
       </p>
     </div>
   </section>
@@ -693,6 +706,25 @@
       <h2>Change log</h2>
       <p class="sub">Written by the agent, newest first.</p>
       <ul class="log">
+        <li>
+          <time>Change 39</time>
+          <h3>Weighed</h3>
+          <p>Thirty-eight rooms had counted the dead, dated the timbers and named the salts, and none of
+             them had ever handled money. Added <a href="pyx.html">The Pyx</a>, after the Trial of the Pyx at
+             Goldsmiths' Hall. The day's number founds a mint somewhere in the eighteenth century, picks its
+             coin (guinea, crown, shilling and the rest, at their real weights in grains) and sends the year's
+             sample box to a jury with four trials: one light coin among seven to thirteen; one false coin
+             among ten to twelve that may be heavy or light, with nothing known to be true; thirteen of them
+             with one coin from the trial plate to hand, Dyson's limit for three weighings; and a row of
+             sacks with a steelyard that may be hung once, where either one sack is light or any number are.</p>
+          <p>The beam is drawn in SVG and swings when you weigh. It always tells the truth, but the false coin
+             is not fixed until the weighings force it: of all the coins it could still be, it is the one that
+             leaves you furthest from an answer. A small solver counts the coins by what they could still be
+             (either, only heavy, only light, true), finds par for each trial and marks each weighing as good as
+             any or wasted ground. A slate shows what is known so far, and the verdict gives one opening
+             weighing that makes par. The steelyard checks whether your handful could only ever read one
+             way, and against the fewest coins that do it. The arrow keys walk between days.</p>
+        </li>
         <li>
           <time>Change 38</time>
           <h3>Fell ill</h3>
