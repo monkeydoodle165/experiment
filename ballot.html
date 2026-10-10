@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Ballot — Drift</title>
+<meta name="description" content="Social choice. The day's number founds a learned society and has every member rank the candidates for President. Count the same papers five ways, call each result, then see whether a faction can do better by lying.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px;
+    background:linear-gradient(160deg,rgba(200,155,255,.10),rgba(122,162,255,.07))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  ul.cands{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:6px}
+  ul.cands li{font-size:.9rem;color:var(--dim)}
+  ul.cands li b{color:var(--ink);font-weight:600}
+  .lots{margin:14px 0 0;font-size:.86rem;color:var(--dim)}
+  .gt{color:#5d6a80}
+
+  .cc{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--ink);white-space:nowrap}
+  .cc i{width:10px;height:10px;border-radius:50%;background:var(--c);display:inline-block;flex:none}
+
+  h4.lab{margin:0 0 10px;font:600 .7rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .pilesbox{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-bottom:20px}
+  .piles{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}
+  .pile{flex:1 0 118px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#0d121b}
+  .pile.mine{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .pile .pn{font:600 .72rem ui-monospace,Menlo,monospace;letter-spacing:.08em;color:var(--dim);margin-bottom:6px}
+  .pile .pn b{font-size:1.15rem;color:var(--ink);letter-spacing:0}
+  .pile ol{margin:0;padding-left:18px;font-size:.88rem;color:#5d6a80}
+  .pile li{padding:2px 0}
+
+  .tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin:0 0 14px}
+  .tab{appearance:none;text-align:left;cursor:pointer;border:1px solid var(--line);border-radius:12px;background:rgba(11,15,22,.5);color:var(--ink);padding:10px 12px;font:600 .86rem/1.3 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .tab span{display:block;font:600 .62rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:3px}
+  .tab.on{border-color:var(--accent2);background:rgba(122,162,255,.08)}
+  .tab.y span{color:var(--accent)} .tab.w span{color:#ffce6a} .tab.n span{color:#ff8fa3}
+  .tab.y span::after{content:" \00b7 right"} .tab.w span::after{content:" \00b7 half"} .tab.n span::after{content:" \00b7 wrong"}
+  .brief{margin:0 0 14px;color:var(--dim);font-size:.95rem}
+  .brief b{color:var(--ink)}
+  .nt{display:inline-block;font:600 .66rem ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--accent2);margin-right:8px}
+  .callrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
+  .callrow .lbl{font:600 10px/1.6 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-right:4px}
+  .chip:disabled{cursor:default;opacity:.55}
+  .chip.on:disabled{opacity:1}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+  .stage{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-top:14px}
+  .stage h5{margin:16px 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .stage h5:first-child{margin-top:0}
+  .bars{position:relative;display:grid;gap:6px}
+  .bar{display:grid;grid-template-columns:112px minmax(0,1fr) 120px;gap:10px;align-items:center;font-size:.88rem}
+  .bar .bn{color:var(--ink);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .bar .bt{height:16px;border-radius:5px;background:rgba(255,255,255,.04);position:relative;overflow:hidden}
+  .bar .bt i{position:absolute;left:0;top:0;bottom:0;width:var(--w);background:var(--c);border-radius:5px;transition:width .9s cubic-bezier(.2,.8,.2,1)}
+  .bar .bv{color:var(--dim);font:600 .82rem ui-monospace,Menlo,monospace}
+  .bar .bv em{font-style:normal;color:var(--accent)}
+  .bar.dim{opacity:.45}
+  .bar.out .bt i{opacity:.35;background:repeating-linear-gradient(135deg,var(--c) 0 6px,transparent 6px 10px)}
+  .bar.out .bn{text-decoration:line-through;color:var(--dim)}
+  .bar.win .bn::after{content:" \2605";color:#ffce6a}
+  .half{position:absolute;top:-4px;bottom:-4px;left:calc(122px + (100% - 252px) * var(--h) / 100);border-left:1px dashed rgba(255,206,106,.6);pointer-events:none}
+  .half span{position:absolute;top:-14px;left:4px;font:600 .58rem ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:#ffce6a;white-space:nowrap}
+  .xfer{margin:8px 0 0;font-size:.86rem;color:var(--dim)}
+  .xfer b{color:var(--ink)}
+  .bookwrap{overflow-x:auto;margin-top:12px}
+  table.book{border-collapse:collapse;width:100%;font-size:.86rem}
+  table.book th,table.book td{padding:6px 9px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+  table.book th{font:600 .64rem ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+  table.mx td.wn{color:var(--accent);font-weight:700}
+  table.mx td.ls{color:#5d6a80}
+  table.mx td.nil{color:#3a4456}
+  .cgrid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px;align-items:start}
+  .cgrid>div{min-width:0}
+  .graph svg{display:block;width:100%;max-width:340px;height:auto;margin:0 auto}
+  .graph .mg{font:600 10px ui-monospace,Menlo,monospace;fill:#8b97ab;text-anchor:middle}
+  .graph .gl{font:800 11px ui-monospace,Menlo,monospace;fill:#0d121b;text-anchor:middle}
+  .sub.small{font-size:.82rem;margin:8px 0 0}
+  .sub.empty{margin:0;font-size:.9rem}
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .msg:empty{display:none}
+  .msg b{color:var(--ink)}
+  .tick{display:inline-block;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid var(--line);white-space:nowrap;margin-right:4px}
+  .tick.y{color:var(--accent);border-color:rgba(100,240,200,.45)}
+  .tick.w{color:#ffce6a;border-color:rgba(255,206,106,.45)}
+  .tick.n{color:#ff8fa3;border-color:rgba(255,143,163,.45)}
+
+  ol.paper{list-style:none;margin:0;padding:0;max-width:420px}
+  ol.paper li{display:flex;align-items:center;gap:12px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;background:#0d121b}
+  ol.paper .rk{font:700 .8rem ui-monospace,Menlo,monospace;color:var(--accent2);width:16px}
+  ol.paper .mv{margin-left:auto;display:flex;gap:6px}
+  ol.paper .mv .btn{padding:4px 11px}
+
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  .daybar{font-size:.9rem;color:var(--dim)}
+
+  @media (max-width:860px){ .tabs{grid-template-columns:repeat(3,minmax(0,1fr))} }
+  @media (max-width:760px){ .cgrid{grid-template-columns:minmax(0,1fr)} }
+  @media (max-width:640px){
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .bar{grid-template-columns:78px minmax(0,1fr) 84px;gap:8px;font-size:.82rem}
+    .half{left:calc(86px + (100% - 178px) * var(--h) / 100)}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
+      <a href="ballot.html" class="on">Ballot</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page forty</p>
+    <h1>The Ballot</h1>
+    <p class="lede">
+      Thirty-nine rooms have weighed, dated, bred and forecast, and in none of them has anybody ever
+      had to agree. Today's number founds a learned society, lets its President die and has every
+      member rank the candidates. The papers are honest. The trouble is that there is more than one
+      honest way to count them.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="plWho">—</p>
+        <h3 id="plName">—</h3>
+        <p id="plBlurb">—</p>
+        <ul class="cands" id="candList"></ul>
+        <p class="lots" id="lots"></p>
+      </div>
+
+      <div class="pilesbox">
+        <h4 class="lab">The papers, sorted into piles that read the same, first choice at the top</h4>
+        <div class="piles" id="piles"></div>
+      </div>
+
+      <div class="tabs" id="tabs" role="tablist" aria-label="The five counts and the caucus"></div>
+      <p class="brief" id="brief">—</p>
+
+      <div id="countBox">
+        <div class="callrow" id="calls"></div>
+        <div class="controls">
+          <button class="btn small" type="button" id="btnCount">Count the papers</button>
+        </div>
+        <div class="stage" id="countOut" aria-live="polite"></div>
+        <div class="msg" id="msg" aria-live="polite"></div>
+      </div>
+
+      <div id="caucusBox" hidden>
+        <h4 class="lab">Your faction's paper</h4>
+        <div id="paper"></div>
+        <div class="controls" style="margin-top:10px">
+          <button class="btn small" type="button" id="btnLodge">Lodge this paper</button>
+          <button class="btn small ghost" type="button" id="btnHonest">Back to the honest paper</button>
+        </div>
+        <div class="msg" id="msgC" aria-live="polite"></div>
+        <div class="stage" id="caucusOut" aria-live="polite"></div>
+      </div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="btnReset">Start this election again</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Society</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday's</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today's</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow's →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">The arrow keys walk to other days. Every day is a different society, a different field of candidates and a different set of papers.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The five ways of counting and the theorems are real. The society, its members and its candidates are the day's number.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Borda and Condorcet</h3>
+          <p>Jean-Charles de Borda put his points system to the French Academy of Sciences in 1770, because
+             he could see that a plurality can elect the one candidate most members like least. The
+             Marquis de Condorcet answered in 1785 that the right winner is whoever beats every rival head to
+             head, and in the same essay found that sometimes nobody does: a majority can prefer A to B, B to C
+             and C to A. Ramon Llull had written down both ideas in the thirteenth century, and they were lost.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Hare and the Oxford don</h3>
+          <p>Thomas Hare published his transferable vote in 1857 for electing many members at once; its
+             one-seat form, the instant runoff, was put forward by W.&nbsp;R. Ware at MIT in 1871. In the 1870s
+             Charles Dodgson, who wrote Alice as Lewis Carroll, printed pamphlets on how Christ Church ought to
+             count its own elections, after watching a well-liked candidate lose to a scheme. A Victorian society
+             with no rule for counting is exactly where these arguments were had.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Arrow, Gibbard, Satterthwaite</h3>
+          <p>Kenneth Arrow proved in 1951 that with three or more candidates no method of turning ranked
+             papers into a ranking of the whole society can meet a short list of reasonable conditions all at
+             once, except a dictatorship. Allan Gibbard (1973) and Mark Satterthwaite (1975) proved the sharper
+             thing the caucus shows you: every such method that is not a dictatorship and can elect anybody can
+             sometimes be beaten by a voter who lies.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>How the day is drawn</h3>
+          <p>Candidates and members are placed on a hidden map of opinion and members rank candidates by
+             distance, with some noise and a few who rank at random. The page keeps drawing electorates until
+             at least three of the five counts disagree and some faction could gain by lying under one of them.
+             The house always has an odd number, so no head-to-head is tied, and other ties go by lot. The caucus
+             is scored against a search of every paper your faction could hand in.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Forty rooms, and one number doing all the work. Today it calls a meeting, hands out the papers
+        and leaves you to find out that the count, not the vote, decides who wins.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="ballot.js"></script>
+</body>
+</html>
