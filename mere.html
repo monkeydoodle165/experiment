@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Mere — Drift</title>
+<meta name="description" content="Population ecology. The day's number stocks a lake with fish that keep to their own shoals. Net, mark and recapture for six days, then tell the club how many fish are in the water before it is drained and counted.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px;
+    background:linear-gradient(160deg,rgba(100,240,200,.08),rgba(122,162,255,.07))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+
+  h4.lab{margin:0 0 10px;font:600 .7rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  #mere{display:block;width:100%;height:auto;aspect-ratio:16/10;border-radius:14px;border:1px solid var(--line);background:#0b1a14;cursor:crosshair;touch-action:manipulation}
+  .maprow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0 0}
+  .maprow .daybar{margin-left:auto}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin:10px 0 0;font-size:.82rem;color:var(--dim)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+  .stage{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-top:18px}
+  .stage h5{margin:16px 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .stage h5:first-child{margin-top:0}
+  .bookwrap{overflow-x:auto}
+  table.book{border-collapse:collapse;width:100%;font-size:.86rem}
+  table.book th,table.book td{padding:6px 9px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+  table.book th:first-child,table.book td:first-child{text-align:left}
+  table.book th{font:600 .62rem ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+  table.book td.re{color:#ffce6a;font-weight:700}
+  table.book tfoot td{color:var(--ink);font-weight:600;border-bottom:none}
+  .formula{margin:12px 0 0;font-size:.9rem;color:var(--dim)}
+  .formula b{color:var(--ink)}
+  .chart svg{display:block;width:100%;height:auto}
+  .chart .gd{stroke:rgba(255,255,255,.07)}
+  .chart .ax{font:600 10px ui-monospace,Menlo,monospace;fill:#8b97ab}
+  .chart .wh{stroke:#7aa2ff;stroke-width:1.5;opacity:.7}
+  .chart .ln{fill:none;stroke:#7aa2ff;stroke-width:2}
+  .chart .dt{fill:#7aa2ff;stroke:#0b0f16;stroke-width:2}
+  .chart .tr{stroke:#64f0c8;stroke-width:2;stroke-dasharray:6 5}
+  .chart .tl{font:600 11px ui-monospace,Menlo,monospace;fill:#64f0c8}
+  .chart .yr{fill:rgba(255,206,106,.10);stroke:rgba(255,206,106,.4)}
+  .chart .yl{font:600 10px ui-monospace,Menlo,monospace;fill:#ffce6a}
+
+  .report{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:560px}
+  .report label{display:block;font:600 .62rem ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+  .report input{display:block;width:100%;margin-top:6px;padding:9px 11px;border-radius:10px;border:1px solid var(--line);background:#0d121b;color:var(--ink);font:600 1rem ui-monospace,Menlo,monospace}
+  .report input:focus{outline:none;border-color:var(--accent)}
+  .report input:disabled{opacity:.6}
+
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .msg:empty{display:none}
+  .msg b{color:var(--ink)}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  .daybar{font-size:.9rem;color:var(--dim)}
+
+  @media (max-width:640px){
+    .nav{position:static}
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .report{grid-template-columns:minmax(0,1fr)}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
+      <a href="ballot.html">Ballot</a>
+      <a href="mere.html" class="on">Mere</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page forty-one</p>
+    <h1>The Mere</h1>
+    <p class="lede">
+      Forty rooms have weighed and counted things you could see. Today's number fills a lake with
+      fish you cannot, and gives you six days with a boat to find out how many there are. Catch,
+      mark, let go, catch again. The arithmetic is a single line. The hard part is the netting.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="plWho">—</p>
+        <h3 id="plName">—</h3>
+        <p id="plBlurb">—</p>
+      </div>
+
+      <h4 class="lab">The mere. Tap the water to set a net, tap a net to take it up. Rings on the surface are fish rising.</h4>
+      <canvas id="mere" width="800" height="500" aria-label="A map of the lake. Tap the water to place up to three nets."></canvas>
+      <div class="legend" id="legend" hidden>
+        <span><i style="background:#64f0c8"></i>carried your mark</span>
+        <span><i style="background:rgba(139,151,171,.8)"></i>never caught</span>
+      </div>
+      <div class="maprow">
+        <button class="btn small" type="button" id="btnHaul">Haul the nets</button>
+        <button class="btn small ghost" type="button" id="btnClear">Take all nets up</button>
+        <span class="daybar" id="netsLeft">—</span>
+      </div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+
+      <div class="stage">
+        <h5>The keeper's book</h5>
+        <div class="bookwrap" id="book"></div>
+        <p class="formula" id="formula"></p>
+        <div class="chart" id="chart"></div>
+      </div>
+
+      <div class="stage">
+        <h5>Your report to the club</h5>
+        <div class="report">
+          <label>How many fish<input id="estN" type="number" min="1" step="1" inputmode="numeric"></label>
+          <label>At least<input id="estLo" type="number" min="1" step="1" inputmode="numeric"></label>
+          <label>At most<input id="estHi" type="number" min="1" step="1" inputmode="numeric"></label>
+        </div>
+        <div class="controls" style="margin-top:14px">
+          <button class="btn small" type="button" id="btnReport">Send the report and drain the mere</button>
+          <button class="btn small ghost" type="button" id="btnUse">Copy the clerk's figures</button>
+        </div>
+      </div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="btnReset">Start this week again</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Mere</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday's</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today's</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow's →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">The arrow keys walk to other days. Every day is a different water, a different fish and a different number of them.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The method, its history and the way it goes wrong are real. The mere, the club and the fish are the day's number.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Laplace and Petersen</h3>
+          <p>Pierre-Simon Laplace estimated the population of France in 1802 from the ratio of registered births
+             to people in a sample of parishes he had counted outright: the same proportion this page uses. The
+             fisheries biologist C.&nbsp;G.&nbsp;J. Petersen tagged plaice in the Limfjord in the 1890s and read their
+             numbers off the share of tagged fish in later catches.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Lincoln and Schnabel</h3>
+          <p>Frederick Lincoln did the same for North American ducks from returned leg bands in 1930. In 1938 the
+             mathematician Zoe Emma Schnabel published the version for a lake netted over many days, adding up
+             catch times marked-at-large over every day: the running estimate in the keeper's book. D.&nbsp;G. Chapman's
+             adjustment of 1951 adds one to the recaptures so the sum can be worked out before any have come in.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Why it comes out low</h3>
+          <p>The arithmetic assumes every fish is as likely to be caught as every other on every day, and that the
+             marked ones mix back in evenly. Neither is quite true. Fish keep to home ground, so nets that go back to
+             one bay keep catching the same fish; and some fish are bolder about nets than others. Both push the
+             recaptures up and the estimate down. Field biologists spend most of their effort on sampling design
+             for exactly this reason.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>How the day is drawn</h3>
+          <p>The fish are set out in four to six shoals of unequal size, with about one in eight a loner, and each
+             is given its own range and its own temper about nets. Where each one is on each of the six mornings is
+             fixed by the day's number, so the same nets in the same places always bring up the same fish. When the
+             mere is drained, the page re-runs your week 240 times with two other keepers' habits for comparison.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Forty-one rooms, and one number doing all the work. Today it stocks a lake, hides the fish in it and
+        lets you find out how much a few nicked tail fins can tell you about what you never saw.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="mere.js"></script>
+</body>
+</html>
