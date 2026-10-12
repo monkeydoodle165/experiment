@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Hold — Drift</title>
+<meta name="description" content="Naval architecture. The day's number fits out a Victorian merchant sailing ship and fills the quay with cargo for two or three ports. Stow it so each port's cargo comes out first, nothing wet drips on anything dry, and she neither capsizes nor shakes her masts out.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px;
+    background:linear-gradient(160deg,rgba(255,206,106,.08),rgba(122,162,255,.07))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+
+  h4.lab{margin:0 0 10px;font:600 .7rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  canvas.view{display:block;width:100%;height:auto;border-radius:14px;border:1px solid var(--line);background:#0b1220}
+  #profile{aspect-ratio:2/1}
+  #roll{aspect-ratio:6/5}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+  .stage{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-top:18px}
+  .stage h5{margin:16px 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .stage h5:first-child{margin-top:0}
+
+  .plan{display:grid;grid-template-columns:auto repeat(6,minmax(0,1fr));gap:5px;align-items:stretch}
+  .tier-lab{font:600 .6rem ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);display:flex;align-items:center;padding-right:6px;white-space:nowrap}
+  .bay-lab{font:600 .6rem ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);text-align:center;padding-top:4px;white-space:nowrap}
+  .cell{position:relative;min-height:54px;border-radius:9px;border:1px dashed rgba(255,255,255,.14);background:rgba(255,255,255,.02);color:var(--ink);
+    font:600 .72rem ui-monospace,Menlo,monospace;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px 2px;overflow:hidden}
+  .cell:hover:not(:disabled){border-color:var(--accent)}
+  .cell:disabled{cursor:default}
+  .cell .em{color:rgba(255,255,255,.2);font-size:1.1rem}
+  .cell b{font-weight:700;letter-spacing:.02em;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+  .cell span{color:var(--dim);font-weight:500}
+  .cell.full{border-style:solid;color:#0b0f16}
+  .cell.full span{color:rgba(11,15,22,.75)}
+  .cell.p0,.lot.p0{--pc:#ffce6a}
+  .cell.p1,.lot.p1{--pc:#7aa2ff}
+  .cell.p2,.lot.p2{--pc:#ff8fa3}
+  .cell.full{background:var(--pc);border-color:var(--pc)}
+  .cell.sel,.lot.sel{outline:3px solid #64f0c8;outline-offset:2px}
+  .cell.bad{box-shadow:inset 0 0 0 3px #ff5d6c}
+  .tg{font-style:normal;font:600 .56rem ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;padding:1px 5px;border-radius:5px;background:rgba(255,255,255,.08);color:var(--dim)}
+  .cell .tg{background:rgba(11,15,22,.2);color:#0b0f16}
+  .tg.wet{background:rgba(120,200,255,.2);color:#9bd6ff}
+  .tg.dry{background:rgba(255,206,106,.14);color:#ffce6a}
+  .cell .tg.wet{background:#0b2a40;color:#9bd6ff}
+  .cell .tg.dry{background:rgba(11,15,22,.25);color:#0b0f16}
+
+  .qrow{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;margin:0 0 10px}
+  .qport{font:600 .7rem ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;min-width:120px;padding-top:8px}
+  .qlots{display:flex;flex-wrap:wrap;gap:6px;flex:1;min-width:0}
+  .lot{border:1px solid var(--pc);border-left-width:5px;border-radius:9px;background:rgba(255,255,255,.03);color:var(--ink);font-size:.82rem;padding:6px 10px;cursor:pointer;text-align:left}
+  .lot b{color:var(--pc)}
+  .lot.aboard{opacity:.45}
+  .lot:disabled{cursor:default}
+  .quaybar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:6px;font-size:.88rem;color:var(--dim)}
+
+  .split{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:18px;align-items:start}
+  ul.read{list-style:none;margin:0;padding:0;font-size:.86rem}
+  ul.read li{display:grid;grid-template-columns:18px 1fr auto;gap:8px;padding:5px 0;border-bottom:1px solid var(--line);color:var(--dim)}
+  ul.read li.hd{font:600 .62rem ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase}
+  ul.read .vl{color:var(--ink);font-family:ui-monospace,Menlo,monospace;text-align:right}
+  ul.read li.ok .mk{color:#64f0c8}
+  ul.read li.no .mk{color:#ff5d6c}
+  ul.read li.no .vl{color:#ff8fa3}
+  ul.read li.na .mk{color:rgba(255,255,255,.25)}
+
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .msg:empty{display:none}
+  .msg b{color:var(--ink)}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  .daybar{font-size:.9rem;color:var(--dim)}
+
+  @media (max-width:760px){
+    .split{grid-template-columns:minmax(0,1fr)}
+  }
+  @media (max-width:640px){
+    .nav{position:static}
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .stage{padding:14px 12px}
+    .plan{gap:3px}
+    .tier-lab{writing-mode:vertical-rl;transform:rotate(180deg);padding:0 2px;font-size:.52rem}
+    .bay-lab{font-size:.5rem}
+    .cell{min-height:50px;font-size:.6rem}
+    .cell .tg{display:none}
+    .qport{min-width:0;width:100%;padding-top:0}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
+      <a href="ballot.html">Ballot</a>
+      <a href="mere.html">Mere</a>
+      <a href="hold.html" class="on">Hold</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page forty-two</p>
+    <h1>The Hold</h1>
+    <p class="lede">
+      Forty-one rooms and nothing has ever had to float. Today's number fits out a small merchant
+      sailing ship, piles a dozen lots of cargo on the quay beside her and gives you her stowage plan.
+      Put the heavy things low and she is safe and unbearable. Put them high and she is comfortable
+      until the first squall. Somewhere between the two is a ship that sails.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="plWho">—</p>
+        <h3 id="plName">—</h3>
+        <p id="plBlurb">—</p>
+      </div>
+
+      <h4 class="lab">Her profile, bow to the right. G is where her weight acts, B where the sea holds her up.</h4>
+      <canvas id="profile" class="view" width="800" height="400" aria-label="A side view of the ship showing her hold, the cargo stowed in it and how she trims in the water."></canvas>
+
+      <div class="stage">
+        <h5>The stowage plan. Pick a lot on the quay, then tap a space. Tap a stowed lot to move it.</h5>
+        <div class="plan" id="plan"></div>
+        <div class="msg" id="msg" aria-live="polite"></div>
+        <h5>On the quay, by port of discharge in the order she calls</h5>
+        <div id="quay"></div>
+        <div class="quaybar">
+          <span id="quayLeft">—</span>
+          <button class="btn small ghost" type="button" id="btnQuay">Send the selected lot back to the quay</button>
+          <button class="btn small ghost" type="button" id="btnClear">Clear the hold</button>
+        </div>
+      </div>
+
+      <div class="stage split">
+        <div>
+          <h5>Her figures</h5>
+          <ul class="read" id="readouts"></ul>
+          <h5>The owners' conditions</h5>
+          <ul class="read" id="rules"></ul>
+        </div>
+        <div>
+          <h5>End on, in a swell. M is the metacentre: while G is below it, she comes back.</h5>
+          <canvas id="roll" class="view" width="360" height="300" aria-label="An end-on view of the ship rolling in a swell at the period her stowage gives her."></canvas>
+        </div>
+      </div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small" type="button" id="btnSign">Sign the plan and sail</button>
+        <button class="btn small ghost" type="button" id="btnMate" hidden>Show the mate’s plan</button>
+        <button class="btn small ghost" type="button" id="btnReset">Unload and start again</button>
+      </div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Ship</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday's</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today's</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow's →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">The arrow keys walk to other days. Every day is a different ship, a different cargo and a different set of ports.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The physics, the rules of thumb and the trouble they were invented to prevent are real. The ship, her owners and her cargo are the day's number.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Bouguer's metacentre</h3>
+          <p>Pierre Bouguer named the metacentre in his <i>Traité du navire</i> of 1746. Heel a ship a little and the
+             centre of her underwater volume, B, swings out to the low side; the line straight up through the new B
+             crosses her centreline at M. If her centre of gravity G is below M, her weight and the sea's push make a
+             couple that rights her. The distance GM is the whole of her small-angle stability, and the only part of
+             it the person loading her controls is how high G sits.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Stiff and tender</h3>
+          <p>A ship rolls like a pendulum, and the period goes as her beam over the square root of GM. In feet the
+             usual rule of thumb is T ≈ 0.44 B / √GM seconds, which this page uses. Too little GM and she is
+             <i>tender</i>: she lies over and comes back slowly. Too much and she is <i>stiff</i>, snapping upright
+             so quickly that she strains her rigging, shifts her cargo and wears out her crew. Stowing weight higher on
+             purpose to ease a ship that is too stiff is a real and old practice.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Stowage</h3>
+          <p>A mate's stowage plan has to satisfy the cargo as well as the physics: the first port's goods on top
+             where the stevedores can reach them, casks of oil, ale and brine kept off anything that spoils wet, and
+             nothing stowed over a void that can collapse in a seaway. Trim matters too; sailing ships were usually
+             loaded a little by the stern so the rudder bit and the bow rose to the sea. Samuel Plimsoll's campaign
+             and the Merchant Shipping Act of 1876 put the load line on British hulls because so many were not.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>How the day is drawn</h3>
+          <p>The ship's length, beam, light weight and the height of her metacentre at her loaded draught are drawn
+             from the day's number, and the metacentre is set so that the obvious plan (heaviest lots low) leaves
+             her too stiff. The heavy lots are dealt round the ports so the first port always has something heavy
+             to put somewhere. Before the page shows you a cargo, a simulated annealer searches the hold until it
+             finds a plan that meets every condition; that is the mate's plan you are shown after you sail.
+             Trim is computed from moments about midships and drawn five times over so you can see it.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Forty-two rooms, and one number doing all the work. Today it builds a ship, loads the quay beside her and
+        lets you find out why nobody puts all the iron at the bottom.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="hold.js"></script>
+</body>
+</html>
