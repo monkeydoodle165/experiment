@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Wire — Drift</title>
+<meta name="description" content="Telegraphy. The day's number sends a Victorian telegram down a bad line. Read the Morse off the inker's tape, write out the copy and deliver it, against the office's mechanical reader.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px;
+    background:linear-gradient(160deg,rgba(100,240,200,.08),rgba(122,162,255,.07))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+
+  h4.lab{margin:0 0 10px;font:600 .7rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .form{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:#b9a77c;border:1px solid #b9a77c;border-radius:12px 12px 0 0;overflow:hidden}
+  .form div{background:#e6dcc0;padding:8px 12px;color:#3b2f17}
+  .form div.wide{grid-column:1/-1}
+  .form span{display:block;font:600 .6rem ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:#7a5a2a}
+  .form b{font:700 .95rem ui-monospace,Menlo,monospace}
+  #tape{display:block;width:100%;height:200px;border:1px solid #b9a77c;border-top:none;border-radius:0 0 12px 12px;cursor:pointer;touch-action:manipulation}
+  .gauge{margin:8px 0 0;font:600 .78rem ui-monospace,Menlo,monospace;color:var(--dim);min-height:1.3em}
+  .maprow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0 0}
+  .maprow .daybar{margin-left:auto}
+  .maprow select{padding:7px 10px;border-radius:999px;border:1px solid var(--line);background:#0d121b;color:var(--ink);font:600 .8rem ui-monospace,Menlo,monospace}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+  .stage{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-top:18px}
+  .stage h5,.verdict h5,#analysis h5{margin:16px 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .stage h5:first-child{margin-top:0}
+  .card{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:4px 10px;font:600 .82rem ui-monospace,Menlo,monospace}
+  .card span{display:flex;gap:8px;align-items:baseline;padding:3px 0;border-bottom:1px solid var(--line)}
+  .card b{color:var(--accent);min-width:1em}
+  .card i{font-style:normal;color:var(--ink);letter-spacing:.08em}
+  textarea#copy{display:block;width:100%;min-height:92px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:#0d121b;color:var(--ink);
+    font:600 1rem/1.5 ui-monospace,Menlo,monospace;text-transform:uppercase;letter-spacing:.06em;resize:vertical;box-sizing:border-box}
+  textarea#copy:focus{outline:none;border-color:var(--accent)}
+  textarea#copy:disabled{opacity:.6}
+
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .msg:empty{display:none}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict p{margin:0 0 8px}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  .copyline{display:flex;flex-wrap:wrap;gap:6px 10px;font:700 .95rem ui-monospace,Menlo,monospace}
+  .copyline .w{padding:2px 7px;border-radius:6px}
+  .copyline .ok{color:#64f0c8;background:rgba(100,240,200,.08)}
+  .copyline .bad,.copyline .miss{color:#ffce6a;background:rgba(255,206,106,.1)}
+  .copyline .extra{color:#8b97ab}
+  .copyline s{color:#ff7a85;margin-right:6px;font-weight:600}
+  .mono{font:600 .9rem ui-monospace,Menlo,monospace;color:var(--ink);word-break:break-word}
+  .chart svg{display:block;width:100%;height:auto}
+  .chart .gd{stroke:rgba(255,255,255,.07)}
+  .chart .ax{font:600 10px ui-monospace,Menlo,monospace;fill:#8b97ab}
+  .chart .th{stroke:#e8edf5;stroke-width:1.5;stroke-dasharray:5 4}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin:8px 0 0;font-size:.8rem;color:var(--dim)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+  .legend i.dash{width:14px;height:0;border-top:2px dashed #e8edf5;border-radius:0}
+  .formula{margin:12px 0 0;font-size:.9rem;color:var(--dim)}
+  .formula b{color:var(--ink)}
+  .daybar{font-size:.9rem;color:var(--dim)}
+
+  @media (max-width:640px){
+    .nav{position:static}
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .form{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
+      <a href="ballot.html">Ballot</a>
+      <a href="mere.html">Mere</a>
+      <a href="hold.html">Hold</a>
+      <a href="wire.html" class="on">Wire</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page forty-three</p>
+    <h1>The Wire</h1>
+    <p class="lede">
+      Forty-two rooms and nobody has ever sent anybody a message. Today's number hands a telegram in
+      at a country post office and sends it down a line with weather on it. At your end there is a
+      strip of paper tape, a code card and a form to write the copy on. Read it before the boy goes out.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="plWho">—</p>
+        <h3 id="plName">—</h3>
+        <p id="plBlurb">—</p>
+      </div>
+
+      <h4 class="lab">The inker's tape, gummed to the form. Hover to gauge a mark; click a word to ask for it again.</h4>
+      <div class="form" id="form"></div>
+      <canvas id="tape" aria-label="A strip of Morse tape: short marks are dots, long marks are dashes, wider spaces separate letters and words."></canvas>
+      <p class="gauge" id="gauge">Gauge: hover over a mark to measure it against the sender’s dot.</p>
+      <div class="maprow">
+        <button class="btn small" type="button" id="btnPlay">Listen to the line</button>
+        <button class="btn small ghost" type="button" id="btnPlayRpt">Listen to the repeats</button>
+        <select id="voice" aria-label="Sound"><option value="sounder">Sounder (clicks)</option><option value="tone">Buzzer (tone)</option></select>
+        <select id="speed" aria-label="Speed"><option value="1">Full speed</option><option value="0.7">Slower</option><option value="0.45">Much slower</option></select>
+        <span class="daybar" id="rptLeft">Repeats left: 2</span>
+      </div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+
+      <div class="stage">
+        <h5>The code card</h5>
+        <div class="card" id="card"></div>
+        <p class="formula">A dash is three dots long, a letter ends with a space of three dots and a word with seven. That is the book. The clerk at the far end has his own ideas.</p>
+      </div>
+
+      <div class="stage">
+        <h5>Your copy</h5>
+        <textarea id="copy" spellcheck="false" autocomplete="off" aria-label="Your copy of the telegram" placeholder="Write the message out here, words separated by spaces"></textarea>
+        <div class="controls" style="margin-top:14px">
+          <button class="btn small" type="button" id="btnDeliver">Send it out with the boy</button>
+        </div>
+      </div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <div id="analysis"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="btnReset">Take this telegram again</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Wire</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday's</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today's</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow's →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">The arrow keys walk to other days. Every day is a different office, a different clerk and a different line.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The code, the tape, the tariff and the way a bad line and a bad fist go wrong are real. The offices, the clerks and the telegrams are the day's number.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Morse, Vail and Gerke</h3>
+          <p>Samuel Morse and Alfred Vail's code of the 1840s was rewritten for the German lines by Friedrich
+             Gerke in 1848 and settled in Vienna in 1851 as the Continental code, the one on the card. The
+             Post Office took over Britain's private telegraph companies in 1870, and its inland offices
+             worked in this code until the telephone and the teleprinter wound them down.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>The inker and the sounder</h3>
+          <p>Morse's register embossed, and later inked, the signal onto a moving strip of paper, which is what
+             is on the form here. Operators soon found they could read faster by ear from the click of the
+             armature, a sound when it went down and another when it came up, and the sounder replaced the
+             tape in most offices. Both are on this page.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>The fist</h3>
+          <p>No two telegraphists sent alike, and operators could tell each other down the line by their
+             fist: how long they held a dash, how much they crowded letters, how steady they were. The book
+             asks for a dash of three dots and spaces of one, three and seven. Here the far clerk is given
+             his own numbers, and the line breaks dashes and drops clicks of static into the spaces as it goes.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>The charge, and the machine</h3>
+          <p>From 1870 an inland telegram cost a shilling for twenty words with the address free; from
+             October 1885 it was sixpence for twelve words, address included, and a halfpenny a word after.
+             The mechanical reader is not a period machine: it ignores very short marks, sorts the rest by
+             length into the two heaps that split them most cleanly and the spaces into three, and reads
+             off whatever that gives. After delivery the page draws both sortings.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Forty-three rooms, and one number doing all the work. Today it hands in a telegram, gives the clerk who
+        sends it a hand of his own, puts weather on the line and leaves you the tape.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="wire.js"></script>
+</body>
+</html>
