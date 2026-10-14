@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Press — Drift</title>
+<meta name="description" content="Imposition. The day's number puts one sheet of an eighteenth-century book on the stone. Lay its pages in the two formes so that the folded sheet reads in order, then pull a proof and watch it fold.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='%2364f0c8' stroke-width='3'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px;
+    background:linear-gradient(160deg,rgba(100,240,200,.08),rgba(122,162,255,.07))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em;font-family:Georgia,"Times New Roman",serif}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  h4.lab{margin:0 0 10px;font:600 .7rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+  .stage{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-top:18px}
+  .stage h5,.verdict h5,#gathering h5,#rules h5,.forme h5{margin:16px 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .stage h5:first-child{margin-top:0}
+  #folder ol{margin:0;padding-left:1.3em;color:var(--dim);font-size:.94rem}
+  #folder li{margin:3px 0}
+  #folder b{color:var(--ink)}
+
+  #tray{display:flex;flex-wrap:wrap;gap:6px}
+  .pchip{padding:5px 0;min-width:40px;justify-content:center;font:700 .85rem ui-monospace,Menlo,monospace}
+  .pchip.used{opacity:.35}
+  .pchip.on{opacity:1;background:rgba(100,240,200,.1)}
+
+  #stone{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-top:6px}
+  .forme h5 span{display:block;margin-top:3px;text-transform:none;letter-spacing:0;font:500 .78rem system-ui,sans-serif;color:var(--dim)}
+  .chase{display:grid;gap:6px;padding:10px;border-radius:10px;border:3px solid #5b5348;background:#24221f}
+  .slot{position:relative;aspect-ratio:.66;border:1px dashed rgba(255,255,255,.18);border-radius:4px;background:rgba(255,255,255,.03);padding:0;cursor:pointer;color:inherit;font:inherit;overflow:hidden;touch-action:manipulation}
+  .slot:hover{border-color:var(--accent)}
+  .slot.full{border:1px solid #b9a77c;background:#efe6cf}
+  #stone.stone .slot.full{background:linear-gradient(160deg,#9aa0a6,#6f757c);border-color:#4b5056}
+  .slot.hint{outline:2px solid #ffce6a;outline-offset:2px;animation:pulse 1.2s ease-in-out infinite}
+  @keyframes pulse{50%{outline-color:rgba(255,206,106,.25)}}
+  .hintlab{position:absolute;left:0;right:0;bottom:4px;font:700 .62rem ui-monospace,Menlo,monospace;color:#ffce6a;text-align:center}
+  .pg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;padding:8% 12%;gap:6%;transition:transform .25s ease}
+  .pg b{font:700 clamp(.85rem,2.6vw,1.35rem) Georgia,"Times New Roman",serif;color:#3b2f17}
+  #stone.stone .pg b{color:#1d2024}
+  .pg i{display:block;width:100%;height:5%;background:rgba(59,47,23,.25);border-radius:1px}
+  .pg i.s{width:55%;align-self:flex-start}
+  #stone.stone .pg i{background:rgba(20,22,25,.35)}
+  .pg.empty{justify-content:center}
+  .pg.empty em{font:600 .6rem ui-monospace,Menlo,monospace;color:rgba(255,255,255,.25);font-style:normal;letter-spacing:.1em;text-transform:uppercase}
+  .pg.inv{transform:rotate(180deg)}
+  .pg.mir{transform:scaleX(-1)}
+  .pg.inv.mir{transform:rotate(180deg) scaleX(-1)}
+
+  #fold{display:block;width:100%;border:1px solid var(--line);border-radius:12px;background:#121821}
+  .note{margin:8px 0 0;font:600 .78rem ui-monospace,Menlo,monospace;color:var(--dim);min-height:1.3em}
+  .count{font:600 .78rem ui-monospace,Menlo,monospace;color:var(--dim);margin:10px 0 0}
+
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .msg:empty{display:none}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict p{margin:0 0 8px}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+
+  .strip{display:flex;flex-wrap:wrap;gap:6px 4px;align-items:flex-start}
+  .turn{width:8px}
+  .leafpg{width:68px;display:flex;flex-direction:column;gap:3px}
+  .lp{position:relative;display:flex;flex-direction:column;aspect-ratio:.66;background:#efe6cf;border:1px solid #b9a77c;border-radius:3px;padding:6px 7px;gap:4px;color:#3b2f17}
+  .lp b{font:700 .78rem Georgia,serif}
+  .recto .lp b{align-self:flex-end}
+  .lp em{font:italic .6rem Georgia,serif}
+  .lp i{display:block;height:3px;background:rgba(59,47,23,.22)}
+  .lp .foot{margin-top:auto;display:flex;justify-content:space-between;font:.55rem Georgia,serif}
+  .lp .sig{flex:1;text-align:center}
+  .lp.inv{transform:rotate(180deg)}
+  .lp.blankpg{align-items:center;justify-content:center;font:600 .6rem ui-monospace,Menlo,monospace;color:#8b97ab;background:rgba(255,255,255,.04);border-style:dashed;border-color:rgba(255,255,255,.2)}
+  .want{font:600 .62rem ui-monospace,Menlo,monospace;text-align:center;color:var(--dim)}
+  .leafpg.ok .want{color:#64f0c8}
+  .leafpg.inv .want,.leafpg.wrong .want{color:#ffce6a}
+  .leafpg.wrong .lp{box-shadow:0 0 0 2px rgba(255,93,108,.7)}
+  .leafpg.inv .lp{box-shadow:0 0 0 2px rgba(255,206,106,.7)}
+  .rulelist{margin:0;padding-left:1.2em;color:var(--dim);font-size:.93rem}
+  .rulelist li{margin:6px 0}
+  .rulelist b{color:var(--ink)}
+  .formula{margin:12px 0 0;font-size:.9rem;color:var(--dim)}
+  .formula b{color:var(--ink)}
+  .daybar{font-size:.9rem;color:var(--dim)}
+
+  @media (max-width:640px){
+    .nav{position:static}
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .leafpg{width:58px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
+      <a href="ballot.html">Ballot</a>
+      <a href="mere.html">Mere</a>
+      <a href="hold.html">Hold</a>
+      <a href="wire.html">Wire</a>
+      <a href="press.html" class="on">Press</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page forty-four</p>
+    <h1>The Press</h1>
+    <p class="lede">
+      Forty-three rooms, and not one of them has made a book. Today's number puts one sheet of an
+      eighteenth-century book on the imposing stone: its pages set, made up and tied, and two empty chases.
+      Lay the pages so that when the sheet is printed both sides, folded the way the folder always folds it
+      and cut, it reads in order with every page head up.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="plWho">—</p>
+        <h3 id="plName">—</h3>
+        <p id="plBlurb">—</p>
+      </div>
+
+      <div class="stage" id="folder"></div>
+
+      <div class="stage">
+        <h5>The pages, made up and tied. Pick one, then click a place in a forme</h5>
+        <div id="tray"></div>
+        <p class="count" id="count">—</p>
+        <p class="formula">Click an empty place to lay the chosen page head up. Click a laid page to turn it head down, and again to lift it off.</p>
+      </div>
+
+      <div id="stone" class="sheet" aria-live="polite"></div>
+
+      <div class="controls" style="margin-top:16px">
+        <button class="btn small" type="button" id="btnProof">Pull a proof and fold it</button>
+        <button class="btn small ghost" type="button" id="btnScrap">Fold a scrap of waste for this page</button>
+        <button class="btn small ghost" type="button" id="btnView">Show the type as it lies on the stone</button>
+        <button class="btn small ghost" type="button" id="btnClear">Clear the stone</button>
+      </div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+
+      <div class="stage">
+        <h5>The folding table</h5>
+        <canvas id="fold" aria-label="The printed sheet on the folding table, folded step by step."></canvas>
+        <p class="note" id="foldNote">—</p>
+        <div class="controls" style="margin-top:10px">
+          <button class="btn small ghost" type="button" id="btnFoldAgain">Fold it again</button>
+        </div>
+      </div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <div class="stage" id="gatherWrap"><div id="gathering"><h5>The gathering</h5><p class="formula">Pull a proof to see how the folded sheet reads.</p></div></div>
+      <div id="rules" class="stage" style="display:none"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="btnReset">Take this sheet again</button>
+        <button class="btn small ghost" type="button" id="btnGive">Let the overseer lay it</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Press</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday's</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today's</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow's →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">The arrow keys walk to other days. Every day is a different house, a different book and a different folder's habit.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The formats, the formes, the folding and the binder's marks are real. The printing houses, the books and the folders are the day's number.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>One sheet, many pages</h3>
+          <p>A hand press printed one side of a whole sheet at a pull. To make a book the sheet was folded:
+             once for a folio, twice for a quarto, three times for an octavo, four for a sixteenmo, giving
+             four, eight, sixteen or thirty-two pages. The pages therefore have to be set on the sheet in an
+             order that looks scrambled flat and comes right only when it is folded. Laying them out is
+             imposition, and it was the compositor's job.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>The stone and the formes</h3>
+          <p>The pages were laid on a flat imposing stone and locked into an iron frame, the chase, with wooden
+             furniture and quoins. One side of the sheet came from the outer forme, which held the first and
+             last pages; the back came from the inner forme. Type is a mirror image of the print, so the forme
+             on the stone is laid the mirror way round to the sheet. The page lets you look at it either way.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Heads and tails</h3>
+          <p>Every fold across the sheet turns half the pages round, so some rows go into the forme head down
+             and the heads meet at the fold, to be cut open later. Pages folded against each other at the back
+             of the book are conjugate leaves, and a recto and the verso of its conjugate always add up to the
+             first page plus the last: on a sheet of pages 1 to 16 they make 17. Joseph Moxon set the schemes
+             out in his <i>Mechanick Exercises</i> of 1683, and compositors were told to fold a piece of paper
+             when in doubt, which is what the scrap of waste here does.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>What this page simplifies</h3>
+          <p>A real quarto and sixteenmo lie sideways on the sheet; here every sheet is drawn so the pages stand
+             upright, which is the same scheme turned a quarter round. The page always prints the back by turning
+             the sheet left to right. The fold is computed, not looked up: each part of the sheet is carried through
+             every fold as a half-turn in three dimensions and the leaves are read off the pile, so a folder with
+             a different habit gets a different, and still correct, scheme. The catchwords and signatures on the
+             proof are the marks real books carried for the binder.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Forty-four rooms, and one number doing all the work. Today it sets up a printing house, puts a book in the
+        press, teaches a folder her habit and leaves you one sheet of it on the stone.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="press.js"></script>
+</body>
+</html>
