@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Gauge — Drift</title>
+<meta name="description" content="Gauge a Georgian cellar for the Excise. The day's number picks the town, the trader and three casks; measure them with the rod, sight along the staves to choose one of the four varieties, dip the broached one and charge what nobody can see.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M8 5Q3 16 8 27H24Q29 16 24 5Z' fill='none' stroke='%2364f0c8' stroke-width='2.5'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px;
+    background:linear-gradient(160deg,rgba(100,240,200,.08),rgba(122,162,255,.07))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em;font-family:Georgia,"Times New Roman",serif}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  #rules{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:14px;font-size:.82rem;color:var(--dim)}
+  #rules b{color:var(--accent);font:700 .82rem ui-monospace,Menlo,monospace}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+  .stage{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-top:18px}
+  .stage h5,.verdict h5{margin:16px 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .stage h5:first-child{margin-top:0}
+  .chip:disabled{opacity:.35;cursor:not-allowed}
+  .chip.done{color:#b9c9bf}
+  #draw svg,#sight svg{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#0e131b}
+  #draw text,#sight text,.bars text{font:11px ui-monospace,Menlo,monospace;fill:#8b97ab}
+  #draw .lab{fill:#e8edf5;font-weight:600}
+  #book b{color:var(--ink)}
+  .formula{margin:10px 0 0;font-size:.86rem;color:var(--dim)}
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .msg:empty{display:none}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict p{margin:0 0 8px}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  #reveal p{color:var(--dim);font-size:.92rem;margin:6px 0 0}
+  #reveal p b{color:var(--ink)}
+  .bars{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#0e131b;margin-top:8px}
+  .tablewrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:.84rem}
+  th{font:600 .62rem ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+  td{padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap;color:var(--ink);font-family:ui-monospace,Menlo,monospace}
+  td.bad{color:#ff8a7a}
+  td.ok{color:#64f0c8}
+  .daybar{font-size:.9rem;color:var(--dim)}
+
+  @media (max-width:640px){
+    .nav{position:static}
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .stage{padding:14px 12px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
+      <a href="ballot.html">Ballot</a>
+      <a href="mere.html">Mere</a>
+      <a href="hold.html">Hold</a>
+      <a href="wire.html">Wire</a>
+      <a href="press.html">Press</a>
+      <a href="vat.html">Vat</a>
+      <a href="lock.html">Lock</a>
+      <a href="spinet.html">Spinet</a>
+      <a href="gauge.html" class="on">Gauge</a>
+    </div>
+  </div>
+</nav>
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page forty-eight</p>
+    <h1>The Gauge</h1>
+    <p class="lede">
+      Forty-seven rooms, and everything in them could be seen before it was measured. Today's number sends you,
+      an officer of the Excise, into a cellar in a Georgian town with three casks to charge. You may not open them.
+      You have a gauging rod, a dip rod and the gauging book, and the duty is owed on what is inside.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="plWho">—</p>
+        <h3 id="plName">—</h3>
+        <p id="plBlurb">—</p>
+        <div id="rules"></div>
+      </div>
+
+      <div class="stage">
+        <h5>The cellar</h5>
+        <div class="chips" id="casks"></div>
+
+        <h5>The cask, lying on its stillage</h5>
+        <div id="draw"></div>
+        <div class="controls" style="margin-top:10px">
+          <button class="btn small ghost" type="button" id="btnB">Rod through the bung</button>
+          <button class="btn small ghost" type="button" id="btnH">Rod across both heads</button>
+          <button class="btn small ghost" type="button" id="btnL">Rod along the length</button>
+          <button class="btn small ghost" type="button" id="btnDip" style="display:none">Dip the wet inches</button>
+        </div>
+        <p class="formula" id="reads">—</p>
+
+        <h5>Sight along the staves</h5>
+        <div id="sight"></div>
+        <p class="formula">The drawing shows only the swell of the stave above the height of the heads, stretched until it fills the box, so that a bend you could never see from the doorway is plain. Hold each of the gauging book's four patterns against it and choose the one it follows.</p>
+        <div class="chips" id="vars" style="margin-top:10px"></div>
+        <p id="book" class="formula" style="font-size:.95rem">—</p>
+        <div class="controls" style="margin-top:12px">
+          <button class="btn small" type="button" id="btnEnter">Write it in the book →</button>
+        </div>
+      </div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+
+      <div class="stage">
+        <h5>The day's entries</h5>
+        <div class="tablewrap"><table id="ledger"></table></div>
+        <div class="controls" style="margin-top:14px">
+          <button class="btn small" type="button" id="btnClose" disabled>Close the book and send it to the supervisor</button>
+        </div>
+      </div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <div class="stage" id="reveal" style="display:none"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="btnReset">Start the round again</button>
+        <button class="btn small ghost" type="button" id="btnGive">Let the supervisor gauge it</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Cellar</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday's</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today's</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow's →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">The arrow keys walk to other days. Every day is a different town, trader, liquor and set of casks.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The gallons, the four varieties and their formulas, and the geometry are real. The traders, their casks and the cooper's hand are the day's number.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Two gallons</h3>
+          <p>Until the imperial gallon arrived in 1824, England measured liquor by two different gallons. Beer and
+             ale went by the ale gallon of 282 cubic inches; wine and spirits by the wine gallon of 231. A hogshead
+             of beer and a hogshead of wine are therefore not the same size, and the officer has to know which he
+             is in front of before he divides.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Four varieties</h3>
+          <p>No cask is a cylinder. The gauging books sorted them into four shapes by how their staves bend: the
+             middle of a spheroid, the middle of a parabolic spindle, two paraboloids or two cones set base to base.
+             Each has an exact formula in the bung diameter, the head diameter and the length. Real casks fall
+             between them, which is why the officer sights along the staves before he chooses.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Lying ullage</h3>
+          <p>A broached cask on its side is only part full, and the dip rod gives the depth of liquor at the bung.
+             The plain rule takes the wet share of the bung's circle as the wet share of the cask. It is wrong,
+             because near the heads the circle is smaller and the same surface cuts off more of it. The book here
+             works the ullage section by section along the variety you chose, and the resurvey shows how far the
+             plain rule would have gone astray.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>What the page simplifies</h3>
+          <p>The rods here read the inside of the cask to a tenth of an inch, and the two heads are averaged.
+             Officers actually measured outside and made allowances for the thickness of the wood, and they used
+             the sliding rule and printed tables where the page does the arithmetic for you. The diagonal rod's
+             scale here is marked for one standard cask, so it shows how a quick reading fails on an odd one.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Forty-eight rooms, and one number doing all the work. Today it lets a cooper bend the staves however he
+        liked and puts the duty on what nobody can see.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="gauge.js"></script>
+</body>
+</html>
