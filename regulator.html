@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Regulator — Drift</title>
+<meta name="description" content="Regulate a Georgian longcase clock in eight noons. The day's number picks the house, the owner, the pendulum rod and how far the bob was knocked; take the sun across the noon line, turn the rating nut, set the hands, and a month after you leave the owner writes to say how it kept.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='12' r='8' fill='none' stroke='%2364f0c8' stroke-width='2.5'/%3E%3Cpath d='M16 12V7M16 12L19 14M16 20V27' stroke='%2364f0c8' stroke-width='2'/%3E%3Ccircle cx='16' cy='28' r='2.5' fill='%2364f0c8'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px;
+    background:linear-gradient(160deg,rgba(100,240,200,.08),rgba(122,162,255,.07))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em;font-family:Georgia,"Times New Roman",serif}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  #rules{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:14px;font-size:.82rem;color:var(--dim)}
+  #rules b{color:var(--accent);font:700 .82rem ui-monospace,Menlo,monospace}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+  .stage{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-top:18px}
+  .stage h5,.verdict h5{margin:16px 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .stage h5:first-child{margin-top:0}
+  .chip:disabled{opacity:.35;cursor:not-allowed}
+  .chip.done{color:#b9c9bf}
+  #plot svg,#draw svg{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#0e131b}
+  #plot text,.bars text{font:11px ui-monospace,Menlo,monospace;fill:#8b97ab}
+  #draw .lab{fill:#e8edf5;font-weight:600}
+  #book b{color:var(--ink)}
+  .formula{margin:10px 0 0;font-size:.86rem;color:var(--dim)}
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .msg:empty{display:none}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict p{margin:0 0 8px}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  #reveal p{color:var(--dim);font-size:.92rem;margin:6px 0 0}
+  #reveal p b{color:var(--ink)}
+  .bars{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#0e131b;margin-top:8px}
+  .tablewrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:.84rem}
+  th{font:600 .62rem ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+  td{padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap;color:var(--ink);font-family:ui-monospace,Menlo,monospace}
+  td.bad{color:#ff8a7a}
+  td.ok{color:#64f0c8}
+  .daybar{font-size:.9rem;color:var(--dim)}
+
+  #sky{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#0e131b}
+  #dayHead{font-size:.95rem;color:var(--dim);margin:0 0 12px}
+  #dayHead b{color:var(--ink)}
+  #nutOut{font-size:.88rem;color:var(--dim)}
+  #nutOut b{color:var(--ink)}
+  .nutrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  #plot{margin-top:10px}
+
+  @media (max-width:640px){
+    .nav{position:static}
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .stage{padding:14px 12px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
+      <a href="ballot.html">Ballot</a>
+      <a href="mere.html">Mere</a>
+      <a href="hold.html">Hold</a>
+      <a href="wire.html">Wire</a>
+      <a href="press.html">Press</a>
+      <a href="vat.html">Vat</a>
+      <a href="lock.html">Lock</a>
+      <a href="spinet.html">Spinet</a>
+      <a href="gauge.html">Gauge</a>
+      <a href="ledger.html">Ledger</a>
+      <a href="regulator.html" class="on">Regulator</a>
+    </div>
+  </div>
+</nav>
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page fifty</p>
+    <h1>The Regulator</h1>
+    <p class="lede">
+      Forty-nine rooms, and every one of them was judged while you were still in it. Today's number sends a
+      clockmaker to a Georgian house where a longcase clock has come by cart from the old place with its bob
+      knocked askew. You have eight noons, a brass line on the south sill and the rating nut. Then you go home,
+      and a month later the owner writes to say how it kept.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="plWho">—</p>
+        <h3 id="plName">—</h3>
+        <p id="plBlurb">—</p>
+        <div id="rules"></div>
+      </div>
+
+      <div class="stage">
+        <h5>Noon</h5>
+        <p id="dayHead">—</p>
+        <canvas id="sky" width="720" height="274" aria-label="The clock dial and the sun's image crossing the meridian line on the sill"></canvas>
+        <div class="controls" style="margin-top:10px">
+          <button class="btn small ghost" type="button" id="btnWatch">Watch the noon line</button>
+          <button class="btn small" type="button" id="btnLimb" disabled>Mark the limb</button>
+          <button class="btn small ghost" type="button" id="btnApp">Let the apprentice take it</button>
+        </div>
+        <p class="formula">The sun's image takes about two minutes to cross the line; here time runs eight times fast. Mark when its leading edge touches the brass, and again when its trailing edge leaves it: the mean of the two is the clock's reading at apparent noon. Space or Enter marks too. The apprentice will do it for you, less carefully.</p>
+
+        <h5>The rating nut</h5>
+        <div class="nutrow">
+          <button class="chip" type="button" data-nut="-5">−5</button>
+          <button class="chip" type="button" data-nut="-1">−1</button>
+          <button class="chip" type="button" data-nut="0">0</button>
+          <button class="chip" type="button" data-nut="1">+1</button>
+          <button class="chip" type="button" data-nut="5">+5</button>
+          <span id="nutOut">—</span>
+        </div>
+
+        <h5>The hands</h5>
+        <div class="controls">
+          <button class="btn small ghost" type="button" id="btnHands" disabled>Set the hands by today's sight</button>
+          <button class="btn small" type="button" id="btnNext">Wind it and wait for tomorrow's noon →</button>
+        </div>
+      </div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+
+      <div class="stage">
+        <h5>The rating book</h5>
+        <div class="tablewrap"><table id="book"></table></div>
+        <p class="formula">Rates are worked from one sight to the next, allowing for the hands if you set them. The column at 60°F takes off what the book says the warmth of the house did. A star means the nut was turned in between.</p>
+        <div id="plot"></div>
+      </div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <div class="stage" id="reveal" style="display:none"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="btnReset">Start the week again</button>
+        <button class="btn small ghost" type="button" id="btnGive">Let the master regulate it</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">House</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday's</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today's</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow's →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">The arrow keys walk to other days. Every day is a different house, owner, clock and month of weather.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The pendulum, the equation of time, the expansion of the rods and the way a clock was rated are real. The houses, the owners and the clock's knocks are the day's number.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Apparent and mean</h3>
+          <p>A clock keeps mean time; the sun keeps apparent time, and the two drift apart through the year by up
+             to a quarter of an hour, because the earth's orbit is an ellipse and its axis is tilted. Clockmakers
+             sold printed tables of the equation of time to go with their clocks. Here it is worked for the date,
+             and the noon line tells you the clock's error only after you have applied it.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>The rating nut</h3>
+          <p>A seconds pendulum is about 39.1 inches long, and its period goes as the square root of its length,
+             so shortening it by one part in a hundred thousand gains about 0.43 seconds a day. The nut under the
+             bob screws it up or down; its thread and divisions set how much a division is worth. The book's figure
+             is never quite the clock's, because the bob does not always follow the nut cleanly.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Cold rods gain</h3>
+          <p>Steel and brass shrink in the cold, the pendulum shortens and the clock gains. Varnished deal hardly
+             shrinks at all but swells with the damp. Harrison's gridiron and Graham's mercury jar were built to
+             cancel the effect, and did so only as well as they were made. A clock regulated in a warm week will
+             gain all winter unless it is left a little slow on purpose.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>What the page simplifies</h3>
+          <p>Each day's rate here comes from one mean temperature, the arc of the pendulum never changes, and the
+             noon line is perfectly true to the meridian. Real makers also took equal altitudes of the sun with a
+             quadrant, or used a transit instrument, and real clocks change rate as their oil thickens. The
+             equation of time is a good modern approximation, not an eighteenth-century table.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Fifty rooms, and one number doing all the work. Today it knocks a bob askew, lets the house cool behind your
+        back, and keeps the owner's letter until a month after you have gone.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="regulator.js"></script>
+</body>
+</html>
