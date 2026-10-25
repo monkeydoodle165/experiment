@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Mill — Drift</title>
+<meta name="description" content="Work a Georgian windmill through a whole day of the day's wind. Reef the sails, keep her into the wind, tenter the stones, and grind every sack on the floor the way its owner asked, without letting her run away, burn, or be tail-winded.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M12 30l2-16h4l2 16z' fill='%23d9a24a'/%3E%3Cg stroke='%23e8edf5' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M16 11L6 2M16 11l10-9M16 11L6 20M16 11l10 9'/%3E%3C/g%3E%3Ccircle cx='16' cy='11' r='2' fill='%2364f0c8'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px;
+    background:linear-gradient(160deg,rgba(217,180,120,.10),rgba(100,240,200,.06))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em;font-family:Georgia,"Times New Roman",serif}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  #rules{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:14px;font-size:.82rem;color:var(--dim)}
+  #rules b{color:var(--accent);font:700 .82rem ui-monospace,Menlo,monospace}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+  .btn.on{background:rgba(255,206,106,.16);border-color:#ffce6a;color:#ffce6a}
+
+  .stage{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-top:18px}
+  .stage h5,.verdict h5{margin:16px 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .stage h5:first-child,.verdict h5:first-child{margin-top:0}
+  .hud{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px 14px;margin:12px 0 0;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(14,19,27,.7)}
+  .hud div{min-width:0}
+  .hud span{display:block;font:600 .6rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .hud b{display:block;font:600 .9rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .formula{margin:10px 0 0;font-size:.86rem;color:var(--dim)}
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim);min-height:1em}
+  .msg:empty{display:none}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict p{margin:0 0 8px}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  #reveal p{color:var(--dim);font-size:.92rem;margin:10px 0 0}
+  #reveal p b{color:var(--ink)}
+  .tablewrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:.84rem}
+  th{font:600 .62rem ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+  td{padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap;color:var(--ink);font-family:ui-monospace,Menlo,monospace}
+  td.bad{color:#ff8a7a}
+  td.ok{color:#64f0c8}
+  .daybar{font-size:.9rem;color:var(--dim)}
+  #scene,#chart{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#0e131b}
+  #chart{margin-top:10px}
+  .hud div.alarm b{color:#ff8a7a}
+  .ctl-group{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+  .ctl-group .lbl{font:600 .6rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);min-width:74px}
+  #orders{margin-top:14px}
+  #orders h5{margin:0 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .orders{display:grid;gap:6px}
+  .ord{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 12px;align-items:baseline;font-size:.86rem;padding:6px 10px;border:1px solid var(--line);border-radius:10px;background:rgba(14,19,27,.6)}
+  .ord b{color:var(--ink);font-weight:600}
+  .ord span:last-child{grid-column:2;color:var(--dim)}
+  .ord em{font-style:normal;font-family:ui-monospace,Menlo,monospace;color:var(--accent2);margin-left:4px}
+  .sks{grid-row:span 2;display:flex;gap:4px;align-self:center}
+  .sk{display:inline-block;width:12px;height:15px;border-radius:3px 3px 4px 4px;border:1px solid rgba(255,255,255,.25)}
+  .sk.cur{background:rgba(217,162,74,.5);border-color:#d9a24a}
+  .sk.good{background:#64f0c8;border-color:#64f0c8}
+  .sk.coarse,.sk.fine{background:#ffce6a;border-color:#ffce6a}
+  .sk.burnt{background:#ff8a7a;border-color:#ff8a7a}
+
+  @media (max-width:640px){
+    .nav{position:static}
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .stage{padding:14px 12px}
+    .hud{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
+      <a href="ballot.html">Ballot</a>
+      <a href="mere.html">Mere</a>
+      <a href="hold.html">Hold</a>
+      <a href="wire.html">Wire</a>
+      <a href="press.html">Press</a>
+      <a href="vat.html">Vat</a>
+      <a href="lock.html">Lock</a>
+      <a href="spinet.html">Spinet</a>
+      <a href="gauge.html">Gauge</a>
+      <a href="ledger.html">Ledger</a>
+      <a href="regulator.html">Regulator</a>
+      <a href="sounding.html">Sounding</a>
+      <a href="fireworks.html">Fireworks</a>
+      <a href="aerostat.html">Aerostat</a>
+      <a href="mill.html" class="on">Mill</a>
+    </div>
+  </div>
+</nav>
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page fifty-four</p>
+    <h1>The Mill</h1>
+    <p class="lede">
+      Yesterday's room went up into the wind and could only go where it was taken. This one stands still and makes the
+      wind work. A windmill on a rise above a village, one pair of stones, and a floor full of other people's sacks:
+      wheat for the baker, barley for the pigs, oats for the carrier's horses. Today's number writes the wind for the
+      whole day, gusts, lulls, squalls and all. Keep the sails at the speed the stones like, keep the meal the way each
+      customer asked for it, and do not let her run away, burn, or be caught with the wind behind her.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="plWho">—</p>
+        <h3 id="plName">—</h3>
+        <p id="plBlurb">—</p>
+        <div id="rules"></div>
+      </div>
+
+      <div class="stage">
+        <h5>The mill</h5>
+        <canvas id="scene" width="720" height="400" aria-label="The windmill seen from the front with its four sails turning, the sky and the fields, a compass showing where the wind comes from in green and which way the sails face in gold, and gauges for the hopper, the stone heat, the brake heat and the sail speed"></canvas>
+        <div class="hud" aria-live="off">
+          <div><span>Time</span><b id="hTime">—</b></div>
+          <div><span>Wind</span><b id="hWind">—</b></div>
+          <div><span>Sails face</span><b id="hFace">—</b></div>
+          <div><span>Sails</span><b id="hCloth">—</b></div>
+          <div><span>Stones</span><b id="hStones">—</b></div>
+          <div><span>Feed</span><b id="hFeed">—</b></div>
+          <div><span>Stone gap</span><b id="hGap">—</b></div>
+          <div><span>The meal</span><b id="hMeal">—</b></div>
+          <div><span>Wanted</span><b id="hWants">—</b></div>
+          <div><span>Sacks ground</span><b id="hDone">—</b></div>
+        </div>
+        <div class="ctl-group">
+          <span class="lbl">The mill</span>
+          <button class="btn small" type="button" id="btnGo">Start the day →</button>
+          <button class="btn small ghost" type="button" id="btnBrake">Take the brake off</button>
+          <button class="btn small ghost" type="button" id="btnHurry">Hurry the clock</button>
+        </div>
+        <div class="ctl-group">
+          <span class="lbl">The sails</span>
+          <button class="btn small ghost" type="button" id="btnLess">Take in a reef</button>
+          <button class="btn small ghost" type="button" id="btnMore">Spread more cloth</button>
+          <button class="btn small ghost" type="button" id="btnWind">Wind her round</button>
+        </div>
+        <div class="ctl-group">
+          <span class="lbl">The stones</span>
+          <button class="btn small ghost" type="button" id="btnTip">Tip a sack in the hopper</button>
+          <button class="btn small ghost" type="button" id="btnFeedLess">Feed slacker</button>
+          <button class="btn small ghost" type="button" id="btnFeedMore">Feed faster</button>
+          <button class="btn small ghost" type="button" id="btnCloser">Close the stones</button>
+          <button class="btn small ghost" type="button" id="btnWider">Open the stones</button>
+          <button class="btn small ghost" type="button" id="btnGov">Governor out</button>
+        </div>
+        <h5>The day so far</h5>
+        <canvas id="chart" width="720" height="220" aria-label="A chart of the day: the wind speed in grey, the sail speed in green, the fineness of the meal coming off the stones as gold dots against the band the current customer wants, and a dot for each finished sack"></canvas>
+        <p class="formula">Grey is the wind in miles an hour and green is the sails in turns a minute, both on the left scale; the red dashes are where the sails begin to suffer. Gold is the meal on the right scale, from 0 (beans split in half) to 100 (flour like dust), and the pale band is what the sack in the hopper should come out at. Faster stones grind finer, a closer gap grinds finer, and a heavier feed grinds coarser.</p>
+        <div id="orders"></div>
+      </div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <div class="stage" id="reveal" style="display:none"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="btnAgain" style="display:none">Start the day again</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Day</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday’s</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today’s</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow’s →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">Before the day starts, the arrow keys walk to other days. Every day is a different year, mill, wind and floor of sacks.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The machinery, the sails, the brake, the fantail and the governor are real. The villages, the customers and the wind are the day's number.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Common and patent sails</h3>
+          <p>For most of the eighteenth century a sail was a wooden lattice with canvas spread over it. The miller reefed it
+             by hand, rolling the cloth in to settings with names like first reef, sword point and dagger point, and he
+             could only do it with the mill stopped and each sail brought round to the bottom in turn. Andrew Meikle's
+             spring sails of 1772 replaced the canvas with hinged shutters, and William Cubitt's patent sails of 1807 let
+             the miller open and close every shutter at once from the ground, with weights that let them spill a gust.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Facing the wind</h3>
+          <p>A post mill's whole body turns on a single great post, and the miller pushed it round with the tailpole. A
+             tower mill turns only its cap. Edmund Lee's fantail of 1745, a small wheel set at right angles to the sails,
+             turns the cap by itself whenever the wind comes round. A mill caught with the wind behind its sails was
+             <i>tail-winded</i>: the sails were driven backwards, and caps were lifted off and post mills blown over.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Stones, feed and tentering</h3>
+          <p>Grain runs from the hopper down a shaking shoe into the eye of the upper stone, the runner, and comes out as
+             meal at the edge. Lowering the runner towards the bed stone (tentering) grinds finer, a faster stone grinds
+             finer and hotter, and stones run empty heat up and can strike sparks into the dust. A bell rang when the
+             hopper ran low. From the 1780s a centrifugal governor could tenter the stones as the speed changed, and the
+             brake, a band of wooden blocks on a wooden wheel, was a well-known cause of mill fires.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>What the page simplifies</h3>
+          <p>The sails drive with a torque that falls off to nothing at a fixed runaway speed, the stones and gearing take
+             a load that grows with speed and with the grain going through, and the fineness of the meal is a single
+             number from 0 to 100 that the page invents. There is one pair of stones, the hoist and the hopper take no
+             minding beyond the time they cost, and nobody dresses the stones or sieves the flour. The villages and customers are made up, and a sack is a coomb of four bushels.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Fifty-four rooms, and one number doing all the work. Today it writes the wind from dawn to dusk and fills a mill
+        floor with sacks.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="mill.js"></script>
+</body>
+</html>
