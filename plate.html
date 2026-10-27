@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Plate — Drift</title>
+<meta name="description" content="Mind a Victorian glasshouse portrait studio for a day. Coat a wet collodion plate, sensitise it, judge the exposure by the light through the roof while the sitter tries to keep still, develop it before it dries, and see whether they will buy it.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='5' y='3' width='22' height='26' rx='2' fill='%23b8963f'/%3E%3Cpath d='M9 26V12a7 7 0 0 1 14 0v14z' fill='%23d8ccb0'/%3E%3Cellipse cx='16' cy='14' rx='3.5' ry='4.5' fill='%23302a24'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px;
+    background:linear-gradient(160deg,rgba(255,206,106,.09),rgba(122,162,255,.05))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em;font-family:Georgia,"Times New Roman",serif}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  #rules{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:14px;font-size:.82rem;color:var(--dim)}
+  #rules b{color:var(--accent);font:700 .82rem ui-monospace,Menlo,monospace}
+  .btn:disabled,.chip:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+  .stage{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-top:18px}
+  .stage h5,.verdict h5{margin:16px 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .stage h5:first-child,.verdict h5:first-child{margin-top:0}
+  .arena{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+  #plate{display:block;width:100%;max-width:420px;margin:0 auto;height:auto;border:1px solid var(--line);border-radius:12px;background:#0b0f16}
+  #sky{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#0e131b;margin-bottom:6px}
+  .skycap{display:flex;justify-content:space-between;font:600 .6rem ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:12px}
+  .skycap i{font-style:normal;color:#64f0c8}
+  .hud{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(14,19,27,.7)}
+  .hud div{min-width:0}
+  .hud span{display:block;font:600 .6rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .hud b{display:block;font:600 .9rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hud div.alarm b{color:#ff8a7a}
+  #stops{margin-top:14px}
+  #stops .chip small{font:600 .62rem ui-monospace,Menlo,monospace;opacity:.7}
+  #btnMain{width:100%;margin-top:14px;padding:14px 18px;font-size:.98rem}
+  .formula{margin:12px 0 0;font-size:.86rem;color:var(--dim)}
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim);min-height:1em}
+  .msg:empty{display:none}
+  #gallery{display:flex;flex-wrap:wrap;gap:14px;margin-top:18px}
+  #gallery:empty{display:none}
+  #gallery figure{margin:0;width:120px}
+  #gallery canvas{display:block;width:100%;height:auto;border-radius:6px}
+  #gallery figcaption{font:600 .64rem/1.5 ui-monospace,Menlo,monospace;color:var(--dim);margin-top:6px;letter-spacing:.04em}
+  #gallery figcaption b{color:var(--ink)}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict p{margin:0 0 8px}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  #reveal p{color:var(--dim);font-size:.92rem;margin:10px 0 0}
+  #reveal p b{color:var(--ink)}
+  .tablewrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:.84rem}
+  th{font:600 .62rem ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+  td{padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap;color:var(--ink);font-family:ui-monospace,Menlo,monospace}
+  td.bad{color:#ff8a7a}
+  td.ok{color:#64f0c8}
+  .daybar{font-size:.9rem;color:var(--dim)}
+
+  @media (max-width:760px){
+    .arena{grid-template-columns:minmax(0,1fr)}
+  }
+  @media (max-width:640px){
+    .nav{position:static}
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .stage{padding:14px 12px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
+      <a href="ballot.html">Ballot</a>
+      <a href="mere.html">Mere</a>
+      <a href="hold.html">Hold</a>
+      <a href="wire.html">Wire</a>
+      <a href="press.html">Press</a>
+      <a href="vat.html">Vat</a>
+      <a href="lock.html">Lock</a>
+      <a href="spinet.html">Spinet</a>
+      <a href="gauge.html">Gauge</a>
+      <a href="ledger.html">Ledger</a>
+      <a href="regulator.html">Regulator</a>
+      <a href="sounding.html">Sounding</a>
+      <a href="fireworks.html">Fireworks</a>
+      <a href="aerostat.html">Aerostat</a>
+      <a href="mill.html">Mill</a>
+      <a href="trial.html">Trial</a>
+      <a href="plate.html" class="on">Plate</a>
+    </div>
+  </div>
+</nav>
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page fifty-six</p>
+    <h1>The Plate</h1>
+    <p class="lede">
+      Yesterday you stood still at the post while the dog did the moving. Today somebody else has to keep still. A
+      portrait studio under a glass roof, some time between 1854 and 1880: coat a glass with collodion, sensitise it in
+      silver, and expose it by nothing but your own judgement of the sky, counting seconds while the sitter tries not
+      to breathe. Then develop it before it dries, and find out whether they will pay for it.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="plWho">—</p>
+        <h3 id="plName">—</h3>
+        <p id="plBlurb">—</p>
+        <div id="rules"></div>
+      </div>
+
+      <div class="stage">
+        <div class="arena">
+          <div>
+            <canvas id="plate" width="300" height="372" aria-label="The working view: the camera's ground glass with the sitter upside down, the plate in the silver bath, a counter while the lens is open, the image coming up under the darkroom's yellow window, and the finished plate in its brass mat"></canvas>
+          </div>
+          <div>
+            <canvas id="sky" width="300" height="84" aria-label="The glass roof of the studio with clouds going over it, and a bar showing how much light comes through, against a green mark for the book's bright midsummer sky"></canvas>
+            <div class="skycap"><span>The roof · light on the sitter</span><i>| the book's sky</i></div>
+            <div class="hud" aria-live="off">
+              <div><span>Now</span><b id="hPhase">—</b></div>
+              <div><span>Studio clock</span><b id="hClock">—</b></div>
+              <div><span>The sitter</span><b id="hPatience">—</b></div>
+              <div><span>The sky</span><b id="hLight">—</b></div>
+              <div><span>Stop</span><b id="hStop">—</b></div>
+              <div><span>Plates</span><b id="hPlates">—</b></div>
+              <div><span>In the bath</span><b id="hBath">—</b></div>
+              <div><span>The plate</span><b id="hWet">—</b></div>
+            </div>
+            <div class="chips" id="stops" role="group" aria-label="Lens stop"></div>
+            <button class="btn" type="button" id="btnMain">Coat a plate</button>
+          </div>
+        </div>
+        <p class="formula">The light is the sky through the roof: the sun's height today, the town's smoke and the clouds going over. The plate takes it in only while the lens is open, so a cloud in the middle of an exposure costs you light you cannot see on the counter. Each stop down needs the time shown against it but sharpens the hands, the figure and the background. The sitter sways a little more with every second held.</p>
+      </div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+      <div id="gallery" aria-label="The plates made so far"></div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <div class="stage" id="reveal" style="display:none"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="btnAgain" style="display:none">Seat the sitter again</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Day</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday’s</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today’s</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow’s →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">Every day is a different year, town, sky, darkroom and sitter.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The process, its order and its troubles are real. The studio, the operator and the sitters are the day's
+        number; the light and the chemistry are a model, sized to give the right sort of seconds.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Wet plate</h3>
+          <p>Frederick Scott Archer published the collodion process in 1851 and did not patent it. A glass is coated with
+             collodion carrying iodide and bromide salts, dipped in a bath of silver nitrate, exposed while still wet,
+             developed with iron sulphate and fixed, all inside ten minutes or so, because once the plate dries it loses
+             its speed and stains. A thin, slightly under-exposed negative backed with black varnish or velvet reads as a
+             positive: that is the ambrotype, sold cased in thousands of high street glasshouses for a shilling or two.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Blue light only</h3>
+          <p>Collodion is sensitive to blue, violet and ultraviolet light and nearly blind to red and yellow. Red coats
+             and gold chains come out black, blue silk and blue eyes come out pale, freckles show and lips darken. Studios
+             were glasshouses on top floors, often with blue glass and blinds, and an operator learned the light by eye:
+             the season, the hour, the cloud, and in a town the smoke.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Keeping still</h3>
+          <p>Exposures ran from a couple of seconds under a bright summer sky to half a minute or more in winter, and
+             every studio had an iron head-rest behind the chair. Small children were held by a mother hidden behind a
+             cloth. Portrait lenses on Petzval's 1840 design were fast but sharp only in the middle; a smaller Waterhouse
+             stop sharpened the edges of the picture at the price of a longer sitting.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>What the page simplifies</h3>
+          <p>The light is one number for the whole studio, the sitter sways as a single piece and the focus is set for
+             you on the eyes. The book's rule (three seconds at f/3.6 under a bright midsummer noon sky, the bath fresh,
+             the room at 62°F, double for every eighteen degrees colder) is the page's own calibration, not a recipe. The
+             plate's tones, the fog from over-development, the dried edges and the streaks from a plate lifted from the
+             bath too soon are worked out by a model, and the studio clock runs eight times as fast as yours except while
+             the lens is open and the developer is on.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Fifty-six rooms, and one number doing all the work. Today it seats somebody in a chair under a glass roof and
+        decides which clouds go over while they try to keep still.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="plate.js"></script>
+</body>
+</html>
