@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Forge — Drift</title>
+<meta name="description" content="Work a village smithy for a morning with no thermometer. Judge the heat of the iron by its colour against the daylight coming in at the door, weld a chain, forge a hook, harden and temper a chisel, and have them ready when the customers call.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M3 10h20c0 4 3 6 6 6v3H21l-2 4h3v4H10v-4h3l-2-4C6 19 3 15 3 10z' fill='%238a9099'/%3E%3Crect x='9' y='6' width='12' height='3' rx='1' fill='%23ff9a3c'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px;
+    background:linear-gradient(160deg,rgba(255,154,60,.09),rgba(122,162,255,.04))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em;font-family:Georgia,"Times New Roman",serif}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  #card h5,.stage h5,.verdict h5{margin:16px 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  #card .sw{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:.8rem;color:var(--dim)}
+  #card .sw span{display:inline-flex;align-items:center;gap:7px}
+  #card i{width:22px;height:14px;border-radius:4px;display:inline-block;border:1px solid rgba(255,255,255,.12)}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+  .stage{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-top:18px}
+  .stage h5:first-child,.verdict h5:first-child{margin-top:0}
+  #forge{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#0b0f16;touch-action:manipulation}
+  .hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(14,19,27,.7);margin-top:12px}
+  .hud div{min-width:0}
+  .hud span{display:block;font:600 .6rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .hud b{display:block;font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hud div.alarm b{color:#ff8a7a}
+  #tools{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+  #tools .btn{padding:13px 10px;font-size:.88rem;text-align:center;user-select:none;-webkit-user-select:none}
+  #btnBlow{background:transparent;color:var(--ink);border-color:rgba(255,154,60,.6);touch-action:none}
+  #btnBlow.on{background:rgba(255,154,60,.22)}
+  #btnStrike{grid-column:span 2}
+  #btnStart{width:100%;margin-top:12px;padding:14px 18px;font-size:.98rem}
+  .keys{margin:10px 0 0;font-size:.8rem;color:var(--dim)}
+  .keys code{font-size:.78rem}
+  #orders{list-style:none;margin:12px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  #orders li{border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.84rem;color:var(--dim)}
+  #orders li b{display:block;color:var(--ink);font-weight:650}
+  #orders li em{display:block;font:600 .7rem ui-monospace,Menlo,monospace;font-style:normal;margin-top:4px;letter-spacing:.04em}
+  #orders li.now{border-color:rgba(255,154,60,.55);background:rgba(255,154,60,.06)}
+  #orders li.done{border-color:rgba(100,240,200,.4)}
+  #orders li.done em{color:#64f0c8}
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .msg:empty{display:none}
+  .msg div+div{margin-top:6px;font-size:.86rem}
+  .msg b{color:var(--ink)}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict p{margin:0 0 8px}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  #reveal p{color:var(--dim);font-size:.92rem;margin:10px 0 0}
+  #reveal p b{color:var(--ink)}
+  #reveal canvas.trace{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:10px;margin-top:8px}
+  #reveal .key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.78rem}
+  .daybar{font-size:.9rem;color:var(--dim)}
+
+  @media (max-width:760px){
+    .hud{grid-template-columns:repeat(2,minmax(0,1fr))}
+    #tools{grid-template-columns:repeat(2,minmax(0,1fr))}
+    #orders{grid-template-columns:minmax(0,1fr)}
+    .keys{display:none}
+  }
+  @media (max-width:640px){
+    .nav{position:static}
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .stage{padding:14px 12px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
+      <a href="ballot.html">Ballot</a>
+      <a href="mere.html">Mere</a>
+      <a href="hold.html">Hold</a>
+      <a href="wire.html">Wire</a>
+      <a href="press.html">Press</a>
+      <a href="vat.html">Vat</a>
+      <a href="lock.html">Lock</a>
+      <a href="spinet.html">Spinet</a>
+      <a href="gauge.html">Gauge</a>
+      <a href="ledger.html">Ledger</a>
+      <a href="regulator.html">Regulator</a>
+      <a href="sounding.html">Sounding</a>
+      <a href="fireworks.html">Fireworks</a>
+      <a href="aerostat.html">Aerostat</a>
+      <a href="mill.html">Mill</a>
+      <a href="trial.html">Trial</a>
+      <a href="plate.html">Plate</a>
+      <a href="forge.html" class="on">Forge</a>
+    </div>
+  </div>
+</nav>
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page fifty-seven</p>
+    <h1>The Forge</h1>
+    <p class="lede">
+      Yesterday the light had to be judged by eye through a glass roof. Today it is heat. A village smithy on a
+      working morning some time between 1790 and 1889, with no thermometer in it: only the colour of the iron, the
+      daylight coming in at the door that changes how that colour looks, and three customers who will call at the
+      hour they were promised.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="fWho">—</p>
+        <h3 id="fName">—</h3>
+        <p id="fBlurb">—</p>
+        <div id="card"></div>
+      </div>
+
+      <div class="stage">
+        <canvas id="forge" width="640" height="330" aria-label="The smithy: the hearth and its fire on the left, the quench trough, the anvil on its block and the doorway on the right. The work is drawn in the colour its heat shows against the daylight in the shop."></canvas>
+        <div class="hud" aria-live="off">
+          <div><span>Now</span><b id="hPhase">—</b></div>
+          <div><span>Shop clock</span><b id="hClock">—</b></div>
+          <div><span>Daylight</span><b id="hLight">—</b></div>
+          <div><span>The fire</span><b id="hFire">—</b></div>
+          <div><span>The work</span><b id="hWhere">—</b></div>
+          <div><span>The order</span><b id="hJob">—</b></div>
+          <div><span>Calling at</span><b id="hCall">—</b></div>
+          <div><span>Purse</span><b id="hPurse">—</b></div>
+        </div>
+        <button class="btn" type="button" id="btnStart">Open the shop</button>
+        <div id="tools" style="display:none">
+          <button class="btn ghost" type="button" id="btnFire">Into the fire (F)</button>
+          <button class="btn" type="button" id="btnBlow">Hold to blow (B)</button>
+          <button class="btn" type="button" id="btnStrike">Strike (space)</button>
+          <button class="btn ghost" type="button" id="btnFlux">Sand the scarf (S)</button>
+          <button class="btn ghost" type="button" id="btnQuench">Quench (Q)</button>
+          <button class="btn ghost" type="button" id="btnClean">Clean the fire (C)</button>
+          <button class="btn ghost" type="button" id="btnShut">Shut the shop</button>
+        </div>
+        <p class="keys">Keys: <code>F</code> fire or anvil, hold <code>B</code> for the bellows, <code>space</code> to strike, <code>S</code> sand, <code>Q</code> quench, <code>C</code> clean the fire.</p>
+        <ul id="orders" aria-label="The orders on the slate"></ul>
+      </div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <div class="stage" id="reveal" style="display:none"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="btnAgain" style="display:none">Open the shop again</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Day</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday’s</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today’s</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow’s →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">Every day is a different village, sky, coal, iron, steel and slate of orders.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The heats, the colours and the order of the work are real. The village, the stock and the customers are the
+        day's number; the fire and the cooling of the iron are a model, sized to give the right sort of seconds.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Heat by colour</h3>
+          <p>Before pyrometers a smith knew heat only by the colour of the iron, and every smithy was kept dim for that
+             reason: in daylight a dull red barely shows and a yellow looks like an orange. Smiths named the heats by
+             what they saw (black, dull red, cherry, orange, yellow, white, sparkling) and worked to them. The page
+             draws the iron as a hot body seen by an eye adapted to the light in the shop, so the same heat looks
+             different at seven and at noon, and when a cloud goes over the door.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Fire welding</h3>
+          <p>Wrought iron welds to itself when both faces are white hot and clean. The scarfed ends are sprinkled with
+             sand (or borax for steel), which melts into a glassy flux that dissolves the scale; the first blow must
+             land within seconds of the iron leaving the fire. A little hotter still and the iron burns, throwing
+             white star-shaped sparks. The welding heat sits in a band only a hundred degrees or so below that, and a
+             poor fire choked with clinker may never reach it.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Hardening and tempering</h3>
+          <p>Carbon steel quenched from just above its hardening heat (a cherry red, near 760 to 800°C) turns glass
+             hard and brittle; quenched from too hot it is coarse-grained and may crack, from too cold it stays soft.
+             It is then rubbed bright and gently reheated from the back: thin oxide films run over the face in order,
+             straw, brown, purple, blue, each meaning a softer, tougher temper, and the smith quenches when the colour
+             he wants reaches the edge. Razors and knives were left at straw, chisels at brown or purple, springs at blue.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>What the page simplifies</h3>
+          <p>The iron is one temperature from end to end (except while tempering), the fire is one number, and every
+             blow at a good heat moves the work by the same amount. The welding and burning heats, the steel's
+             hardening heat and the coal's best fire are the day's number within believable ranges, not the figures for
+             any real brand. The shop clock runs twenty times as fast as yours, and there is no striker to swing the
+             sledge for you.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Fifty-seven rooms, and one number doing all the work. Today it lights a fire, opens a door on to the day's
+        weather and decides how hot the iron in the rack has to be before it will weld.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="forge.js"></script>
+</body>
+</html>
