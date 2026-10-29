@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Bakehouse — Drift</title>
+<meta name="description" content="Fire a village brick oven before dawn with no thermometer. Judge it by the soot on the crown, a pinch of flour and your bare arm, get the bread in when the dough is proved, then bake the neighbours' pies, cakes and puddings in the falling heat.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M3 26V17a13 11 0 0 1 26 0v9z' fill='%234a2c20'/%3E%3Cpath d='M7 26v-8a9 7 0 0 1 18 0v8z' fill='%23140d09'/%3E%3Cellipse cx='16' cy='24' rx='7' ry='3.4' fill='%23c8893a'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px;
+    background:linear-gradient(160deg,rgba(255,154,60,.09),rgba(122,162,255,.04))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em;font-family:Georgia,"Times New Roman",serif}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  #card h5,.stage h5,.verdict h5{margin:16px 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  #card .sw{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:.8rem;color:var(--dim)}
+  #card .sw span{display:inline-flex;align-items:center;gap:7px}
+  #card i{width:22px;height:14px;border-radius:4px;display:inline-block;border:1px solid rgba(255,255,255,.12)}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+  .stage{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-top:18px}
+  .stage h5:first-child,.verdict h5:first-child{margin-top:0}
+  #oven{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#0b0f16;touch-action:manipulation}
+  .hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(14,19,27,.7);margin-top:12px}
+  .hud div{min-width:0}
+  .hud span{display:block;font:600 .6rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .hud b{display:block;font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hud div.alarm b{color:#ff8a7a}
+  #tools{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+  #tools .btn{padding:13px 10px;font-size:.88rem;text-align:center;user-select:none;-webkit-user-select:none}
+  #btnHurry.on{background:rgba(255,154,60,.22);border-color:rgba(255,154,60,.6);color:var(--ink)}
+  #btnFag{grid-column:span 2}
+  #btnStart{width:100%;margin-top:12px;padding:14px 18px;font-size:.98rem}
+  .keys{margin:10px 0 0;font-size:.8rem;color:var(--dim)}
+  .keys code{font-size:.78rem}
+  #orders{list-style:none;margin:12px 0 0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+  #orders li{border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.84rem;color:var(--dim)}
+  #orders li b{display:block;color:var(--ink);font-weight:650}
+  #orders li em{display:block;font:600 .7rem ui-monospace,Menlo,monospace;font-style:normal;margin-top:4px;letter-spacing:.04em}
+  #orders li.now{border-color:rgba(255,154,60,.55);background:rgba(255,154,60,.06)}
+  #orders li.done{border-color:rgba(100,240,200,.4)}
+  #orders li.done em{color:#64f0c8}
+  #orders li.ready{border-color:rgba(122,162,255,.45)}
+  #orders li span{display:block;font-size:.78rem;margin-top:2px}
+  #orders li .btn{margin-top:8px;width:100%;padding:8px 10px;font-size:.8rem}
+  #card .lore{margin:12px 0 0;font-size:.86rem;color:var(--dim)}
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .msg:empty{display:none}
+  .msg div+div{margin-top:6px;font-size:.86rem}
+  .msg b{color:var(--ink)}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict p{margin:0 0 8px}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  #reveal p{color:var(--dim);font-size:.92rem;margin:10px 0 0}
+  #reveal p b{color:var(--ink)}
+  #reveal canvas.trace{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:10px;margin-top:8px}
+  #reveal .key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.78rem}
+  .daybar{font-size:.9rem;color:var(--dim)}
+
+  @media (max-width:760px){
+    .hud{grid-template-columns:repeat(2,minmax(0,1fr))}
+    #tools{grid-template-columns:repeat(2,minmax(0,1fr))}
+    #orders{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .keys{display:none}
+  }
+  @media (max-width:480px){#orders{grid-template-columns:minmax(0,1fr)}}
+  @media (max-width:640px){
+    .nav{position:static}
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .stage{padding:14px 12px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
+      <a href="ballot.html">Ballot</a>
+      <a href="mere.html">Mere</a>
+      <a href="hold.html">Hold</a>
+      <a href="wire.html">Wire</a>
+      <a href="press.html">Press</a>
+      <a href="vat.html">Vat</a>
+      <a href="lock.html">Lock</a>
+      <a href="spinet.html">Spinet</a>
+      <a href="gauge.html">Gauge</a>
+      <a href="ledger.html">Ledger</a>
+      <a href="regulator.html">Regulator</a>
+      <a href="sounding.html">Sounding</a>
+      <a href="fireworks.html">Fireworks</a>
+      <a href="aerostat.html">Aerostat</a>
+      <a href="mill.html">Mill</a>
+      <a href="trial.html">Trial</a>
+      <a href="plate.html">Plate</a>
+      <a href="forge.html">Forge</a>
+      <a href="bakehouse.html" class="on">Bakehouse</a>
+    </div>
+  </div>
+</nav>
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page fifty-eight</p>
+    <h1>The Bakehouse</h1>
+    <p class="lede">
+      In the Forge the fire was kept going all morning and the iron went in and out of it. A baker's oven works the
+      other way round. It is fired once, before light, with the door open; then the fire is raked out, the floor
+      swabbed and the door shut, and from that moment the oven only ever cools. Everything that has to be baked
+      today, the bread and then whatever the neighbours carry in, has to be fitted into that one long fall of heat.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="bWho">—</p>
+        <h3 id="bName">—</h3>
+        <p id="bBlurb">—</p>
+        <div id="card"></div>
+      </div>
+
+      <div class="stage">
+        <canvas id="oven" width="640" height="330" aria-label="The bakehouse: the brick oven in section on the left, with its crown, floor, fire and iron door; the stack of faggots and the dough trough on the right."></canvas>
+        <div class="hud" aria-live="off">
+          <div><span>Now</span><b id="hPhase">—</b></div>
+          <div><span>Clock</span><b id="hClock">—</b></div>
+          <div><span>The fire</span><b id="hFire">—</b></div>
+          <div><span>The crown</span><b id="hCrown">—</b></div>
+          <div><span>The dough</span><b id="hDough">—</b></div>
+          <div><span>The floor</span><b id="hFloor">—</b></div>
+          <div><span>The door</span><b id="hDoor">—</b></div>
+          <div><span>Stack</span><b id="hStack">—</b></div>
+        </div>
+        <button class="btn" type="button" id="btnStart">Light the lamp</button>
+        <div id="tools" style="display:none">
+          <button class="btn" type="button" id="btnFag">Put in a faggot (A)</button>
+          <button class="btn ghost" type="button" id="btnRake">Rake out (R)</button>
+          <button class="btn ghost" type="button" id="btnSwab">Swab the floor (S)</button>
+          <button class="btn ghost" type="button" id="btnFlour">Throw flour (T)</button>
+          <button class="btn ghost" type="button" id="btnHand">Arm in the mouth (H)</button>
+          <button class="btn ghost" type="button" id="btnHurry">Hurry the clock (Z)</button>
+          <button class="btn ghost" type="button" id="btnShut">Finish for the day</button>
+        </div>
+        <p class="keys">Keys: <code>A</code> a faggot, <code>R</code> rake out, <code>S</code> swab, <code>T</code> flour, <code>H</code> arm, <code>Z</code> hurry, <code>1</code>–<code>4</code> load or draw.</p>
+        <ul id="orders" aria-label="What has to be baked today"></ul>
+      </div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <div class="stage" id="reveal" style="display:none"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="btnAgain" style="display:none">Fire the oven again</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Day</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday’s</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today’s</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow’s →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">Every day is a different village, oven, stack of faggots, barm and set of neighbours.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The way the oven was fired and judged, and the order things went into it, are real. The village, the oven and
+        the neighbours are the day's number; the heat in the brick is a small model, sized to give the right sort of hours.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Firing a brick oven</h3>
+          <p>Until gas and coal-fired side-flue ovens spread late in the century, most village bread was baked in a
+             brick oven heated by burning wood inside it: faggots of furze, brushwood or ash, pushed in through the
+             mouth with the door open so the fire could draw. When the oven was hot the embers were raked out with a
+             long iron scraper, the floor was swabbed with a wet mop on a pole, and the door was shut so the heat in
+             the walls could even out before the dough went in.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Judging it by eye and by hand</h3>
+          <p>Bakers judged the heat without instruments. The soot left on the inside of the dome by the first smoky
+             flames burns away as the brick gets hot, so a crown that has gone from black to white is a sign the oven
+             is getting there. A pinch of flour thrown on the floor browns faster the hotter it is. And many bakers
+             simply put a bare arm in at the mouth and counted how long they could bear it. The crown and the flour
+             both read the surface of the brick, though, and a quick hot fire of furze can whiten the crown long
+             before the heat has soaked into the depth of the oven.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Baking in a falling oven</h3>
+          <p>A wood-fired oven is hottest just after it is cleaned and cools for the rest of the day. Bakers used that.
+             Bread went in first, at the top heat. Then the oven was let out to neighbours, who brought pies, joints
+             and puddings to be baked for a penny or two, since few cottages had an oven of their own. Cakes went in
+             when it was slacker, and rusks, meringues and things to dry went in last of all. A dish that wants a
+             gentle heat browns before it is cooked through in a hot oven; a loaf put into a slack one comes out
+             pale and heavy.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>What the page simplifies</h3>
+          <p>The oven is two lumps of heat, a thin surface the fire and dough touch and a deep mass behind it, where a
+             real oven has a gradient through every brick. Each faggot gives the same heat, every dish has one right
+             temperature, and the dough proves at a steady rate. The bakehouse clock runs four times as fast as yours,
+             or sixteen when hurried. The prices of bread follow the shape of the century (dear in the war years,
+             cheaper after the Corn Laws went in 1846) without being any particular town's assize.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Fifty-eight rooms, and one number doing all the work. Today it builds an oven, stacks the faggots by the door,
+        sets the dough rising overnight and decides which neighbours will knock with their dinners.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="bakehouse.js"></script>
+</body>
+</html>
