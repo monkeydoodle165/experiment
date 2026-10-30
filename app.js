@@ -233,3 +233,66 @@
     raf = requestAnimationFrame(step);
   }
 })();
+
+/* ---------- Change 59: the Ropewalk ----------
+   index.html has grown past what can be rewritten in one go, so the newest room is announced from here:
+   a nav link, the first call to action, the first Rooms card, the seed afterword and the log entry.
+   A later change can fold these back into the static HTML and delete this block. */
+(function () {
+  'use strict';
+  function el(html) { var t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; }
+  if (document.querySelector('a.room[href="ropewalk.html"]')) return;
+
+  var nav = document.querySelector('.nav-links');
+  if (nav) nav.appendChild(el('<a href="ropewalk.html">Ropewalk</a>'));
+
+  var cta = document.querySelector('.cta-row');
+  if (cta) {
+    var first = cta.querySelector('.btn:not(.ghost)');
+    if (first) first.classList.add('ghost');
+    cta.insertBefore(el('<a class="btn" href="ropewalk.html">Spin today\'s yarn</a>'), cta.firstChild);
+  }
+
+  var rooms = document.querySelector('#rooms .rooms');
+  if (rooms) rooms.insertBefore(el(
+    '<a class="room" href="ropewalk.html">' +
+      '<span class="room-tag">ropemaking</span>' +
+      '<h3>The Ropewalk</h3>' +
+      '<p>From an oven that only cools to a walk a fifth of a mile long, taken backwards. A boy turns the wheel, you let ' +
+      'the hemp out through your fingers, and your pace decides the twist while your hand decides the thickness. ' +
+      'The day\'s number picks the walk, the hemp, the boy and the rope on the slate. Spin three even yarns, lay ' +
+      'them up, and see whether the rope holds on the machine.</p>' +
+      '<span class="room-go">Hook on →</span>' +
+    '</a>'), rooms.firstChild);
+
+  var after = document.querySelector('#seed .afterword');
+  if (after) {
+    after.innerHTML = after.innerHTML
+      .replace('fifty-eight jobs', 'fifty-nine jobs')
+      .replace(/One integer, fifty-eight rooms\./, 'and in <a href="ropewalk.html">the Ropewalk</a> it lays out a walk, hackles the hemp well or badly, ' +
+        'puts a boy on the wheel and decides when he will look out of the door. One integer, fifty-nine rooms.')
+      .replace('with a pie to bake.\n', 'with a pie to bake,\n');
+  }
+
+  var log = document.querySelector('#log .log');
+  if (log) log.insertBefore(el(
+    '<li>' +
+      '<time>Change 59</time>' +
+      '<h3>Walking backwards</h3>' +
+      '<p>The Bakehouse fitted a morning\'s work into one fall of heat. Added <a href="ropewalk.html">The Ropewalk</a>, ' +
+      'where the work is one long walk taken backwards. It is a ropewalk on today\'s calendar date some time between ' +
+      '1780 and 1859, in one of twelve towns from Bridport to Port Glasgow, each with its own length of walk. The ' +
+      'day\'s number picks the hemp (long clean Riga, short Königsberg tow, silky Italian or, after 1830, smooth ' +
+      'Manila that wants more twist to hold), the boy on the wheel (steady, flagging, or given to looking out of ' +
+      'the door), and the order on the slate: a lead line, a bolt rope, a hawser, a tiller rope, a bell rope or a ' +
+      'well rope, each wanting its own hardness of yarn.</p>' +
+      '<p>You control two things with one body: how fast you walk back from the wheel, and how fast you let the hemp ' +
+      'go through your fingers. The twist in each foot of yarn is the wheel\'s turns divided by your pace, and its ' +
+      'thickness is the hemp let go divided by your pace, so when the boy slows you must walk slower and then feed ' +
+      'less. Walk off too fast and the yarn parts and has to be pieced; stand still and the wheel puts a hard kink ' +
+      'in it. There is a sample on the post to match by eye. After three yarns the rope is laid up, losing a quarter ' +
+      'to a third of its length, and put on the proving machine, which breaks it at its weakest few feet. The page ' +
+      'then draws every foot of each yarn\'s twist and thickness against the sample, and the rope\'s strength against ' +
+      'what the machine asked.</p>' +
+    '</li>'), log.firstChild);
+})();

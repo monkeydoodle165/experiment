@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Ropewalk — Drift</title>
+<meta name="description" content="Spin hemp into yarn by walking backwards down a ropewalk while a boy turns the wheel. Keep your walk to the wheel and your hand to your walk, then lay three yarns into a rope and see whether it holds on the machine.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 10c4 0 4 4 8 4s4-4 8-4 4 4 8 4M4 18c4 0 4 4 8 4s4-4 8-4 4 4 8 4' fill='none' stroke='%23d4b47a' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px;
+    background:linear-gradient(160deg,rgba(212,180,122,.09),rgba(122,162,255,.04))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em;font-family:Georgia,"Times New Roman",serif}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  .stage h5,.verdict h5{margin:16px 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .stage{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-top:18px}
+  .stage h5:first-child{margin-top:0}
+  #walkway{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#0b0f16}
+  .hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(14,19,27,.7);margin-top:12px}
+  .hud div{min-width:0}
+  .hud span{display:block;font:600 .6rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .hud b{display:block;font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hud div.alarm b{color:#ff8a7a}
+  #tools{margin-top:12px}
+  .slide{display:grid;grid-template-columns:150px minmax(0,1fr);align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;margin-top:10px}
+  .slide label{font:600 .72rem ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
+  .slide label small{display:block;font-weight:400;letter-spacing:.02em;text-transform:none;color:var(--dim);font-size:.72rem;margin-top:2px}
+  .slide input{width:100%;height:34px;accent-color:#d4b47a;cursor:pointer}
+  #btnStart,#btnLay{width:100%;margin-top:12px;padding:14px 18px;font-size:.98rem}
+  #btnCut{margin-top:10px}
+  .keys{margin:10px 0 0;font-size:.8rem;color:var(--dim)}
+  .keys code{font-size:.78rem}
+  #yarns{list-style:none;margin:12px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  #yarns li{border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:.84rem;color:var(--dim)}
+  #yarns li b{display:block;font-weight:650}
+  #yarns li span{display:block;font-size:.78rem;margin-top:2px}
+  #yarns li.now{border-color:rgba(212,180,122,.55);background:rgba(212,180,122,.06)}
+  #yarns li.done{border-color:rgba(100,240,200,.4)}
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .msg:empty{display:none}
+  .msg div+div{margin-top:6px;font-size:.86rem;opacity:.8}
+  .msg b{color:var(--ink)}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict p{margin:0 0 8px}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  #reveal p{color:var(--dim);font-size:.92rem;margin:10px 0 0}
+  #reveal canvas.trace{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:10px;margin-top:8px}
+  #reveal .key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.78rem;margin-top:8px}
+  .daybar{font-size:.9rem;color:var(--dim)}
+
+  @media (max-width:760px){
+    .hud{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .slide{grid-template-columns:minmax(0,1fr)}
+    .keys{display:none}
+  }
+  @media (max-width:520px){#yarns{grid-template-columns:minmax(0,1fr)}}
+  @media (max-width:640px){
+    .nav{position:static}
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .stage{padding:14px 12px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
+      <a href="ballot.html">Ballot</a>
+      <a href="mere.html">Mere</a>
+      <a href="hold.html">Hold</a>
+      <a href="wire.html">Wire</a>
+      <a href="press.html">Press</a>
+      <a href="vat.html">Vat</a>
+      <a href="lock.html">Lock</a>
+      <a href="spinet.html">Spinet</a>
+      <a href="gauge.html">Gauge</a>
+      <a href="ledger.html">Ledger</a>
+      <a href="regulator.html">Regulator</a>
+      <a href="sounding.html">Sounding</a>
+      <a href="fireworks.html">Fireworks</a>
+      <a href="aerostat.html">Aerostat</a>
+      <a href="mill.html">Mill</a>
+      <a href="trial.html">Trial</a>
+      <a href="plate.html">Plate</a>
+      <a href="forge.html">Forge</a>
+      <a href="bakehouse.html">Bakehouse</a>
+      <a href="ropewalk.html" class="on">Ropewalk</a>
+    </div>
+  </div>
+</nav>
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page fifty-nine</p>
+    <h1>The Ropewalk</h1>
+    <p class="lede">
+      In the Bakehouse everything had to be fitted into one long fall of heat. Here the work is a single walk, a
+      fifth of a mile long and taken backwards. A boy turns a wheel at one end; you wrap a bundle of hemp round your
+      waist, hook a few fibres to the wheel and walk away from it, letting the hemp out through your fingers. The wheel
+      puts in the twist. How hard the yarn comes out depends on how fast you walk, and how thick it comes out depends
+      on how fast you let the hemp go. You have one body to keep both even with, all the way to the far end.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="rWho">—</p>
+        <h3 id="rName">—</h3>
+        <p id="rBlurb">—</p>
+      </div>
+
+      <div class="stage">
+        <canvas id="walkway" width="640" height="340" aria-label="The ropewalk: the wheel and the boy at the left, the stakeheads down the walk and the spinner walking backwards with the hemp round his waist; below, the foreman's sample yarn and a close view of the yarn coming off your hand."></canvas>
+        <div class="hud" aria-live="off">
+          <div><span>Yarn</span><b id="hYarn">—</b></div>
+          <div><span>Down the walk</span><b id="hDown">—</b></div>
+          <div><span>The wheel</span><b id="hWheel">—</b></div>
+          <div><span>Your walk</span><b id="hWalk">—</b></div>
+          <div><span>Twist, by feel</span><b id="hTwist">—</b></div>
+          <div><span>Thickness, by eye</span><b id="hThick">—</b></div>
+          <div><span>Hemp at your waist</span><b id="hHemp">—</b></div>
+          <div><span>The ends</span><b>30 ft cut off</b></div>
+        </div>
+        <button class="btn" type="button" id="btnStart">Hook on the first yarn</button>
+        <div id="tools" style="display:none">
+          <div class="slide">
+            <label for="walk">Walk backwards<small>faster = softer twist</small></label>
+            <input type="range" id="walk" min="0" max="100" step="1" value="0">
+          </div>
+          <div class="slide">
+            <label for="feed">Let the hemp go<small>faster = fatter yarn</small></label>
+            <input type="range" id="feed" min="0" max="100" step="1" value="0">
+          </div>
+          <button class="btn small ghost" type="button" id="btnCut">Stop and break it off here</button>
+        </div>
+        <button class="btn" type="button" id="btnLay" style="display:none">Lay the three yarns into rope</button>
+        <p class="keys">Keys: <code>→</code>/<code>←</code> or <code>D</code>/<code>A</code> walk faster or slower, <code>↑</code>/<code>↓</code> or <code>W</code>/<code>S</code> let more or less hemp go.</p>
+        <ul id="yarns" aria-label="The three yarns"></ul>
+      </div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <div class="stage" id="reveal" style="display:none"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="btnAgain" style="display:none">Spin it again</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Day</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday’s</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today’s</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow’s →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">Every day is a different walk, hemp, boy on the wheel and rope on the slate.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The way hemp was spun on a walk, and why a spinner had to match his pace to the wheel, are real. The walk, the
+        hemp, the boy and the order are the day's number; the yarn is a small model, sized to make the right mistakes.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Spinning on a walk</h3>
+          <p>Before machines took it over in the nineteenth century, rope yarn was spun by hand on a ropewalk: a
+             long straight shed or open alley, often a quarter of a mile, with a spinning wheel at one end. A boy
+             turned the wheel, which drove a set of whirls with hooks on them. The spinner carried a bundle of dressed
+             hemp round his waist, hooked a few fibres on, and walked backwards down the walk, drawing the fibres out
+             of the bundle with one hand while the other, often holding a scrap of wet cloth, smoothed the yarn and
+             took the twist as it ran up to him. The finished yarn was hung on stakeheads, posts with pegs set at
+             intervals all the way down, to keep it off the ground.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Two things to keep even</h3>
+          <p>The wheel turns at whatever pace the boy gives it, and every turn goes into the length of yarn just
+             spun. So the twist in each foot is the turns of the wheel divided by the feet walked, and a spinner who
+             kept the same pace while the wheel slowed made soft yarn, while one who stood still made a hard, kinked
+             place. The thickness is the hemp let out divided by the feet walked, so walking faster to keep the twist
+             right meant letting the hemp go faster too. Too little twist and the fibres slide past each other and the
+             yarn parts; too much and the fibres are cut by their own angle and the yarn is weaker for it.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>From yarn to rope</h3>
+          <p>Yarns were twisted together the other way into strands, and strands the first way again into rope, with
+             a grooved wooden cone called a top travelling down the walk between them to close them up evenly. The
+             opposing twists are what hold a rope together. Laying takes up length, so a rope comes out a quarter to a
+             third shorter than its yarns, more for a hard lay than a soft one. The naval dockyards tested their rope
+             by loading lengths of it to destruction, and a rope breaks at its weakest place however good the rest is.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>What the page simplifies</h3>
+          <p>Here three yarns make the whole rope, where a real one has dozens or hundreds of yarns in each strand,
+             and they go straight into the rope without being made into strands first. The spinner walks several
+             times faster than anyone could. The twist goes only into the foot under your hand, where in a real yarn
+             it runs back along the length still spun, and the strength of each foot is a simple sum of how much hemp
+             is in it and how near its twist is to the sample's. The kinds of hemp are real; the numbers given to
+             them, and the pay, are the day's number.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Fifty-nine rooms, and one number doing all the work. Today it lays out a walk, hackles the hemp well or badly,
+        puts a boy on the wheel and decides when he will look out of the door.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="ropewalk.js"></script>
+</body>
+</html>
