@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Hayfield — Drift</title>
+<meta name="description" content="One week of haymaking with a gang of scythes and a weatherglass on the kitchen wall. Mow, ted, turn, rake, cock and lead four lands of hay to the rick before Saturday night, dry enough not to fire and before the rain washes it.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 26c3-9 7-13 12-13s9 4 12 13z' fill='%23cbb46a'/%3E%3Ccircle cx='24' cy='7' r='4' fill='%23ffce6a'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px;
+    background:linear-gradient(160deg,rgba(203,180,106,.1),rgba(100,240,200,.04))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em;font-family:Georgia,"Times New Roman",serif}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  .stage h5{margin:16px 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .stage{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-top:18px}
+  .stage h5:first-child{margin-top:0}
+  #meadow{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#0b0f16}
+  .hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(14,19,27,.7);margin-top:12px}
+  .hud div{min-width:0}
+  .hud span{display:block;font:600 .6rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .hud b{display:block;font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hud div.alarm b{color:#ffb27a}
+  .clock{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+  #btnPlay{flex:1 1 220px;padding:13px 18px;font-size:.96rem}
+  #lands{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+  .land{border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0}
+  .land.now{border-color:rgba(203,180,106,.6);background:rgba(203,180,106,.06)}
+  .land.home{border-color:rgba(100,240,200,.4)}
+  .land h4{margin:0;font-size:.95rem;display:flex;align-items:center;gap:8px}
+  .land h4 i{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .land h4 small{margin-left:auto;font:500 .72rem ui-monospace,Menlo,monospace;color:var(--dim)}
+  .land p{margin:4px 0 0;font-size:.84rem;color:var(--dim)}
+  .land p.st{color:var(--ink)}
+  .land p.qu{font-style:italic}
+  .land .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .land .acts .btn{padding:6px 11px;font-size:.76rem}
+  .keys{margin:10px 0 0;font-size:.8rem;color:var(--dim)}
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .msg:empty{display:none}
+  .msg div+div{margin-top:6px;font-size:.86rem;opacity:.75}
+  .msg b{color:var(--ink)}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict p{margin:0 0 8px}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  #reveal p{color:var(--dim);font-size:.92rem;margin:10px 0 0}
+  #reveal canvas.trace{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:10px;margin-top:8px}
+  #reveal .key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.78rem;margin-top:8px}
+  .daybar{font-size:.9rem;color:var(--dim)}
+
+  @media (max-width:760px){
+    .hud{grid-template-columns:repeat(2,minmax(0,1fr))}
+    #lands{grid-template-columns:minmax(0,1fr)}
+  }
+  @media (max-width:640px){
+    .nav{position:static}
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .stage{padding:14px 12px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
+      <a href="ballot.html">Ballot</a>
+      <a href="mere.html">Mere</a>
+      <a href="hold.html">Hold</a>
+      <a href="wire.html">Wire</a>
+      <a href="press.html">Press</a>
+      <a href="vat.html">Vat</a>
+      <a href="lock.html">Lock</a>
+      <a href="spinet.html">Spinet</a>
+      <a href="gauge.html">Gauge</a>
+      <a href="ledger.html">Ledger</a>
+      <a href="regulator.html">Regulator</a>
+      <a href="sounding.html">Sounding</a>
+      <a href="fireworks.html">Fireworks</a>
+      <a href="aerostat.html">Aerostat</a>
+      <a href="mill.html">Mill</a>
+      <a href="trial.html">Trial</a>
+      <a href="plate.html">Plate</a>
+      <a href="forge.html">Forge</a>
+      <a href="bakehouse.html">Bakehouse</a>
+      <a href="ropewalk.html">Ropewalk</a>
+      <a href="hayfield.html" class="on">Hayfield</a>
+    </div>
+  </div>
+</nav>
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page sixty</p>
+    <h1>The Hayfield</h1>
+    <p class="lede">
+      The Ropewalk was one long walk under a roof, and the weather never came into it. Here the weather is the whole
+      job. A meadow ready to cut, a gang of scythes, six working days and a weatherglass on the kitchen wall. Grass is
+      three parts water when it falls; hay that goes into the rick too damp heats until it chars, and hay left spread
+      out in the rain has its goodness washed out of it. All week long you are deciding what the sky will
+      do next.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="rWho">—</p>
+        <h3 id="rName">—</h3>
+        <p id="rBlurb">—</p>
+      </div>
+
+      <div class="stage">
+        <canvas id="meadow" width="640" height="340" aria-label="The meadow in four lands under the sky, with the weatherglass in the top corner and the rick in the yard at the bottom right."></canvas>
+        <div class="hud" aria-live="off">
+          <div><span>When</span><b id="hWhen">—</b></div>
+          <div><span>The sky</span><b id="hSky">—</b></div>
+          <div><span>The glass</span><b id="hGlass">—</b></div>
+          <div><span>Wind</span><b id="hWind">—</b></div>
+          <div><span>The gang</span><b id="hGang">—</b></div>
+          <div><span>Still to do</span><b id="hLeft">—</b></div>
+          <div><span>In the rick</span><b id="hRick">—</b></div>
+          <div><span>Fit to lead</span><b>under a quarter water</b></div>
+        </div>
+        <div class="clock">
+          <button class="btn" type="button" id="btnPlay">Start the week</button>
+          <button class="btn small ghost" type="button" id="btnSpeed">Faster</button>
+        </div>
+        <div id="lands" aria-label="The four lands of the meadow"></div>
+        <p class="keys">Give the gang a job on any land and the clock runs until they finish it. Starting a new job abandons the one in hand. <code>Space</code> holds or runs the clock.</p>
+      </div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <div class="stage" id="reveal" style="display:none"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="btnAgain" style="display:none">Make this week's hay again</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Day</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday’s</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today’s</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow’s →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">Every day is a different farm, meadow, gang and week of weather.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The order of the work, the reason for each step and the way a falling glass runs ahead of the rain are real.
+        The farm, the meadow and the week's weather are the day's number, and the drying is a small model.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Making hay</h3>
+          <p>Before machines, a meadow was mown with scythes, a man taking about an acre a day, and the grass left
+             in the swath where it fell. Women and boys followed with forks and tedded it, throwing it up and spreading
+             it so the sun and wind could get through it, and turned it again later in the day. At evening, or when
+             rain threatened, it was raked into windrows and put up in cocks, which shed most of the wet and dry
+             hardly at all. When the hay rattled and a twisted wisp snapped instead of sweating, it was pitched onto
+             the wagon and led to the rick.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Why the rick heats</h3>
+          <p>Cut grass goes on living for a while, and so do the moulds and bacteria on it. Packed into a rick with
+             too much water in it, their breathing warms the hay, and the warmth lets them breathe faster. A little
+             sweat is good and gives hay its smell; too much turns it brown and mowburnt, and past about seventy
+             degrees the heating can run on by itself until the middle chars or the rick catches fire. Farmers drove
+             an iron bar into a new rick and felt it when it came out.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>The weatherglass</h3>
+          <p>An aneroid or mercury barometer reads the weight of the air. A depression coming in from the west drags
+             the glass down ahead of its rain, bottoms out about when the worst of it passes, and lets it climb again
+             behind. The words on the dial are much less use than the way the hand is moving, which is why a
+             barometer has a second setting hand: you leave it where the glass stood and come back later to see which
+             way it has gone. On this one the brass hand shows where the glass stood three hours ago. Summer thunder
+             showers come with hardly any warning on the glass at all.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>What the page simplifies</h3>
+          <p>The gang works as one body on one land at a time, where a real farm would split it, and a job's state
+             changes all at once when it finishes. The water in the hay moves toward what the air will allow at a rate
+             set by the sun, the wind and how loosely it lies; rain adds to it in proportion to how open it lies and
+             washes out some of its worth. The heating of the rick is worked out from how wet it went up, not from
+             any real biology. The weather signs at dawn are right about three times in four, which is generous.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Sixty rooms, and one number doing all the work. Today it brings two or three depressions in off the sea, decides
+        whether Thursday afternoon will thunder, and leaves you a glass to guess it from.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="hayfield.js"></script>
+</body>
+</html>

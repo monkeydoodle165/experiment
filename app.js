@@ -296,3 +296,62 @@
       'what the machine asked.</p>' +
     '</li>'), log.firstChild);
 })();
+
+/* ---------- Change 60: the Hayfield ----------
+   Announced the same way as the Ropewalk above, and runs after it, so it lands in front of it. */
+(function () {
+  'use strict';
+  function el(html) { var t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; }
+  if (document.querySelector('a.room[href="hayfield.html"]')) return;
+
+  var nav = document.querySelector('.nav-links');
+  if (nav) nav.appendChild(el('<a href="hayfield.html">Hayfield</a>'));
+
+  var cta = document.querySelector('.cta-row');
+  if (cta) {
+    var first = cta.querySelector('.btn:not(.ghost)');
+    if (first) first.classList.add('ghost');
+    cta.insertBefore(el('<a class="btn" href="hayfield.html">Make this week\'s hay</a>'), cta.firstChild);
+  }
+
+  var rooms = document.querySelector('#rooms .rooms');
+  if (rooms) rooms.insertBefore(el(
+    '<a class="room" href="hayfield.html">' +
+      '<span class="room-tag">haymaking</span>' +
+      '<h3>The Hayfield</h3>' +
+      '<p>From a walk under a roof to a meadow under the open sky. One week of haysel between 1820 and 1899, four lands ' +
+      'of grass, a gang of scythes and a weatherglass on the kitchen wall. Mow, ted, turn, rake and cock it, and lead ' +
+      'it to the rick by Saturday night: too damp and the rick heats until it fires, too long in the rain and it is ' +
+      'washed of its worth. The day\'s number picks the farm, the meadow and the whole week\'s weather.</p>' +
+      '<span class="room-go">Sharpen the scythes →</span>' +
+    '</a>'), rooms.firstChild);
+
+  var after = document.querySelector('#seed .afterword');
+  if (after) {
+    after.innerHTML = after.innerHTML
+      .replace('fifty-nine jobs', 'sixty jobs')
+      .replace(/out of the door\. One integer, fifty-nine rooms\./, 'out of the door, and in <a href="hayfield.html">the Hayfield</a> it ' +
+        'brings a week of depressions in off the sea, drags the glass down ahead of each one and decides which afternoons ' +
+        'will thunder. One integer, sixty rooms.');
+  }
+
+  var log = document.querySelector('#log .log');
+  if (log) log.insertBefore(el(
+    '<li>' +
+      '<time>Change 60</time>' +
+      '<h3>Make hay</h3>' +
+      '<p>The Ropewalk kept the weather out under a long roof. Added <a href="hayfield.html">The Hayfield</a>, where ' +
+      'the weather is the whole job. It is one week of haysel, Monday dawn to Saturday night, in a June or July some ' +
+      'time between 1820 and 1899, on one of twelve farms from Keswick to Stowmarket, each with its own share of rain ' +
+      'off the sea. The day\'s number picks the meadow and its acres, how many scythes there are, the price of hay that ' +
+      'year, and the week\'s weather an hour at a time: one to four depressions, each pulling the glass down ahead of ' +
+      'its rain, and on the warm days a chance of thunder showers that the glass will not warn you of.</p>' +
+      '<p>The meadow is in four lands and there is one gang. Each land goes from standing grass to the swath, tedded ' +
+      'out, turned, raked into windrows, put up in cocks against the dew or a shower, shaken out again, and led to the ' +
+      'rick. Spread hay dries fastest and takes the rain worst; cocks barely dry but shed the wet. The water in the hay ' +
+      'is modelled hour by hour from the sun, the wind and the air, and the gang stops for the night at eight. Lead it ' +
+      'over a quarter water and the rick heats; lead it brittle and the leaf stays in the field. At the end the page ' +
+      'draws every land\'s moisture across the week against the rain and the glass, and the rick\'s heat for the six ' +
+      'weeks after.</p>' +
+    '</li>'), log.firstChild);
+})();
