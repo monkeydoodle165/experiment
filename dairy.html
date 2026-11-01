@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Dairy — Drift</title>
+<meta name="description" content="A farmhouse dairy on a churning morning between 1820 and 1899. Bring the cream to the right warmth, turn the barrel churn until the butter breaks, stop at grains the size of wheat, then wash, salt and work it for the market.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='9' y='5' width='14' height='22' rx='4' fill='%239a6b3f'/%3E%3Crect x='9' y='10' width='14' height='2' fill='%233b2a1a'/%3E%3Crect x='9' y='20' width='14' height='2' fill='%233b2a1a'/%3E%3Ccircle cx='16' cy='16' r='3' fill='%23f2d36b'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px;
+    background:linear-gradient(160deg,rgba(242,211,107,.1),rgba(100,240,200,.04))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em;font-family:Georgia,"Times New Roman",serif}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  .plaque .book{border-left:2px solid rgba(242,211,107,.5);padding-left:14px;font-family:Georgia,"Times New Roman",serif;font-style:italic}
+  .stage{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-top:18px}
+  .stage h5{margin:16px 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .stage h5:first-child{margin-top:0}
+  #room{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#0b0f16}
+  .hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(14,19,27,.7);margin-top:12px}
+  .hud div{min-width:0}
+  .hud span{display:block;font:600 .6rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .hud b{display:block;font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hud div.alarm b{color:#ffb27a}
+  .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+  .acts .btn{padding:8px 14px;font-size:.82rem}
+  .acts .btn.big{flex:1 1 220px;padding:12px 18px;font-size:.95rem}
+  .acts .btn[disabled]{opacity:.35;cursor:not-allowed;transform:none}
+  .pace{display:flex;align-items:center;gap:12px;margin-top:12px;font-size:.86rem;color:var(--dim)}
+  .pace input{flex:1;accent-color:#f2d36b}
+  .pace b{font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);min-width:9ch;text-align:right}
+  .keys{margin:10px 0 0;font-size:.8rem;color:var(--dim)}
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .msg:empty{display:none}
+  .msg b{color:var(--ink)}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict p{margin:0 0 8px}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  #reveal p{color:var(--dim);font-size:.92rem;margin:10px 0 0}
+  #reveal canvas{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:10px;margin-top:8px}
+  #reveal .key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.78rem;margin-top:8px;color:var(--dim)}
+  #reveal .key i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+  .card{width:100%;border-collapse:collapse;margin-top:8px;font-size:.88rem}
+  .card td{padding:7px 8px;border-top:1px solid var(--line);color:var(--dim);vertical-align:top}
+  .card td.n{font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;text-align:right}
+  .card tr.tot td{color:var(--ink);font-weight:650}
+  .daybar{font-size:.9rem;color:var(--dim)}
+
+  @media (max-width:760px){
+    .hud{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:640px){
+    .nav{position:static}
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .stage{padding:14px 12px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
+      <a href="ballot.html">Ballot</a>
+      <a href="mere.html">Mere</a>
+      <a href="hold.html">Hold</a>
+      <a href="wire.html">Wire</a>
+      <a href="press.html">Press</a>
+      <a href="vat.html">Vat</a>
+      <a href="lock.html">Lock</a>
+      <a href="spinet.html">Spinet</a>
+      <a href="gauge.html">Gauge</a>
+      <a href="ledger.html">Ledger</a>
+      <a href="regulator.html">Regulator</a>
+      <a href="sounding.html">Sounding</a>
+      <a href="fireworks.html">Fireworks</a>
+      <a href="aerostat.html">Aerostat</a>
+      <a href="mill.html">Mill</a>
+      <a href="trial.html">Trial</a>
+      <a href="plate.html">Plate</a>
+      <a href="forge.html">Forge</a>
+      <a href="bakehouse.html">Bakehouse</a>
+      <a href="ropewalk.html">Ropewalk</a>
+      <a href="hayfield.html">Hayfield</a>
+      <a href="dairy.html" class="on">Dairy</a>
+    </div>
+  </div>
+</nav>
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page sixty-one</p>
+    <h1>The Dairy</h1>
+    <p class="lede">
+      The Hayfield was all open sky and guessing the weather. This room is a cold stone dairy on the shady side of
+      a farmhouse, and the weather you are judging is inside a barrel. Cream that is too cold will not turn to butter
+      if you churn it all morning. Cream that is too warm turns quickly, but the butter is soft and greasy and half
+      the fat runs away in the buttermilk. Get it right and somewhere past half an hour the churn goes heavy, then
+      quiet, and then the butter breaks.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="rWho">—</p>
+        <h3 id="rName">—</h3>
+        <p id="rBlurb">—</p>
+        <p class="book" id="rBook">—</p>
+      </div>
+
+      <div class="stage">
+        <canvas id="room" width="640" height="340" aria-label="The dairy: a barrel churn on its stand, a magnified view through the sight glass in its lid, and a dairy thermometer standing in the cream."></canvas>
+        <div class="hud" aria-live="off">
+          <div><span>Clock</span><b id="hWhen">—</b></div>
+          <div><span>The cream</span><b id="hTemp">—</b></div>
+          <div><span>The dairy</span><b id="hRoom">—</b></div>
+          <div><span>In the churn</span><b id="hStage">—</b></div>
+          <div><span>The sound of it</span><b id="hSound">—</b></div>
+          <div id="hPlugBox"><span>Vent plug</span><b id="hPlug">—</b></div>
+          <div><span>Cream</span><b id="hCream">—</b></div>
+          <div><span>Ordered</span><b id="hOrder">—</b></div>
+        </div>
+
+        <div id="pTemper">
+          <div class="acts">
+            <button class="btn ghost" type="button" id="bWarm">Stand the crock in hot water (+2°)</button>
+            <button class="btn ghost" type="button" id="bCool">Stand it in the well trough (−2°)</button>
+          </div>
+          <div class="acts">
+            <button class="btn big" type="button" id="bPour">Pour it into the churn and start turning</button>
+          </div>
+        </div>
+
+        <div id="pChurn" style="display:none">
+          <div class="pace">
+            <span>Pace</span>
+            <input type="range" id="pace" min="20" max="90" step="1" value="50" aria-label="Turns of the churn per minute">
+            <b id="paceOut">50 a min</b>
+          </div>
+          <div class="acts">
+            <button class="btn big" type="button" id="bTurn">Rest your arm</button>
+            <button class="btn small ghost" type="button" id="bSpeed">Faster clock</button>
+            <button class="btn small ghost" type="button" id="bSound">Sound on</button>
+          </div>
+          <div class="acts">
+            <button class="btn ghost" type="button" id="bVent">Pull the vent plug</button>
+            <button class="btn ghost" type="button" id="bHot">Pour in warm water (+2½°)</button>
+            <button class="btn ghost" type="button" id="bBreak">Add breaking water (−3°)</button>
+            <button class="btn" type="button" id="bStop">Stop, and draw off the buttermilk</button>
+          </div>
+          <p class="keys"><code>Space</code> turns or rests, <code>↑</code> <code>↓</code> change the pace, <code>V</code> vents the churn.</p>
+        </div>
+
+        <div id="pMake" style="display:none">
+          <div class="acts">
+            <button class="btn ghost" type="button" id="bWash">Wash the grains in cold water</button>
+            <button class="btn ghost" type="button" id="bWork">Give it a pass on the butter worker</button>
+          </div>
+          <div class="pace">
+            <span>Salt</span>
+            <input type="range" id="salt" min="0" max="1.2" step="0.05" value="0" aria-label="Ounces of salt to the pound">
+            <b id="saltOut">none</b>
+          </div>
+          <div class="acts">
+            <button class="btn big" type="button" id="bSend">Make it up and send it to market</button>
+          </div>
+        </div>
+      </div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <div class="stage" id="reveal" style="display:none"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="bAgain" style="display:none">Churn this cream again</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Day</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday’s</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today’s</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow’s →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">Every day is a different farm, herd, season, cream and order.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The steps, the reason the temperature matters, the way a churn sounds as it comes, and the old way of judging
+        butter out of a hundred are real. The farm, the herd, the cream and the order are the day's number, and the
+        churning is a small model.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>What churning does</h3>
+          <p>Cream is fat in tiny globules, each one wrapped in a thin skin, floating in watery milk. Knocking it about
+             beats air into it, and the skins break against the bubbles. The cream swells and thickens and the churn
+             goes heavy and dull. Then the bare fat starts to stick together, the foam falls in, and all at once the
+             cream separates into specks of butter in thin buttermilk. Dairymaids called this the butter breaking, or
+             coming, and could hear it: the thud of thick cream turns back into a splash.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Why the thermometer matters</h3>
+          <p>Butterfat is a mixture of fats that melt at different temperatures, so at any warmth some of it is solid
+             and some liquid. Too cold and the globules are too hard to stick together, and the churn can go on for
+             hours. Too warm and they stick at once, but the butter is soft, greasy and pale, and fat is lost in the
+             buttermilk. In winter, when cows are on hay, their butterfat is harder and the cream has to be churned
+             several degrees warmer than in summer. Dairy books of the time gave a range, not one figure, and
+             dairymaids learned the rest by ear.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Washing, salting and working</h3>
+          <p>Churning stopped when the grains were about the size of wheat, small enough to wash, large enough not to
+             run out with the buttermilk. Buttermilk left in butter goes sour and makes it go off, so the grains were
+             washed in cold water, then salted and pressed on a butter worker to squeeze out water and spread the salt.
+             Work it too little and it weeps and comes out streaky; too much and the grain is broken and it goes
+             greasy. Shows and buyers scored butter out of a hundred: forty-five for flavour, twenty-five for body,
+             fifteen for colour, ten for salting and five for the make-up.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>What the page simplifies</h3>
+          <p>How fast the cream churns is one number that rises steeply with warmth around a best temperature set by
+             the season and the herd, and with how ripe the cream is and how hard you turn. Too fast and the cream
+             rides round with the barrel instead of falling. The gas that builds up in the first few minutes, the heat
+             your turning adds, the fat lost in the buttermilk, the washing and the working are all rough rules of
+             thumb, and the scorecard is a fair imitation of a judge, not a real one.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Sixty-one rooms, and one number doing all the work. Today it chooses a herd and a season, ripens the cream a
+        little more or a little less than it should be, and leaves you to find the right warmth from a book that gives
+        a range and a churn that tells you by sound.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="dairy.js"></script>
+</body>
+</html>

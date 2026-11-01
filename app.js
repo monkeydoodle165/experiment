@@ -355,3 +355,63 @@
       'weeks after.</p>' +
     '</li>'), log.firstChild);
 })();
+
+/* ---------- Change 61: the Dairy ----------
+   Announced the same way as the two rooms above, and runs after them, so it lands in front of them. */
+(function () {
+  'use strict';
+  function el(html) { var t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; }
+  if (document.querySelector('a.room[href="dairy.html"]')) return;
+
+  var nav = document.querySelector('.nav-links');
+  if (nav) nav.appendChild(el('<a href="dairy.html">Dairy</a>'));
+
+  var cta = document.querySelector('.cta-row');
+  if (cta) {
+    var first = cta.querySelector('.btn:not(.ghost)');
+    if (first) first.classList.add('ghost');
+    cta.insertBefore(el('<a class="btn" href="dairy.html">Churn today\'s butter</a>'), cta.firstChild);
+  }
+
+  var rooms = document.querySelector('#rooms .rooms');
+  if (rooms) rooms.insertBefore(el(
+    '<a class="room" href="dairy.html">' +
+      '<span class="room-tag">buttermaking</span>' +
+      '<h3>The Dairy</h3>' +
+      '<p>From the open sky back into a cold stone room. Bring a crock of cream to the warmth you think right, turn the ' +
+      'barrel churn, pull the vent plug before it blows, and listen for the slosh to go dull and then break into a ' +
+      'splash. Stop at grains the size of wheat, then wash, salt and work it, and a judge scores it out of a hundred. ' +
+      'The day\'s number picks the farm, the herd, the season and how ripe the cream has got.</p>' +
+      '<span class="room-go">Scald the churn →</span>' +
+    '</a>'), rooms.firstChild);
+
+  var after = document.querySelector('#seed .afterword');
+  if (after) {
+    after.innerHTML = after.innerHTML
+      .replace('sixty jobs', 'sixty-one jobs')
+      .replace(/will thunder\. One integer, sixty rooms\./, 'will thunder, and in <a href="dairy.html">the Dairy</a> it ' +
+        'picks a herd and a season, ripens the cream a little too far or not far enough, and hides the right churning ' +
+        'warmth inside a range in a dairy book. One integer, sixty-one rooms.');
+  }
+
+  var log = document.querySelector('#log .log');
+  if (log) log.insertBefore(el(
+    '<li>' +
+      '<time>Change 61</time>' +
+      '<h3>The butter breaks</h3>' +
+      '<p>The Hayfield was all weather and open sky. Added <a href="dairy.html">The Dairy</a>, a cold stone room on the ' +
+      'shady side of a farmhouse, on a churning morning on today\'s calendar date some time between 1820 and 1899, in one ' +
+      'of twelve dairying places from Epping to Mallow. The day\'s number picks the herd (Alderney and Guernsey cream ' +
+      'comes easily and yellow, Ayrshire cream is slow), how many gallons have been saved, how ripe the cream has got, ' +
+      'what butter is fetching and the order: fresh rolls, light salt prints, half-salt for the house in town, or a ' +
+      'firkin to keep. The season sets the right churning warmth, because winter butterfat is harder.</p>' +
+      '<p>There is a thermometer, but the book on the shelf only gives a range. The churning runs faster the warmer the ' +
+      'cream, the riper it is and the harder you turn, up to the point where the cream rides round with the barrel ' +
+      'instead of falling. Too cold and it will not come in three hours; too warm and it comes fast, soft and greasy and ' +
+      'loses its fat in the buttermilk. Gas builds behind the vent plug in the first quarter of an hour, and the churn ' +
+      'sounds different as the cream thins, thickens and breaks, with an optional knock you can hear. After that the ' +
+      'grains are washed, salted and worked, and the butter is scored out of a hundred the way shows did it: flavour, ' +
+      'body, colour, salting and make-up. The page then draws the whole churning, temperature and progress, against the ' +
+      'band this cream wanted.</p>' +
+    '</li>'), log.firstChild);
+})();
