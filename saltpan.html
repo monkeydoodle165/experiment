@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Saltpan — Drift</title>
+<meta name="description" content="An open-pan salt works between 1800 and 1899. Fire the pan hot for fine table salt or slow for coarse fishery salt, draw it onto the hurdles, scratch off the scale before the plate burns, and fill the order before the boat leaves.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='3' y='16' width='26' height='8' rx='1' fill='%23555c66'/%3E%3Crect x='5' y='17' width='22' height='5' fill='%236e8ca0'/%3E%3Cpath d='M8 22l4-4 4 4 4-3 4 3z' fill='%23f2f4f0'/%3E%3Crect x='3' y='24' width='26' height='5' fill='%23a0522d'/%3E%3Cpath d='M11 13c0-3 3-3 3-6M18 13c0-3 3-3 3-6' stroke='%23c9ced6' stroke-width='1.6' fill='none'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px;
+    background:linear-gradient(160deg,rgba(242,211,107,.1),rgba(100,240,200,.04))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em;font-family:Georgia,"Times New Roman",serif}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  .plaque .book{border-left:2px solid rgba(242,211,107,.5);padding-left:14px;font-family:Georgia,"Times New Roman",serif;font-style:italic}
+  .stage{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-top:18px}
+  .stage h5{margin:16px 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .stage h5:first-child{margin-top:0}
+  #room{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#0b0f16}
+  .hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(14,19,27,.7);margin-top:12px}
+  .hud div{min-width:0}
+  .hud span{display:block;font:600 .6rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .hud b{display:block;font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hud div.alarm b{color:#ffb27a}
+  .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+  .acts .btn{padding:8px 14px;font-size:.82rem}
+  .acts .btn.big{flex:1 1 220px;padding:12px 18px;font-size:.95rem}
+  .acts .btn[disabled]{opacity:.35;cursor:not-allowed;transform:none}
+  .pace{display:flex;align-items:center;gap:12px;margin-top:12px;font-size:.86rem;color:var(--dim)}
+  .pace input{flex:1;accent-color:#ff9a4a}
+  .pace b{font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);min-width:9ch;text-align:right}
+  .keys{margin:10px 0 0;font-size:.8rem;color:var(--dim)}
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .msg:empty{display:none}
+  .msg b{color:var(--ink)}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict p{margin:0 0 8px}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  #reveal p{color:var(--dim);font-size:.92rem;margin:10px 0 0}
+  #reveal canvas{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:10px;margin-top:8px}
+  #reveal .key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.78rem;margin-top:8px;color:var(--dim)}
+  #reveal .key i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+  .card{width:100%;border-collapse:collapse;margin-top:8px;font-size:.88rem}
+  .card td{padding:7px 8px;border-top:1px solid var(--line);color:var(--dim);vertical-align:top}
+  .card td.n{font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;text-align:right}
+  .card tr.tot td{color:var(--ink);font-weight:650}
+  .daybar{font-size:.9rem;color:var(--dim)}
+
+  @media (max-width:760px){
+    .hud{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:640px){
+    .nav{position:static}
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .stage{padding:14px 12px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
+      <a href="ballot.html">Ballot</a>
+      <a href="mere.html">Mere</a>
+      <a href="hold.html">Hold</a>
+      <a href="wire.html">Wire</a>
+      <a href="press.html">Press</a>
+      <a href="vat.html">Vat</a>
+      <a href="lock.html">Lock</a>
+      <a href="spinet.html">Spinet</a>
+      <a href="gauge.html">Gauge</a>
+      <a href="ledger.html">Ledger</a>
+      <a href="regulator.html">Regulator</a>
+      <a href="sounding.html">Sounding</a>
+      <a href="fireworks.html">Fireworks</a>
+      <a href="aerostat.html">Aerostat</a>
+      <a href="mill.html">Mill</a>
+      <a href="trial.html">Trial</a>
+      <a href="plate.html">Plate</a>
+      <a href="forge.html">Forge</a>
+      <a href="bakehouse.html">Bakehouse</a>
+      <a href="ropewalk.html">Ropewalk</a>
+      <a href="hayfield.html">Hayfield</a>
+      <a href="dairy.html">Dairy</a>
+      <a href="saltpan.html" class="on">Saltpan</a>
+    </div>
+  </div>
+</nav>
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page sixty-two</p>
+    <h1>The Saltpan</h1>
+    <p class="lede">
+      The Dairy wanted the cream kept cool and judged by the degree. This room is a long shed full of steam over an
+      iron pan the size of a barn floor, and the same rule runs backwards: here the heat decides the grain. Boil the
+      brine hard and the salt falls as fine as flour, right for the table. Keep it barely warm for days and it grows
+      into big hollow crystals for the herring curers. The order on the slate wants one grain, and the boat will not wait.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="rWho">—</p>
+        <h3 id="rName">—</h3>
+        <p id="rBlurb">—</p>
+        <p class="book" id="rBook">—</p>
+      </div>
+
+      <div class="stage">
+        <canvas id="room" width="640" height="340" aria-label="The pan house: an iron salt pan over a brick furnace, steam rising, salt on the hurdles beside it, a thermometer, and a magnifying glass on the newest salt."></canvas>
+        <div class="hud" aria-live="off">
+          <div><span>Clock</span><b id="hWhen">—</b></div>
+          <div><span>The brine</span><b id="hTemp">—</b></div>
+          <div><span>Grain forming</span><b id="hGrain">—</b></div>
+          <div><span>Wind on the chimney</span><b id="hWind">—</b></div>
+          <div><span>Salt in the pan</span><b id="hPan">—</b></div>
+          <div><span>On the hurdles</span><b id="hDrawn">—</b></div>
+          <div id="hScaleBox"><span>Scale</span><b id="hScale">—</b></div>
+          <div id="hBottomBox"><span>Pan bottom</span><b id="hBottom">—</b></div>
+        </div>
+
+        <div id="pReady">
+          <div class="acts">
+            <button class="btn big" type="button" id="bStart">Light the fires under the pan</button>
+          </div>
+        </div>
+
+        <div id="pRun" style="display:none">
+          <div class="pace">
+            <span>Firing</span>
+            <input type="range" id="fire" min="0" max="100" step="1" value="35" aria-label="How hard the stoker fires the furnace">
+            <b id="fireOut">steady</b>
+          </div>
+          <div class="acts">
+            <button class="btn big" type="button" id="bDraw">Draw the salt onto the hurdles</button>
+            <button class="btn small ghost" type="button" id="bSpeed">Faster clock</button>
+            <button class="btn small ghost" type="button" id="bPause">Pause</button>
+          </div>
+          <div class="acts">
+            <button class="btn ghost" type="button" id="bScratch">Let the fire down and scratch the pan (9 h)</button>
+            <button class="btn ghost" type="button" id="bShip">Load the boat now</button>
+          </div>
+          <p class="keys"><code>↑</code> <code>↓</code> change the firing, <code>D</code> draws, <code>Space</code> pauses.</p>
+        </div>
+      </div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <div class="stage" id="reveal" style="display:none"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="bAgain" style="display:none">Fill the pan and try this order again</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Day</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday’s</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today’s</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow’s →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">Every day is a different works, brine, order, pan and run of wind.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The open pan, the way its heat set the grain, the four kinds of salt, the scale and the burned plates are real.
+        The works, the order, the pan and the wind are the day's number, and the pan itself is a small model.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Brine, a pan and a fire</h3>
+          <p>Through most of the nineteenth century, almost all British salt was made the same way. Brine was pumped up from
+             salt beds deep underground in Cheshire and Worcestershire and run into wide, shallow iron pans riveted
+             together from plates, set over coal furnaces whose flues ran the whole length underneath. Once the brine is
+             saturated, every ton of water that steams off leaves salt behind on the bottom, and men called wallers
+             raked or lifted it out. Coast works boiled sea water, or sea water strengthened with rock salt, and burned
+             far more coal for every ton.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Heat makes the grain</h3>
+          <p>Fast evaporation makes many crystals at once, and they stay small. Slow evaporation makes few, and they grow.
+             So one works made different salts in different pans: fine lump salt boiled hard at about 226°F, the boiling
+             point of saturated brine, and drawn every few hours; common salt at 160 to 180°F; and coarse fishery salt
+             at 100 to 130°F, left for days so the crystals grew into hollow, stepped "hoppers" that dissolved slowly
+             into fish. The wind mattered too: a strong wind over the chimney pulls the fire harder.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Scale and burned plates</h3>
+          <p>Brine carries lime as well as salt, and as the water goes the lime settles on the plates as a hard crust of
+             scale (mostly calcium sulphate). Scale keeps the heat from the brine, so the plate under it runs hotter, and
+             a plate under thick scale over a hard fire could go red and split. Pans were let down regularly and men
+             climbed in to break it off with picks, a job called scratching the pan. Hot lump pans needed it far more
+             often than slow fishery pans.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>What the page simplifies</h3>
+          <p>The grain size is one formula of the temperature, with a fixed spread, and crystals in a cool pan grow a
+             little for each hour they lie there. Evaporation is a steep curve of temperature plus a little help from
+             the wind. The furnace, the draught, the scale, the risk to the plate, the coal and the wages are rules of
+             thumb, chosen to behave sensibly rather than measured. Prices are only rough guides to their period.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Sixty-two rooms, and one number doing all the work. Today it picks a works and a brine, writes an order on the
+        slate, and sends the wind across the chimney top hour by hour, so the fire you set is never quite the fire you get.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="saltpan.js"></script>
+</body>
+</html>

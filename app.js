@@ -415,3 +415,61 @@
       'band this cream wanted.</p>' +
     '</li>'), log.firstChild);
 })();
+
+/* ---------- Change 62: the Saltpan ----------
+   Announced the same way as the rooms above, and runs after them, so it lands in front of them. */
+(function () {
+  'use strict';
+  function el(html) { var t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; }
+  if (document.querySelector('a.room[href="saltpan.html"]')) return;
+
+  var nav = document.querySelector('.nav-links');
+  if (nav) nav.appendChild(el('<a href="saltpan.html">Saltpan</a>'));
+
+  var cta = document.querySelector('.cta-row');
+  if (cta) {
+    var first = cta.querySelector('.btn:not(.ghost)');
+    if (first) first.classList.add('ghost');
+    cta.insertBefore(el('<a class="btn" href="saltpan.html">Fire today\'s salt pan</a>'), cta.firstChild);
+  }
+
+  var rooms = document.querySelector('#rooms .rooms');
+  if (rooms) rooms.insertBefore(el(
+    '<a class="room" href="saltpan.html">' +
+      '<span class="room-tag">saltmaking</span>' +
+      '<h3>The Saltpan</h3>' +
+      '<p>From a cool dairy to a shed full of steam. An open iron pan of brine over a coal furnace, where the heat ' +
+      'decides the grain: boil it hard for fine table salt, keep it barely warm for days for coarse fishery salt. Draw ' +
+      'the salt onto the hurdles, scratch off the scale before the plate burns, watch the wind pull at the fire, and ' +
+      'fill the order before the boat leaves. The day\'s number picks the works, the brine, the order and the wind.</p>' +
+      '<span class="room-go">Light the fires →</span>' +
+    '</a>'), rooms.firstChild);
+
+  var after = document.querySelector('#seed .afterword');
+  if (after) {
+    after.innerHTML = after.innerHTML
+      .replace('sixty-one jobs', 'sixty-two jobs')
+      .replace(/One integer, sixty-one rooms\./, 'In <a href="saltpan.html">the Saltpan</a> it writes an order on the ' +
+        'slate and sends the wind across the chimney top hour by hour, so the fire you set is never quite the fire you get. ' +
+        'One integer, sixty-two rooms.');
+  }
+
+  var log = document.querySelector('#log .log');
+  if (log) log.insertBefore(el(
+    '<li>' +
+      '<time>Change 62</time>' +
+      '<h3>Heat makes the grain</h3>' +
+      '<p>The Dairy kept its cream cool and judged it by the degree. Added <a href="saltpan.html">The Saltpan</a>, where the ' +
+      'same rule runs backwards: an open-pan salt works some time between 1800 and 1899, in one of twelve places from ' +
+      'Winsford and Droitwich to Lymington and Maldon. The day\'s number picks the works and how strong and limy its brine ' +
+      'runs, the order on the slate (lump salt for the table, butter salt, common salt, or big hopper crystals of fishery ' +
+      'salt for the herring curers), the pan that suits it, the hours until the boat leaves, the price, the coal and the ' +
+      'wind across the chimney hour by hour.</p>' +
+      '<p>One slider sets the firing. The pan heads for a temperature set by the fire, the draught and how much scale and ' +
+      'salt lie on the plate. Hot brine throws fine grain fast; cool brine throws coarse grain slowly, and crystals left ' +
+      'lying in a cool pan keep growing, all shown under a magnifying glass. Draw the salt onto the hurdles (late draws go ' +
+      'aboard dripping), let the fire down to scratch the lime off before the plate burns, and when the boat comes the ' +
+      'merchant sorts every draw by grain against the order. The page then draws the pan hour by hour and the spread of ' +
+      'grain on the hurdles, with the account.</p>' +
+    '</li>'), log.firstChild);
+})();
