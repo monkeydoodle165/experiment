@@ -473,3 +473,59 @@
       'grain on the hurdles, with the account.</p>' +
     '</li>'), log.firstChild);
 })();
+
+/* ---------- Change 63: the Chandlery ----------
+   Announced the same way as the rooms above, and runs after them, so it lands in front of them. */
+(function () {
+  'use strict';
+  function el(html) { var t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; }
+  if (document.querySelector('a.room[href="chandlery.html"]')) return;
+
+  var nav = document.querySelector('.nav-links');
+  if (nav) nav.appendChild(el('<a href="chandlery.html">Chandlery</a>'));
+
+  var cta = document.querySelector('.cta-row');
+  if (cta) {
+    var first = cta.querySelector('.btn:not(.ghost)');
+    if (first) first.classList.add('ghost');
+    cta.insertBefore(el('<a class="btn" href="chandlery.html">Dip today\'s candles</a>'), cta.firstChild);
+  }
+
+  var rooms = document.querySelector('#rooms .rooms');
+  if (rooms) rooms.insertBefore(el(
+    '<a class="room" href="chandlery.html">' +
+      '<span class="room-tag">candlemaking</span>' +
+      '<h3>The Chandlery</h3>' +
+      '<p>From a shed full of steam to a tallow chandler\'s back room. A wheel of wicks turns over a vat of melted fat, ' +
+      'and forty or fifty dips make a candle. Keep the tallow just running, let each coat set before the next while the ' +
+      'room warms through the afternoon, weigh a candle, and cut the wheel down when they are true to the pound. The ' +
+      'day\'s number picks the town, the tallow, the order and the hour the carrier calls.</p>' +
+      '<span class="room-go">Set the wheel turning →</span>' +
+    '</a>'), rooms.firstChild);
+
+  var after = document.querySelector('#seed .afterword');
+  if (after) {
+    after.innerHTML = after.innerHTML
+      .replace('sixty-two jobs', 'sixty-three jobs')
+      .replace(/One integer, sixty-two rooms\./, 'In <a href="chandlery.html">the Chandlery</a> it picks the tallow and ' +
+        'warms the room through the afternoon, so the pace that suited the morning will not suit the day. ' +
+        'One integer, sixty-three rooms.');
+  }
+
+  var log = document.querySelector('#log .log');
+  if (log) log.insertBefore(el(
+    '<li>' +
+      '<time>Change 63</time>' +
+      '<h3>Forty coats make a candle</h3>' +
+      '<p>In the Saltpan the heat decided the grain. Added <a href="chandlery.html">The Chandlery</a>, where it decides ' +
+      'the candle: a tallow chandler\'s dipping room some time between 1790 and 1869, in one of twelve towns from Exeter ' +
+      'to the Canongate. The day\'s number picks the town and the season, the tallow (hard mutton, Russian, beef, mixed, ' +
+      'or cheap rough fat, each setting at its own heat), the order on the slate (twelves, eights, long sixes or fours to ' +
+      'the pound), how many wheels of it, the prices, the candle duty before 1831, and the hour the carrier calls.</p>' +
+      '<p>Two sliders: the fire under the vat and the pace of the wheel. Tallow only just above its setting point lays a ' +
+      'thick coat that ridges; hotter tallow lays a thin smooth one and, hotter still, melts the last coat off or smokes. ' +
+      'Each coat cools towards the room, slower on a fat candle and slower as the afternoon warms, and a round taken ' +
+      'before it has set makes the feet sag. Weigh a candle, cut the wheel down when it is right, and the buyer\'s scale ' +
+      'and the account follow, with the vat and the room drawn through the day.</p>' +
+    '</li>'), log.firstChild);
+})();

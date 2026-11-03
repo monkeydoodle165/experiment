@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Chandlery — Drift</title>
+<meta name="description" content="A tallow chandler's dipping room between 1790 and 1869. Keep the tallow just running, let every coat set before the next, weigh a candle, and cut the wheel down when the candles are true to the pound, before the carrier calls.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='4' y='4' width='24' height='3' fill='%236b4f33'/%3E%3Crect x='7' y='7' width='4' height='17' rx='1.5' fill='%23efe6c8'/%3E%3Crect x='14' y='7' width='4' height='17' rx='1.5' fill='%23efe6c8'/%3E%3Crect x='21' y='7' width='4' height='17' rx='1.5' fill='%23efe6c8'/%3E%3Crect x='3' y='22' width='26' height='7' fill='%23d9c58e'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px;
+    background:linear-gradient(160deg,rgba(242,211,107,.1),rgba(100,240,200,.04))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em;font-family:Georgia,"Times New Roman",serif}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  .plaque .book{border-left:2px solid rgba(242,211,107,.5);padding-left:14px;font-family:Georgia,"Times New Roman",serif;font-style:italic}
+  .stage{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-top:18px}
+  .stage h5{margin:16px 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .stage h5:first-child{margin-top:0}
+  #room{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#0b0f16}
+  .hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(14,19,27,.7);margin-top:12px}
+  .hud div{min-width:0}
+  .hud span{display:block;font:600 .6rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .hud b{display:block;font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hud div.alarm b{color:#ffb27a}
+  .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+  .acts .btn{padding:8px 14px;font-size:.82rem}
+  .acts .btn.big{flex:1 1 220px;padding:12px 18px;font-size:.95rem}
+  .acts .btn[disabled]{opacity:.35;cursor:not-allowed;transform:none}
+  .pace{display:flex;align-items:center;gap:12px;margin-top:12px;font-size:.86rem;color:var(--dim)}
+  .pace input{flex:1;accent-color:#ff9a4a}
+  .pace b{font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);min-width:9ch;text-align:right}
+  .keys{margin:10px 0 0;font-size:.8rem;color:var(--dim)}
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .msg:empty{display:none}
+  .msg b{color:var(--ink)}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict p{margin:0 0 8px}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  #reveal p{color:var(--dim);font-size:.92rem;margin:10px 0 0}
+  #reveal canvas{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:10px;margin-top:8px}
+  #reveal .key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.78rem;margin-top:8px;color:var(--dim)}
+  #reveal .key i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+  .card{width:100%;border-collapse:collapse;margin-top:8px;font-size:.88rem}
+  .card td{padding:7px 8px;border-top:1px solid var(--line);color:var(--dim);vertical-align:top}
+  .card td.n{font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;text-align:right}
+  .card tr.tot td{color:var(--ink);font-weight:650}
+  .daybar{font-size:.9rem;color:var(--dim)}
+
+  @media (max-width:760px){
+    .hud{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:640px){
+    .nav{position:static}
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .stage{padding:14px 12px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
+      <a href="ballot.html">Ballot</a>
+      <a href="mere.html">Mere</a>
+      <a href="hold.html">Hold</a>
+      <a href="wire.html">Wire</a>
+      <a href="press.html">Press</a>
+      <a href="vat.html">Vat</a>
+      <a href="lock.html">Lock</a>
+      <a href="spinet.html">Spinet</a>
+      <a href="gauge.html">Gauge</a>
+      <a href="ledger.html">Ledger</a>
+      <a href="regulator.html">Regulator</a>
+      <a href="sounding.html">Sounding</a>
+      <a href="fireworks.html">Fireworks</a>
+      <a href="aerostat.html">Aerostat</a>
+      <a href="mill.html">Mill</a>
+      <a href="trial.html">Trial</a>
+      <a href="plate.html">Plate</a>
+      <a href="forge.html">Forge</a>
+      <a href="bakehouse.html">Bakehouse</a>
+      <a href="ropewalk.html">Ropewalk</a>
+      <a href="hayfield.html">Hayfield</a>
+      <a href="dairy.html">Dairy</a>
+      <a href="saltpan.html">Saltpan</a>
+      <a href="chandlery.html" class="on">Chandlery</a>
+    </div>
+  </div>
+</nav>
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page sixty-three</p>
+    <h1>The Chandlery</h1>
+    <p class="lede">
+      In the Saltpan the heat decided the grain. In a tallow chandler's back room it decides the candle. A wheel of
+      rods hung with bare cotton wicks turns over a vat of melted fat, and every round of it dips every wick once.
+      Each dip leaves a coat; forty or fifty coats make a candle. Keep the tallow just running, let each coat set
+      before the next goes on, and know when to stop, because the order wants candles so many to the pound and the
+      carrier will not wait.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="rWho">—</p>
+        <h3 id="rName">—</h3>
+        <p id="rBlurb">—</p>
+        <p class="book" id="rBook">—</p>
+      </div>
+
+      <div class="stage">
+        <canvas id="room" width="640" height="340" aria-label="The dipping room: a rod of candles over a vat of tallow with a fire under it, a window, a room thermometer, a balance on the bench and boxes for the finished candles."></canvas>
+        <div class="hud" aria-live="off">
+          <div><span>Clock</span><b id="hWhen">—</b></div>
+          <div><span>The room</span><b id="hRoom">—</b></div>
+          <div id="hVatBox"><span>The vat</span><b id="hVat">—</b></div>
+          <div id="hCoatBox"><span>Last coat</span><b id="hCoat">—</b></div>
+          <div><span>Dips</span><b id="hDips">—</b></div>
+          <div><span>Wheel</span><b id="hWheel">—</b></div>
+          <div><span>Last weighed</span><b id="hWeighed">—</b></div>
+          <div><span>Boxed</span><b id="hDone">—</b></div>
+        </div>
+
+        <div id="pReady">
+          <div class="acts">
+            <button class="btn big" type="button" id="bStart">Set the wheel turning</button>
+          </div>
+        </div>
+
+        <div id="pRun" style="display:none">
+          <div class="pace">
+            <span>Fire</span>
+            <input type="range" id="fire" min="0" max="100" step="1" value="50" aria-label="How hard the fire under the vat is kept">
+            <b id="fireOut">steady</b>
+          </div>
+          <div class="pace">
+            <span>Pace</span>
+            <input type="range" id="wait" min="2" max="10" step="0.5" value="3" aria-label="Minutes for one round of the wheel">
+            <b id="waitOut">3 min a round</b>
+          </div>
+          <div class="acts">
+            <button class="btn big" type="button" id="bWeigh">Weigh a candle</button>
+            <button class="btn big ghost" type="button" id="bCut">Cut this wheel down</button>
+          </div>
+          <div class="acts">
+            <button class="btn small ghost" type="button" id="bSpeed">Faster clock</button>
+            <button class="btn small ghost" type="button" id="bPause">Pause</button>
+          </div>
+          <p class="keys"><code>↑</code> <code>↓</code> the fire, <code>←</code> <code>→</code> the pace, <code>W</code> weighs, <code>C</code> cuts the wheel down, <code>Space</code> pauses.</p>
+        </div>
+      </div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <div class="stage" id="reveal" style="display:none"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="bAgain" style="display:none">Melt them down and try this order again</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Day</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday’s</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today’s</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow’s →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">Every day is a different town, season, tallow, order and carrier.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        Dipping, the wheel, the warmth of the vat and of the room, the sizes so many to the pound and the candle duty are
+        real. The town, the tallow, the order and the carrier are the day's number, and the candle itself is a small model.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Dips and moulds</h3>
+          <p>Most candles burned in British houses before the 1850s were tallow dips: rendered beef and mutton fat built up
+             coat by coat on a cotton wick. Wax was for churches and the rich, moulded tallow cost a little more, and
+             dips were what the shop, the kitchen and the cottage used. Sizes were sold by count to the pound: twelves,
+             eights, long sixes and fours. A chandler's wheel or frame carried many rods of wicks, so while one rod was
+             down in the vat the rest were up in the air, cooling.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Just hot enough to run</h3>
+          <p>Tallow kept only a little above its setting point leaves a thick coat at each dip, but it drags, ridges and
+             builds layers that part. Hot tallow leaves a thin, smooth coat and, hotter still, melts off what was put on
+             before; overheated tallow smokes and darkens. And each coat had to set before the next: in hot weather it
+             would not, which is why chandlers dipped in the cold months and shut up shop, or worked at night, in summer.
+             Mutton tallow sets harder and higher than beef, and makes the better candle.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>The exciseman</h3>
+          <p>From 1709 until 1831 candles were taxed, a penny a pound on tallow at the end of the period and much more on
+             wax. A chandler had to give the excise notice before every making, and an officer could come in and weigh what
+             was on the rods. Its repeal in 1831 was celebrated as a tax off the poor man's light.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>What the page simplifies</h3>
+          <p>The coat each dip leaves is one smooth curve of how far the vat sits above the melting point, and the candle
+             cools by one exponential whose pace grows with its thickness. Every candle on the wheel shares one history,
+             and the spread of their weights is a rule of thumb from the ridges and sagging feet. Melting points, prices,
+             wages and the room's warmth are sensible guesses for their period, not records.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Sixty-three rooms, and one number doing all the work. Today it picks a town and a tallow, writes an order on the
+        slate, and warms the room through the afternoon, so the pace that suited the morning will not suit the day.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="chandlery.js"></script>
+</body>
+</html>
