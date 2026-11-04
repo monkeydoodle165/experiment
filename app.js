@@ -529,3 +529,60 @@
       'and the account follow, with the vat and the room drawn through the day.</p>' +
     '</li>'), log.firstChild);
 })();
+
+/* ---------- Change 64: the Maltings ----------
+   Announced the same way as the rooms above, and runs after them, so it lands in front of them. */
+(function () {
+  'use strict';
+  function el(html) { var t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; }
+  if (document.querySelector('a.room[href="maltings.html"]')) return;
+
+  var nav = document.querySelector('.nav-links');
+  if (nav) nav.appendChild(el('<a href="maltings.html">Maltings</a>'));
+
+  var cta = document.querySelector('.cta-row');
+  if (cta) {
+    var first = cta.querySelector('.btn:not(.ghost)');
+    if (first) first.classList.add('ghost');
+    cta.insertBefore(el('<a class="btn" href="maltings.html">Lay today\'s barley on the floor</a>'), cta.firstChild);
+  }
+
+  var rooms = document.querySelector('#rooms .rooms');
+  if (rooms) rooms.insertBefore(el(
+    '<a class="room" href="maltings.html">' +
+      '<span class="room-tag">malting</span>' +
+      '<h3>The Maltings</h3>' +
+      '<p>From an afternoon at the dipping wheel to ten days on a malting floor. Steeped barley grows, and growing makes ' +
+      'heat. Watch by watch, set how deep the piece lies, how often it is turned and how far the shutters open, sprinkle ' +
+      'it when it dries, split a corn to see how far the shoot has crept, and load the kiln at three-quarters. The day\'s ' +
+      'number picks the town, the barley, the weather, the brewer\'s order and the day the kiln is wanted.</p>' +
+      '<span class="room-go">Lay out the floor →</span>' +
+    '</a>'), rooms.firstChild);
+
+  var after = document.querySelector('#seed .afterword');
+  if (after) {
+    after.innerHTML = after.innerHTML
+      .replace('sixty-three jobs', 'sixty-four jobs')
+      .replace(/One integer, sixty-three rooms\./, 'In <a href="maltings.html">the Maltings</a> it steeps a barley and sends ' +
+        'a warm or a cold spell across the floor in the middle of the week. One integer, sixty-four rooms.');
+  }
+
+  var log = document.querySelector('#log .log');
+  if (log) log.insertBefore(el(
+    '<li>' +
+      '<time>Change 64</time>' +
+      '<h3>Three parts up the corn</h3>' +
+      '<p>The Chandlery raced the carrier through one afternoon. Added <a href="maltings.html">The Maltings</a>, which takes ' +
+      'a week and a half: a floor maltings some time between 1820 and 1879, in one of twelve malting towns from Ware and ' +
+      'Mistley to Burton and Knaresborough. The day\'s number picks the barley (Chevalier, Norfolk, clay-land, Saale or ' +
+      'Scotch bere, each growing and heating at its own pace), how many quarters came out of the steep, how deep the ' +
+      'excise couch lies, the weather with a warm or cold spell somewhere in it, the brewer\'s order (pale, amber or brown ' +
+      'malt) and the day the kiln is wanted.</p>' +
+      '<p>It plays in six-hour watches rather than against a running clock. For each watch set the depth of the piece, how ' +
+      'many times to turn it and how far the shutters stand open, and sprinkle it if it is drying. A deep piece holds its ' +
+      'heat and runs away with itself; a thin one goes cold and stops. Five split corns show the acrospire creeping up ' +
+      'and the rootlets curling out; let them lie and they knit into a mat, let it get warm and wet and it goes musty. ' +
+      'Load the kiln when the spire is three parts up, pick the finishing heat for the colour, and the brewer mashes a ' +
+      'sample and says where the extract went, with the floor drawn watch by watch and the account.</p>' +
+    '</li>'), log.firstChild);
+})();

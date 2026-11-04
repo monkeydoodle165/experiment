@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Maltings — Drift</title>
+<meta name="description" content="Bring a floor of steeped barley to malt between 1820 and 1879. Thin the piece as it warms, turn it before the rootlets knit, sprinkle it when it dries, load the kiln when the spire is three parts up the corn, and finish it to the colour the brewer asked for.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cellipse cx='16' cy='15' rx='7' ry='12' fill='%23d2b26a'/%3E%3Cpath d='M12 25 Q9 16 13 7' stroke='%237fae4a' stroke-width='2.4' fill='none'/%3E%3Cpath d='M16 27 l-4 4 M16 27 l0 4 M16 27 l4 4' stroke='%23f2eee0' stroke-width='1.5'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px;
+    background:linear-gradient(160deg,rgba(242,211,107,.1),rgba(100,240,200,.04))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em;font-family:Georgia,"Times New Roman",serif}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  .plaque .book{border-left:2px solid rgba(242,211,107,.5);padding-left:14px;font-family:Georgia,"Times New Roman",serif;font-style:italic}
+  .stage{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-top:18px}
+  .stage h5{margin:16px 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .stage h5:first-child{margin-top:0}
+  #floor{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#0b0f16}
+  .hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(14,19,27,.7);margin-top:12px}
+  .hud div{min-width:0}
+  .hud span{display:block;font:600 .6rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .hud b{display:block;font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hud div.alarm b{color:#ffb27a}
+  .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+  .acts .btn{padding:8px 14px;font-size:.82rem}
+  .acts .btn.big{flex:1 1 220px;padding:12px 18px;font-size:.95rem}
+  .acts .btn[disabled]{opacity:.35;cursor:not-allowed;transform:none}
+  .pace{display:flex;align-items:center;gap:12px;margin-top:12px;font-size:.86rem;color:var(--dim)}
+  .pace input{flex:1;accent-color:#d2b26a}
+  .pace span{min-width:6.5ch}
+  .pace b{font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);min-width:9ch;text-align:right}
+  .keys{margin:10px 0 0;font-size:.8rem;color:var(--dim)}
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .msg:empty{display:none}
+  .msg b{color:var(--ink)}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict p{margin:0 0 8px}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  #reveal p{color:var(--dim);font-size:.92rem;margin:10px 0 0}
+  #reveal canvas{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:10px;margin-top:8px}
+  #reveal .key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.78rem;margin-top:8px;color:var(--dim)}
+  #reveal .key i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+  .card{width:100%;border-collapse:collapse;margin-top:8px;font-size:.88rem}
+  .card td{padding:7px 8px;border-top:1px solid var(--line);color:var(--dim);vertical-align:top}
+  .card td.n{font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;text-align:right}
+  .card tr.tot td{color:var(--ink);font-weight:650}
+  .daybar{font-size:.9rem;color:var(--dim)}
+
+  @media (max-width:760px){
+    .hud{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:640px){
+    .nav{position:static}
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .stage{padding:14px 12px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
+      <a href="ballot.html">Ballot</a>
+      <a href="mere.html">Mere</a>
+      <a href="hold.html">Hold</a>
+      <a href="wire.html">Wire</a>
+      <a href="press.html">Press</a>
+      <a href="vat.html">Vat</a>
+      <a href="lock.html">Lock</a>
+      <a href="spinet.html">Spinet</a>
+      <a href="gauge.html">Gauge</a>
+      <a href="ledger.html">Ledger</a>
+      <a href="regulator.html">Regulator</a>
+      <a href="sounding.html">Sounding</a>
+      <a href="fireworks.html">Fireworks</a>
+      <a href="aerostat.html">Aerostat</a>
+      <a href="mill.html">Mill</a>
+      <a href="trial.html">Trial</a>
+      <a href="plate.html">Plate</a>
+      <a href="forge.html">Forge</a>
+      <a href="bakehouse.html">Bakehouse</a>
+      <a href="ropewalk.html">Ropewalk</a>
+      <a href="hayfield.html">Hayfield</a>
+      <a href="dairy.html">Dairy</a>
+      <a href="saltpan.html">Saltpan</a>
+      <a href="chandlery.html">Chandlery</a>
+      <a href="maltings.html" class="on">Maltings</a>
+    </div>
+  </div>
+</nav>
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page sixty-four</p>
+    <h1>The Maltings</h1>
+    <p class="lede">
+      The Chandlery was an afternoon against the clock. This room takes a week and a half. Barley comes out of the steep
+      swollen and wet and is laid on a stone floor to start growing, and the growing makes heat. Thin the piece as it
+      warms, turn it before the rootlets knit it into a mat, sprinkle it when it dries, and stop it on the kiln when the
+      shoot inside each corn has crept three-quarters of the way up its back. Then the fire decides the colour.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="rWho">—</p>
+        <h3 id="rName">—</h3>
+        <p id="rBlurb">—</p>
+        <p class="book" id="rBook">—</p>
+      </div>
+
+      <div class="stage">
+        <canvas id="floor" width="640" height="340" aria-label="The malting floor: a long low room with shuttered windows, the piece of growing barley on the floor with a thermometer in it, a thermometer for the air, and five corns split open to show how far the shoot and the rootlets have grown."></canvas>
+        <div class="hud" aria-live="off">
+          <div><span>Clock</span><b id="hWhen">—</b></div>
+          <div><span>Outside</span><b id="hAir">—</b></div>
+          <div id="hTBox"><span>The piece</span><b id="hT">—</b></div>
+          <div id="hMBox"><span>In the hand</span><b id="hM">—</b></div>
+          <div><span>Acrospire</span><b id="hA">—</b></div>
+          <div id="hRBox"><span>Rootlets</span><b id="hR">—</b></div>
+          <div><span>Kiln wanted</span><b id="hKiln">—</b></div>
+          <div><span>Turned</span><b id="hTurned">—</b></div>
+        </div>
+
+        <div id="pFloor">
+          <h5 style="margin-top:14px">For the next watch</h5>
+          <div class="pace">
+            <span>Depth</span>
+            <input type="range" id="depth" min="2" max="16" step="1" value="12" aria-label="How deep the piece lies on the floor, in inches">
+            <b id="depthOut">—</b>
+          </div>
+          <div class="pace">
+            <span>Turn</span>
+            <input type="range" id="turns" min="0" max="4" step="1" value="0" aria-label="How many times to turn the piece in the next six hours">
+            <b id="turnsOut">—</b>
+          </div>
+          <div class="pace">
+            <span>Windows</span>
+            <input type="range" id="win" min="0" max="2" step="1" value="1" aria-label="How far the window shutters stand open">
+            <b id="winOut">—</b>
+          </div>
+          <div class="acts">
+            <button class="btn ghost" type="button" id="bSprinkle">Sprinkle the floor</button>
+          </div>
+          <div class="acts">
+            <button class="btn big" type="button" id="bWatch">Next watch (6 hours)</button>
+            <button class="btn big ghost" type="button" id="bDay">A whole day as set</button>
+            <button class="btn big ghost" type="button" id="bKiln">Load the kiln</button>
+          </div>
+          <p class="keys"><code>N</code> next watch, <code>D</code> a whole day, <code>K</code> loads the kiln. The green mark on the thermometers is 55 to 62°F, where good malt is grown.</p>
+        </div>
+
+        <div id="pKiln" style="display:none">
+          <h5 style="margin-top:14px">The kiln</h5>
+          <p class="keys" id="kilnNote">Pale malt is dried slowly and never let get hot; amber is finished warm; brown is blown over a fierce wood fire. Malt that goes on wet colours faster on a hot fire.</p>
+          <div class="pace">
+            <span>Finish</span>
+            <input type="range" id="heat" min="120" max="240" step="1" value="150" aria-label="The finishing heat of the kiln, in degrees Fahrenheit">
+            <b id="heatOut">—</b>
+          </div>
+          <div class="acts">
+            <button class="btn big" type="button" id="bFire">Fire the kiln and send a sample to the brewer</button>
+          </div>
+        </div>
+      </div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <div class="stage" id="reveal" style="display:none"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="bAgain" style="display:none">Steep the same barley again</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Day</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday’s</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today’s</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow’s →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">Every day is a different town, barley, order, weather and kiln date.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        Floor malting, the couch, turning, sprinkling, the acrospire rule, the kiln colours and the malt tax are real. The
+        town, the barley, the weather and the order are the day's number, and the growing corn is a small model.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Growing on the floor</h3>
+          <p>Barley was steeped in a cistern for two or three days, then laid on a malting floor to germinate. The rootlets
+             break out of the bottom of the corn first; the shoot, the acrospire, grows up the back of the corn under the
+             husk, and as it goes the starch ahead of it turns mealy and sweet. Maltsters split corns with a thumbnail to see
+             how far it had got. Stop too early and the tip of the corn stays hard; let it grow out of the end and the corn
+             has eaten what the brewer was paying for.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Keeping it cool</h3>
+          <p>Growing grain breathes and warms, and a deep piece holds its heat. Maltsters thinned the floor as it warmed,
+             thickened it when it was cold, worked the window shutters, and turned it with wooden shovels and ploughs several
+             times a day so that the rootlets never knitted it into a felt. Slow, cool growth at the bottom of the fifties
+             made the best malt. That is why floor malting was a winter trade and most maltings stood empty from June to
+             September.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>The couch and the tax</h3>
+          <p>Malt was taxed from 1697 until 1880, and for most of the nineteenth century at about two and sevenpence a bushel.
+             The officer charged it on his gauge of the grain in the cistern, the couch or the floor, whichever was greatest,
+             and the law kept the barley in the couch frame for at least a day so it could be measured. Gladstone abolished
+             the tax in 1880 and moved it onto beer.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>What the page simplifies</h3>
+          <p>The whole floor is one temperature with one exponential for how fast it breathes, one curve for the spire and
+             one for the rootlets, and the unevenness between corns is one number that turning shrinks. The kiln is a single
+             finishing heat. Extract figures, prices and wages are sensible guesses for the period, not records.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Sixty-four rooms, and one number doing all the work. Today it steeps a barley, sends a warm or a cold spell
+        across the floor in the middle of the week, and names the day the kiln is wanted, so the growth you can afford
+        to let run slow is never quite the growth the weather gives you.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="maltings.js"></script>
+</body>
+</html>
