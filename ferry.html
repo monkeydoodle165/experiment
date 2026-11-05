@@ -1,1 +1,282 @@
-PLACEHOLDER
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Ferry — Drift</title>
+<meta name="description" content="Row a ferry across a tidal river between 1800 and 1879. Point her up into the stream to crab across, work up the slack water under the bank, keep clear of the barges coming down on the tide, and land at the stair with your passengers dry before the morning is out.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2316303f'/%3E%3Cpath d='M4 10 h24 M4 22 h24' stroke='%2347708a' stroke-width='1.5'/%3E%3Cpath d='M10 16 q6 -5 12 0 q-6 5 -12 0z' fill='%23d2b26a'/%3E%3Cpath d='M12 11 l4 10 M20 11 l-4 10' stroke='%23f2eee0' stroke-width='1.4'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px;
+    background:linear-gradient(160deg,rgba(242,211,107,.1),rgba(100,240,200,.04))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em;font-family:Georgia,"Times New Roman",serif}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  .plaque .book{border-left:2px solid rgba(242,211,107,.5);padding-left:14px;font-family:Georgia,"Times New Roman",serif;font-style:italic}
+  .stage{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-top:18px}
+  .stage h5{margin:16px 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .stage h5:first-child{margin-top:0}
+  #river{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#0b0f16}
+  .hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(14,19,27,.7);margin-top:12px}
+  .hud div{min-width:0}
+  .hud span{display:block;font:600 .6rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .hud b{display:block;font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hud div.alarm b{color:#ffb27a}
+  .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+  .acts .btn{padding:8px 14px;font-size:.82rem}
+  .acts .btn.big{flex:1 1 220px;padding:12px 18px;font-size:.95rem}
+  .acts .btn[disabled]{opacity:.35;cursor:not-allowed;transform:none}
+  .pace{display:flex;align-items:center;gap:12px;margin-top:12px;font-size:.86rem;color:var(--dim)}
+  .pace input{flex:1;accent-color:#d2b26a}
+  .pace span{min-width:6.5ch}
+  .pace b{font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);min-width:9ch;text-align:right}
+  .keys{margin:10px 0 0;font-size:.8rem;color:var(--dim)}
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .msg:empty{display:none}
+  .msg b{color:var(--ink)}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict p{margin:0 0 8px}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  #reveal p{color:var(--dim);font-size:.92rem;margin:10px 0 0}
+  #reveal canvas{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:10px;margin-top:8px}
+  #reveal .key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.78rem;margin-top:8px;color:var(--dim)}
+  #reveal .key i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+  .card{width:100%;border-collapse:collapse;margin-top:8px;font-size:.88rem}
+  .card td{padding:7px 8px;border-top:1px solid var(--line);color:var(--dim);vertical-align:top}
+  .card td.n{font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;text-align:right}
+  .card tr.tot td{color:var(--ink);font-weight:650}
+  .daybar{font-size:.9rem;color:var(--dim)}
+
+  @media (max-width:760px){
+    .hud{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:640px){
+    .nav{position:static}
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .stage{padding:14px 12px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
+      <a href="ballot.html">Ballot</a>
+      <a href="mere.html">Mere</a>
+      <a href="hold.html">Hold</a>
+      <a href="wire.html">Wire</a>
+      <a href="press.html">Press</a>
+      <a href="vat.html">Vat</a>
+      <a href="lock.html">Lock</a>
+      <a href="spinet.html">Spinet</a>
+      <a href="gauge.html">Gauge</a>
+      <a href="ledger.html">Ledger</a>
+      <a href="regulator.html">Regulator</a>
+      <a href="sounding.html">Sounding</a>
+      <a href="fireworks.html">Fireworks</a>
+      <a href="aerostat.html">Aerostat</a>
+      <a href="mill.html">Mill</a>
+      <a href="trial.html">Trial</a>
+      <a href="plate.html">Plate</a>
+      <a href="forge.html">Forge</a>
+      <a href="bakehouse.html">Bakehouse</a>
+      <a href="ropewalk.html">Ropewalk</a>
+      <a href="hayfield.html">Hayfield</a>
+      <a href="dairy.html">Dairy</a>
+      <a href="saltpan.html">Saltpan</a>
+      <a href="chandlery.html">Chandlery</a>
+      <a href="maltings.html">Maltings</a>
+      <a href="ferry.html" class="on">Ferry</a>
+    </div>
+  </div>
+</nav>
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page sixty-five</p>
+    <h1>The Ferry</h1>
+    <p class="lede">
+      The Maltings took ten days and never moved. This room is a morning on the water. A ferry crosses a tidal river
+      from one stair to the other, and the river never stops sliding past under you. Point the bow straight at the stair
+      and you will land a long way below it. Point her up into the stream, crab across, work up the slack water under the
+      bank when you have been set down, and keep out of the way of whatever is coming down on the tide.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="rWho">—</p>
+        <h3 id="rName">—</h3>
+        <p id="rBlurb">—</p>
+        <p class="book" id="rBook">—</p>
+      </div>
+
+      <div class="stage">
+        <canvas id="river" width="640" height="400" aria-label="The river seen from above: the near bank along the bottom with its stair, the far bank along the top with the other stair, streaks on the water showing which way and how fast the tide runs, passengers waiting at each stair, vessels passing, and your ferry boat."></canvas>
+        <div class="hud" aria-live="off">
+          <div><span>Clock</span><b id="hWhen">—</b></div>
+          <div><span>Tide</span><b id="hTide">—</b></div>
+          <div><span>Wind</span><b id="hWind">—</b></div>
+          <div><span>Bound for</span><b id="hDest">—</b></div>
+          <div><span>Aboard</span><b id="hAboard">—</b></div>
+          <div><span>Waiting</span><b id="hWait">—</b></div>
+          <div id="hArmBox"><span>Your arms</span><b id="hArm">—</b></div>
+          <div><span>Fares</span><b id="hFares">—</b></div>
+        </div>
+
+        <div class="pace">
+          <span>Bow</span>
+          <input type="range" id="aim" min="-80" max="80" step="1" value="0" aria-label="Where the bow points: negative is up river, positive is down river, zero is straight across">
+          <b id="aimOut">—</b>
+        </div>
+        <div class="pace">
+          <span>Pull</span>
+          <input type="range" id="pull" min="0" max="3" step="1" value="2" aria-label="How hard you pull: oars shipped, easy, steady or hard">
+          <b id="pullOut">—</b>
+        </div>
+        <div class="acts">
+          <button class="btn big" type="button" id="bGo">Take the oars</button>
+          <button class="btn big ghost" type="button" id="bFast">Wait at the stair (faster)</button>
+          <button class="btn ghost" type="button" id="bEnd">Tie up for the morning</button>
+        </div>
+        <p class="keys"><code>←</code> <code>→</code> (or <code>A</code> <code>D</code>) swing the bow, <code>↑</code> <code>↓</code> (or <code>W</code> <code>S</code>) pull harder or easier, <code>Space</code> pushes off. The bow angle is measured from straight across, so it keeps its meaning whichever way you are going. A minute of the morning passes in five seconds.</p>
+      </div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <div class="stage" id="reveal" style="display:none"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="bAgain" style="display:none">Row the same morning again</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Day</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday’s</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today’s</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow’s →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">Every day is a different river, boat, tide, wind and run of passengers.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        The ferries, the stairs, crabbing across a stream, the slack water under the bank and wind against tide are real.
+        The width, the stream, the passengers and the traffic are the day's number, and the river is a small model.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Crabbing across</h3>
+          <p>A boat moves through the water, and the water moves over the ground. What you see from the bank is the sum of
+             the two. To go straight across a stream you point the bow up into it, far enough that the part of your speed
+             that goes upstream cancels the stream, and the boat crabs across sideways. Watermen and ferrymen did this all
+             day without drawing a triangle. Aircraft pilots and swimmers in rip currents do the same sum.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>The slack under the bank</h3>
+          <p>A river runs fastest over its deep channel and slowest along the sides, where the bottom and the banks drag on
+             it. A boat that has been set down below its stair does not fight back up the middle. It creeps up in the
+             slack close inshore, then strikes out across. The tide also eases off to nothing at high and low water,
+             and a crossing at slack water is an easy one.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Ferries and stairs</h3>
+          <p>Most river ferries were held by ancient right, often by a manor or a borough, and leased to whoever rowed
+             them. Passengers went down a public stair or slipway to the water, paid a penny or a halfpenny, and sat in
+             the stern. Sailing barges, colliers and trows worked up and down on the tide, and after the 1830s steam tugs
+             went wherever they liked. When wind blows against the tide the water stands up into a short, steep chop,
+             and a laden boat goes slower and wetter.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>What the page simplifies</h3>
+          <p>The river is straight, the same width all the way along, and its stream is one curve across the channel that
+             rises and falls with a single tide. The boat answers its oars after a few seconds and tires your arms by one
+             rule. Widths, fares, rents and traffic are sensible guesses for the period, not records of any real ferry.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Sixty-five rooms, and one number doing all the work. Today it chooses the river, sets the time of high water and
+        the strength of the stream, turns the wind against the tide or with it, and sends the passengers and the barges
+        down to the water.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="ferry.js"></script>
+</body>
+</html>

@@ -586,3 +586,60 @@
       'sample and says where the extract went, with the floor drawn watch by watch and the account.</p>' +
     '</li>'), log.firstChild);
 })();
+
+/* ---------- Change 65: the Ferry ----------
+   Announced the same way as the rooms above, and runs after them, so it lands in front of them. */
+(function () {
+  'use strict';
+  function el(html) { var t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; }
+  if (document.querySelector('a.room[href="ferry.html"]')) return;
+
+  var nav = document.querySelector('.nav-links');
+  if (nav) nav.appendChild(el('<a href="ferry.html">Ferry</a>'));
+
+  var cta = document.querySelector('.cta-row');
+  if (cta) {
+    var first = cta.querySelector('.btn:not(.ghost)');
+    if (first) first.classList.add('ghost');
+    cta.insertBefore(el('<a class="btn" href="ferry.html">Row this morning\'s ferry</a>'), cta.firstChild);
+  }
+
+  var rooms = document.querySelector('#rooms .rooms');
+  if (rooms) rooms.insertBefore(el(
+    '<a class="room" href="ferry.html">' +
+      '<span class="room-tag">ferrying</span>' +
+      '<h3>The Ferry</h3>' +
+      '<p>From ten days on a malting floor to a morning on moving water. Row a ferry between two stairs across a tidal ' +
+      'river while the stream slides under you: point the bow up into it and crab across, creep up the slack under the ' +
+      'bank when you have been set down, and keep clear of the barges and tugs coming down on the tide. The day\'s number ' +
+      'picks the river, the boat, the fare, the time of high water, the wind and everyone who comes down to the water.</p>' +
+      '<span class="room-go">Take the oars →</span>' +
+    '</a>'), rooms.firstChild);
+
+  var after = document.querySelector('#seed .afterword');
+  if (after) {
+    after.innerHTML = after.innerHTML
+      .replace('sixty-four jobs', 'sixty-five jobs')
+      .replace(/One integer, sixty-four rooms\./, 'At <a href="ferry.html">the Ferry</a> it sets the hour of high water ' +
+        'and turns the wind against the tide or with it. One integer, sixty-five rooms.');
+  }
+
+  var log = document.querySelector('#log .log');
+  if (log) log.insertBefore(el(
+    '<li>' +
+      '<time>Change 65</time>' +
+      '<h3>Point her where the stair will be</h3>' +
+      '<p>The Maltings took a week and a half and never moved. Added <a href="ferry.html">The Ferry</a>, a morning on ' +
+      'moving water: a rowing ferry across a tidal river some time between 1800 and 1879, on one of twelve crossings from ' +
+      'Wapping Old Stairs and the Shields to Dartmouth, Polruan and Felixstowe Ferry. The day\'s number picks the river ' +
+      'and how wide it is, where its deep channel runs, the boat (a sculler\'s skiff, a pair-oared wherry or the old ' +
+      'ferry boat), the fare, the hour of high water, springs or neaps, the wind, a market day, and a fixed run of ' +
+      'passengers and vessels for the morning.</p>' +
+      '<p>It runs in real time, a minute of the morning every five seconds. Swing the bow and set the pull; the boat\'s ' +
+      'track over the ground is its own speed through the water plus a stream that is strongest over the channel and ' +
+      'dies away under the banks, rising and falling with the tide. Land on a stair to set people down and take up ' +
+      'whoever is waiting, before they lose patience and walk round. Wind against tide raises a chop, tired arms slow ' +
+      'the boat, and a barge or a tug that catches you leaves everyone aboard wet and unwilling to pay. At the end the ' +
+      'page draws every crossing over the ground, the tide through the morning and the account.</p>' +
+    '</li>'), log.firstChild);
+})();
