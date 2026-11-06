@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Tollgate — Drift</title>
+<meta name="description" content="Keep a turnpike gate for a morning between 1770 and 1840. Read the board, count the horses, measure the wheels, weigh the waggons, check the tickets, see through the false claims of dung and church, and never keep the Mail waiting.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23202a1c'/%3E%3Cpath d='M4 26 h24' stroke='%236d6a62' stroke-width='2'/%3E%3Cpath d='M6 12 v14 M26 12 v14' stroke='%23f2eee0' stroke-width='2'/%3E%3Cpath d='M6 14 h20 M6 19 h20 M6 24 h20 M6 24 l20 -10' stroke='%23f2eee0' stroke-width='1.5'/%3E%3Ccircle cx='16' cy='7' r='3' fill='%23f2d36b'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px;
+    background:linear-gradient(160deg,rgba(242,211,107,.1),rgba(100,240,200,.04))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em;font-family:Georgia,"Times New Roman",serif}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  .plaque .book{border-left:2px solid rgba(242,211,107,.5);padding-left:14px;font-family:Georgia,"Times New Roman",serif;font-style:italic}
+  .stage{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-top:18px}
+  .stage h5{margin:16px 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .stage h5:first-child{margin-top:0}
+  #road{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#0b0f16}
+  .hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(14,19,27,.7);margin-top:12px}
+  .hud div{min-width:0}
+  .hud span{display:block;font:600 .6rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .hud b{display:block;font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hud div.alarm b{color:#ffb27a}
+  .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+  .acts .btn{padding:8px 14px;font-size:.82rem}
+  .acts .btn.big{flex:1 1 220px;padding:12px 18px;font-size:.95rem}
+  .acts .btn[disabled]{opacity:.35;cursor:not-allowed;transform:none}
+  .pace{display:flex;align-items:center;gap:12px;margin-top:12px;font-size:.86rem;color:var(--dim)}
+  .pace input{flex:1;accent-color:#d2b26a}
+  .pace span{min-width:6.5ch}
+  .pace b{font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);min-width:9ch;text-align:right}
+  .keys{margin:10px 0 0;font-size:.8rem;color:var(--dim)}
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .msg:empty{display:none}
+  .msg b{color:var(--ink)}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict p{margin:0 0 8px}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  #reveal p{color:var(--dim);font-size:.92rem;margin:10px 0 0}
+  #reveal canvas{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:10px;margin-top:8px}
+  #reveal .key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.78rem;margin-top:8px;color:var(--dim)}
+  #reveal .key i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+  .card{width:100%;border-collapse:collapse;margin-top:8px;font-size:.88rem}
+  .card td{padding:7px 8px;border-top:1px solid var(--line);color:var(--dim);vertical-align:top}
+  .card td.n{font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;text-align:right}
+  .card tr.tot td{color:var(--ink);font-weight:650}
+  .daybar{font-size:.9rem;color:var(--dim)}
+
+  .gate-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:14px;margin-top:12px}
+  .board{border:1px solid rgba(242,211,107,.35);border-radius:12px;padding:12px 14px;background:rgba(242,211,107,.05)}
+  .board h4,.front h4{margin:0 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .board table{width:100%;border-collapse:collapse;font-size:.84rem}
+  .board td{padding:4px 4px;border-top:1px solid var(--line);color:var(--dim);vertical-align:top}
+  .board td.n{font:600 .82rem ui-monospace,Menlo,monospace;color:#f2d36b;white-space:nowrap;text-align:right}
+  .board .ex{margin:8px 0 0;font-size:.8rem;color:var(--dim)}
+  .board .ex b{color:var(--ink)}
+  .front{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:rgba(14,19,27,.7)}
+  .front .who{margin:0 0 6px;font-family:Georgia,"Times New Roman",serif;font-size:1.05rem;color:var(--ink)}
+  .front table{width:100%;border-collapse:collapse;font-size:.85rem}
+  .front td{padding:4px 4px;border-top:1px solid var(--line);color:var(--dim);vertical-align:top}
+  .front td:first-child{white-space:nowrap;width:1%;padding-right:10px;font:600 .62rem ui-monospace,Menlo,monospace;letter-spacing:.12em;text-transform:uppercase}
+  .front td b{color:var(--ink)}
+  .front .says{margin:8px 0 0;font-style:italic;font-family:Georgia,"Times New Roman",serif;color:var(--ink);font-size:.92rem}
+  .front .says:empty{display:none}
+  .till{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;align-items:center}
+  .till .coin{min-width:46px;padding:7px 10px;font:600 .8rem ui-monospace,Menlo,monospace}
+  .till .sum{margin-left:auto;font:600 1.05rem ui-monospace,Menlo,monospace;color:#f2d36b;min-width:9ch;text-align:right}
+  .tl-row{display:flex;gap:8px;align-items:baseline;padding:6px 0;border-top:1px solid var(--line);font-size:.86rem;color:var(--dim)}
+  .tl-row time{font:600 .78rem ui-monospace,Menlo,monospace;color:var(--ink);min-width:7ch}
+  .tl-row .tag{font:600 .62rem ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:6px;white-space:nowrap}
+  .tag.ok{color:#64f0c8;border:1px solid rgba(100,240,200,.4)}
+  .tag.under{color:#ffce6a;border:1px solid rgba(255,206,106,.4)}
+  .tag.over{color:#ff8fa3;border:1px solid rgba(255,143,163,.4)}
+  .tag.gone{color:#8b97ab;border:1px solid rgba(139,151,171,.4)}
+  @media (max-width:760px){ .gate-grid{grid-template-columns:minmax(0,1fr)} }
+
+  @media (max-width:760px){
+    .hud{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:640px){
+    .nav{position:static}
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .stage{padding:14px 12px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
+      <a href="ballot.html">Ballot</a>
+      <a href="mere.html">Mere</a>
+      <a href="hold.html">Hold</a>
+      <a href="wire.html">Wire</a>
+      <a href="press.html">Press</a>
+      <a href="vat.html">Vat</a>
+      <a href="lock.html">Lock</a>
+      <a href="spinet.html">Spinet</a>
+      <a href="gauge.html">Gauge</a>
+      <a href="ledger.html">Ledger</a>
+      <a href="regulator.html">Regulator</a>
+      <a href="sounding.html">Sounding</a>
+      <a href="fireworks.html">Fireworks</a>
+      <a href="aerostat.html">Aerostat</a>
+      <a href="mill.html">Mill</a>
+      <a href="trial.html">Trial</a>
+      <a href="plate.html">Plate</a>
+      <a href="forge.html">Forge</a>
+      <a href="bakehouse.html">Bakehouse</a>
+      <a href="ropewalk.html">Ropewalk</a>
+      <a href="hayfield.html">Hayfield</a>
+      <a href="dairy.html">Dairy</a>
+      <a href="saltpan.html">Saltpan</a>
+      <a href="chandlery.html">Chandlery</a>
+      <a href="maltings.html">Maltings</a>
+      <a href="ferry.html">Ferry</a>
+      <a href="tollgate.html" class="on">Tollgate</a>
+    </div>
+  </div>
+</nav>
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page sixty-six</p>
+    <h1>The Tollgate</h1>
+    <p class="lede">
+      The Ferry was a morning on moving water. This room stands still and lets the road come to you. You keep a turnpike
+      gate, and everything on the road has a price painted on the board: so much a horse for a coach, more for a waggon on
+      narrow wheels, so much a score for cattle, extra for every hundredweight over on the weighing engine. Some of it goes
+      through free, and some of what claims to go through free is lying. Count the horses, read the tickets, take the right
+      money, and open the gate before the Mail has to sound its horn twice.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="rWho">—</p>
+        <h3 id="rName">—</h3>
+        <p id="rBlurb">—</p>
+        <p class="book" id="rBook">—</p>
+      </div>
+
+      <div class="stage">
+        <canvas id="road" width="640" height="250" aria-label="The road seen from the side: the toll house and the white gate across the road, the queue of travellers waiting on the left, and whoever has paid going away on the right."></canvas>
+        <div class="hud" aria-live="off">
+          <div><span>Clock</span><b id="hWhen">—</b></div>
+          <div><span>In the queue</span><b id="hQueue">—</b></div>
+          <div><span>Taken</span><b id="hTaken">—</b></div>
+          <div id="hCompBox"><span>Complaints</span><b id="hComp">—</b></div>
+        </div>
+
+        <div class="gate-grid">
+          <div class="front" id="front">
+            <h4>At the gate</h4>
+            <p class="who" id="fWho">Nobody yet.</p>
+            <table id="fFacts"></table>
+            <p class="says" id="fSays"></p>
+          </div>
+          <div class="board" id="board"></div>
+        </div>
+
+        <div class="till" id="till">
+          <button class="btn small ghost coin" type="button" data-d="0.5">½d</button>
+          <button class="btn small ghost coin" type="button" data-d="1">1d</button>
+          <button class="btn small ghost coin" type="button" data-d="3">3d</button>
+          <button class="btn small ghost coin" type="button" data-d="6">6d</button>
+          <button class="btn small ghost coin" type="button" data-d="12">1s</button>
+          <button class="btn small ghost coin" type="button" data-d="60">5s</button>
+          <button class="btn small ghost coin" type="button" id="bUndo">undo</button>
+          <button class="btn small ghost coin" type="button" id="bClear">clear</button>
+          <span class="sum" id="sum">0d</span>
+        </div>
+        <div class="acts">
+          <button class="btn big" type="button" id="bTake">Take the toll and open</button>
+          <button class="btn big ghost" type="button" id="bFree">Let them through free</button>
+        </div>
+        <div class="pace">
+          <span>Clock</span>
+          <input type="range" id="pace" min="0" max="2" step="1" value="1" aria-label="How fast the morning runs">
+          <b id="paceOut">—</b>
+        </div>
+        <div class="acts">
+          <button class="btn ghost" type="button" id="bGo">Open the toll house</button>
+          <button class="btn ghost" type="button" id="bWait">Sit by the fire till someone comes</button>
+          <button class="btn ghost" type="button" id="bEnd">Hand over the gate</button>
+        </div>
+        <p class="keys">Keys: <code>1</code>–<code>6</code> drop ½d, 1d, 3d, 6d, 1s, 5s in the till, <code>Backspace</code> takes the last coin out, <code>Enter</code> takes the toll and opens, <code>F</code> lets them through free. Proportions for droves are rounded to the nearest halfpenny, and you are allowed that halfpenny either way.</p>
+      </div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <div class="stage" id="reveal" style="display:none"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="bAgain" style="display:none">Keep the same gate again</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Day</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday’s</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today’s</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow’s →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">Every day is a different road, board, year and run of travellers.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        Turnpike trusts, toll boards, broad and narrow wheels, weighing engines, tickets that clear the next gate and the
+        usual exemptions are real. The roads are real roads; the gates, the rates and the travellers are the day's number.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Turnpike trusts</h3>
+          <p>From the early 1700s Parliament let local trusts take over a stretch of road, borrow money to mend it, and
+             charge everyone who used it. By the 1830s more than a thousand trusts kept some twenty thousand miles of road
+             and nearly eight thousand gates. Each gate's tolls were usually let by auction for a year, and the lessee, or
+             the keeper he put in the toll house, made his living from whatever he took over the rent.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Wheels and weight</h3>
+          <p>Narrow wheels on a heavy waggon cut a road to pieces, so the law taxed them. Waggons on wheels six inches or more
+             across paid less a horse and were allowed to carry more. Many gates had a weighing engine, a platform on a
+             great steelyard, and charged by the hundredweight for anything over the limit.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Who went free</h3>
+          <p>The General Turnpike Acts let a long list through without paying: the Royal Mail, soldiers on the march and
+             their baggage, people going to church on a Sunday, funerals, dung for the land, stone to mend the road, and on
+             many roads lime and horses going to plough. Keepers spent their days deciding whether a cart of "manure" really
+             was, and the Post Office fined any who kept the Mail waiting.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>What the page simplifies</h3>
+          <p>One board, one gate, one ticket arrangement, and travellers who tell the truth about everything you can see. Real
+             boards ran to dozens of lines, charged differently for summer and winter, and argued about whether a gig was a
+             chaise. The rates and limits are sensible guesses for the period, not the board of any real gate.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Sixty-six rooms, and one number doing all the work. Today it paints the board, sets the year and the day of the week,
+        and sends everyone down the road to your gate, the honest and the other kind.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="tollgate.js"></script>
+</body>
+</html>

@@ -643,3 +643,59 @@
       'page draws every crossing over the ground, the tide through the morning and the account.</p>' +
     '</li>'), log.firstChild);
 })();
+
+/* ---------- Change 66: the Tollgate ----------
+   Announced the same way as the rooms above, and runs after them, so it lands in front of them. */
+(function () {
+  'use strict';
+  function el(html) { var t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; }
+  if (document.querySelector('a.room[href="tollgate.html"]')) return;
+
+  var nav = document.querySelector('.nav-links');
+  if (nav) nav.appendChild(el('<a href="tollgate.html">Tollgate</a>'));
+
+  var cta = document.querySelector('.cta-row');
+  if (cta) {
+    var first = cta.querySelector('.btn:not(.ghost)');
+    if (first) first.classList.add('ghost');
+    cta.insertBefore(el('<a class="btn" href="tollgate.html">Keep this morning\'s gate</a>'), cta.firstChild);
+  }
+
+  var rooms = document.querySelector('#rooms .rooms');
+  if (rooms) rooms.insertBefore(el(
+    '<a class="room" href="tollgate.html">' +
+      '<span class="room-tag">turnpike</span>' +
+      '<h3>The Tollgate</h3>' +
+      '<p>From a morning on moving water to a morning standing still while the road comes to you. Keep a turnpike gate: ' +
+      'count the horses, measure the wheels, read the weighing engine and the tickets, take exactly what the board says, ' +
+      'let the Mail and the funerals through free, and lift the dung on the cart that says it is only muck. The day\'s ' +
+      'number paints the board and sends everyone down the road.</p>' +
+      '<span class="room-go">Open the toll house →</span>' +
+    '</a>'), rooms.firstChild);
+
+  var after = document.querySelector('#seed .afterword');
+  if (after) {
+    after.innerHTML = after.innerHTML
+      .replace('sixty-five jobs', 'sixty-six jobs')
+      .replace(/One integer, sixty-five rooms\./, 'At <a href="tollgate.html">the Tollgate</a> it paints the board, picks ' +
+        'the day of the week and decides which cart of dung is really dung. One integer, sixty-six rooms.');
+  }
+
+  var log = document.querySelector('#log .log');
+  if (log) log.insertBefore(el(
+    '<li>' +
+      '<time>Change 66</time>' +
+      '<h3>Lift the dung</h3>' +
+      '<p>The Ferry was all motion. Added <a href="tollgate.html">The Tollgate</a>, a morning keeping a turnpike gate on ' +
+      'one of twelve roads from the Great North Road at Stilton to the Carmarthen road at Efail-wen, some time between ' +
+      '1770 and 1840. The day\'s number paints the board (so much a coach horse, less a waggon horse on broad wheels and ' +
+      'more on narrow, droves by the score, a weighing engine with its limits, and which loads go free), sets the year and ' +
+      'so the day of the week and whether the Mail runs yet, and sends a fixed run of travellers down the road.</p>' +
+      '<p>It runs in real time. Read what is at the gate, drop the right coins in the till and open, or let them through ' +
+      'free. Soldiers, funerals, stone for the road and Sunday churchgoers owe nothing; a churchgoer on a Wednesday does. ' +
+      'A ticket from the next gate clears you, yesterday\'s does not, and some of the dung is a skin over sacks of malt. ' +
+      'Charge short and the money is gone, overcharge and the trustees\' clerk hears of it, and keep the Mail waiting at ' +
+      'your peril. At the end the page draws the morning, settles the account against the rent and shows every toll the ' +
+      'board and the till disagreed on.</p>' +
+    '</li>'), log.firstChild);
+})();
