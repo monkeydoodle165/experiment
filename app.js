@@ -699,3 +699,59 @@
       'board and the till disagreed on.</p>' +
     '</li>'), log.firstChild);
 })();
+
+/* ---------- Change 67: the Lamplighter ----------
+   Announced the same way as the rooms above, and runs after them, so it lands in front of them. */
+(function () {
+  'use strict';
+  function el(html) { var t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; }
+  if (document.querySelector('a.room[href="lamplighter.html"]')) return;
+
+  var nav = document.querySelector('.nav-links');
+  if (nav) nav.appendChild(el('<a href="lamplighter.html">Lamplighter</a>'));
+
+  var cta = document.querySelector('.cta-row');
+  if (cta) {
+    var first = cta.querySelector('.btn:not(.ghost)');
+    if (first) first.classList.add('ghost');
+    cta.insertBefore(el('<a class="btn" href="lamplighter.html">Light this evening\'s lamps</a>'), cta.firstChild);
+  }
+
+  var rooms = document.querySelector('#rooms .rooms');
+  if (rooms) rooms.insertBefore(el(
+    '<a class="room" href="lamplighter.html">' +
+      '<span class="room-tag">street lighting</span>' +
+      '<h3>The Lamplighter</h3>' +
+      '<p>From a morning standing at a gate to an evening running through the streets. Light every gas lamp in a Victorian ' +
+      'district before lighting-up time, with a pole, a plan and the real sunset for that town and date coming down on you. ' +
+      'Gusts put out lamps with cracked panes, moon nights take the back streets off the list, and the inspector comes ' +
+      'round a quarter of an hour later. At the end the page draws your round beside a good one.</p>' +
+      '<span class="room-go">Shoulder the pole →</span>' +
+    '</a>'), rooms.firstChild);
+
+  var after = document.querySelector('#seed .afterword');
+  if (after) {
+    after.innerHTML = after.innerHTML
+      .replace('sixty-six jobs', 'sixty-seven jobs')
+      .replace(/One integer, sixty-six rooms\./, 'At <a href="lamplighter.html">the Lamplighter</a> it lays out the streets ' +
+        'and cracks a pane or two, and leaves the sunset to the calendar. One integer, sixty-seven rooms.');
+  }
+
+  var log = document.querySelector('#log .log');
+  if (log) log.insertBefore(el(
+    '<li>' +
+      '<time>Change 67</time>' +
+      '<h3>Before the dark comes down</h3>' +
+      '<p>The Tollgate stood still and let the road come to it. Added <a href="lamplighter.html">The Lamplighter</a>, an ' +
+      'evening lighting the gas lamps of one district in one of twelve towns from Westminster and Bath to Glasgow and ' +
+      'Aberdeen, some time between 1832 and 1897. The day\'s number lays out the streets (a rough grid with some links ' +
+      'built over), stands two or three dozen lamps along them, picks the wind and the cracked panes, and decides whether ' +
+      'the parish keeps a moon table. The calendar date does the rest: sunset, twilight and the moon are worked out from ' +
+      'the sun\'s real position at that town\'s latitude, so a December round in Aberdeen starts before four.</p>' +
+      '<p>Click lamps to plan the round; the lamplighter takes the shortest way through the streets to each in turn, and ' +
+      'the town darkens around him as he goes, windows coming on and pools of light spreading where he has been. Every ' +
+      'lamp on the list must be burning by lighting-up time, and the inspector finds whatever has gone out since. At the ' +
+      'end the page draws the route you walked over a good one worked out from the same map, the lamps burning against ' +
+      'the failing light, and the account.</p>' +
+    '</li>'), log.firstChild);
+})();
