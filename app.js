@@ -755,3 +755,62 @@
       'the failing light, and the account.</p>' +
     '</li>'), log.firstChild);
 })();
+
+/* ---------- Change 68: the Firebreak ----------
+   Announced the same way as the rooms above, and runs after them, so it lands in front of them. */
+(function () {
+  'use strict';
+  function el(html) { var t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; }
+  if (document.querySelector('a.room[href="firebreak.html"]')) return;
+
+  var nav = document.querySelector('.nav-links');
+  if (nav) nav.appendChild(el('<a href="firebreak.html">Firebreak</a>'));
+
+  var cta = document.querySelector('.cta-row');
+  if (cta) {
+    var first = cta.querySelector('.btn:not(.ghost)');
+    if (first) first.classList.add('ghost');
+    cta.insertBefore(el('<a class="btn" href="firebreak.html">Fight tonight\'s fire</a>'), cta.firstChild);
+  }
+
+  var rooms = document.querySelector('#rooms .rooms');
+  if (rooms) rooms.insertBefore(el(
+    '<a class="room" href="firebreak.html">' +
+      '<span class="room-tag">firefighting</span>' +
+      '<h3>The Firebreak</h3>' +
+      '<p>From lighting the lamps to the night one gets loose. A roof is alight in an eighteenth-century market town and ' +
+      'the wind is up. Aim the parish engine where its bucket chain can keep it fed, send the hook crew to pull houses down ' +
+      'ahead of the flames, and wait for the engine from the next town. In the morning the page sets your night beside the ' +
+      'same fire left alone.</p>' +
+      '<span class="room-go">Ring the fire bell →</span>' +
+    '</a>'), rooms.firstChild);
+
+  var after = document.querySelector('#seed .afterword');
+  if (after) {
+    after.innerHTML = after.innerHTML
+      .replace('sixty-seven jobs', 'sixty-eight jobs')
+      .replace(/One integer, sixty-seven rooms\./, 'At <a href="firebreak.html">the Firebreak</a> it lays out a town of ' +
+        'thatch, timber and brick, starts a fire in the wrong stable and decides which way the burning thatch will blow. ' +
+        'One integer, sixty-eight rooms.');
+  }
+
+  var log = document.querySelector('#log .log');
+  if (log) log.insertBefore(el(
+    '<li>' +
+      '<time>Change 68</time>' +
+      '<h3>Pull it down</h3>' +
+      '<p>The Lamplighter carried a small flame round a town to keep it safe. Added <a href="firebreak.html">The ' +
+      'Firebreak</a>, the night a flame gets loose: a fire in the small hours in one of twelve market towns from Blandford ' +
+      'Forum and Tiverton to Wymondham and Bungay, some time between 1700 and 1789. The day\'s number lays out the town (a ' +
+      'main street, a cross street down to the river, a market place and hall, a church in its yard, frontages of thatch, ' +
+      'timber and brick, and barns, yards and hay ricks behind), sinks the wells, picks the wind and the hour it backs or ' +
+      'veers, and chooses where the fire starts, from several houses upwind of the market, so that left alone it would ' +
+      'take a good part of the town but not all of it.</p>' +
+      '<p>Fire passes from roof to roof as heat, far faster downwind, and burning thatch is thrown over the streets ahead of ' +
+      'it. Houses glow before they catch. The parish engine cools and quenches the block it is aimed at, but only as hard as ' +
+      'the bucket chain from the nearest well or the river can feed it; the hook crew pulls down whatever you click, in ' +
+      'order, at the parish\'s expense; and a second engine arrives from the next town later in the night. When the last ' +
+      'roof is out the page runs the same fire again with nobody out of bed, and shows the two towns at first light, the ' +
+      'roofs alight minute by minute, and the vestry\'s account.</p>' +
+    '</li>'), log.firstChild);
+})();

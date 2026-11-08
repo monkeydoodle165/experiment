@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Firebreak — Drift</title>
+<meta name="description" content="A fire in an eighteenth-century market town in the small hours. Send the parish engine, pull houses down with fire hooks to make a break, and wait for the engine from the next town. The day's number lays out the town and picks the wind.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23121826'/%3E%3Crect x='5' y='17' width='8' height='9' fill='%235f5233'/%3E%3Crect x='19' y='17' width='8' height='9' fill='%235b3a2e'/%3E%3Cpath d='M16 5 C21 11 21 15 16 20 C11 15 11 11 16 5 Z' fill='%23ff8a3d'/%3E%3Cpath d='M16 11 C18 14 18 16 16 18 C14 16 14 14 16 11 Z' fill='%23ffe7a3'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px;
+    background:linear-gradient(160deg,rgba(242,211,107,.1),rgba(100,240,200,.04))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em;font-family:Georgia,"Times New Roman",serif}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  .plaque .book{border-left:2px solid rgba(242,211,107,.5);padding-left:14px;font-family:Georgia,"Times New Roman",serif;font-style:italic}
+  .stage{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-top:18px}
+  .stage h5{margin:16px 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .stage h5:first-child{margin-top:0}
+  .hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(14,19,27,.7);margin-top:12px}
+  .hud div{min-width:0}
+  .hud span{display:block;font:600 .6rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .hud b{display:block;font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hud div.alarm b{color:#ffb27a}
+  .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+  .acts .btn{padding:8px 14px;font-size:.82rem}
+  .acts .btn.big{flex:1 1 220px;padding:12px 18px;font-size:.95rem}
+  .acts .btn[disabled]{opacity:.35;cursor:not-allowed;transform:none}
+  .pace{display:flex;align-items:center;gap:12px;margin-top:12px;font-size:.86rem;color:var(--dim)}
+  .pace input{flex:1;accent-color:#d2b26a}
+  .pace span{min-width:6.5ch}
+  .pace b{font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);min-width:9ch;text-align:right}
+  .keys{margin:10px 0 0;font-size:.8rem;color:var(--dim)}
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .msg:empty{display:none}
+  .msg b{color:var(--ink)}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict p{margin:0 0 8px}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  #reveal p{color:var(--dim);font-size:.92rem;margin:10px 0 0}
+  #reveal canvas{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:10px;margin-top:8px}
+  #reveal .key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.78rem;margin-top:8px;color:var(--dim)}
+  #reveal .key i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+  .card{width:100%;border-collapse:collapse;margin-top:8px;font-size:.88rem}
+  .card td{padding:7px 8px;border-top:1px solid var(--line);color:var(--dim);vertical-align:top}
+  .card td.n{font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;text-align:right}
+  .card tr.tot td{color:var(--ink);font-weight:650}
+  .daybar{font-size:.9rem;color:var(--dim)}
+
+  #town{display:block;width:100%;height:auto;aspect-ratio:640/400;border:1px solid var(--line);border-radius:12px;background:#0d120e;touch-action:manipulation;cursor:crosshair}
+  .tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+  .tools .btn{padding:9px 10px;font-size:.84rem;text-align:center;line-height:1.25;background:transparent;color:var(--ink);border-color:var(--line)}
+  .tools .btn small{display:block;font:600 .62rem ui-monospace,Menlo,monospace;letter-spacing:.06em;color:var(--dim);margin-top:2px}
+  .tools .btn.on[data-tool="0"]{border-color:#64f0c8;color:#64f0c8;background:rgba(100,240,200,.08)}
+  .tools .btn.on[data-tool="1"]{border-color:#7aa2ff;color:#7aa2ff;background:rgba(122,162,255,.08)}
+  .tools .btn.on[data-tool="2"]{border-color:#ffd166;color:#ffd166;background:rgba(255,209,102,.08)}
+  .legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px;font-size:.76rem;color:var(--dim)}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+  .legend i.ring{border:1.5px solid #7aa2ff;border-radius:50%;background:rgba(122,162,255,.35)}
+  .cell{margin:8px 0 0;font:600 .76rem ui-monospace,Menlo,monospace;color:var(--dim);min-height:1.2em}
+
+  @media (max-width:760px){
+    .hud{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:640px){
+    .nav{position:static}
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .stage{padding:14px 12px}
+    .tools .btn small{display:none}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
+      <a href="ballot.html">Ballot</a>
+      <a href="mere.html">Mere</a>
+      <a href="hold.html">Hold</a>
+      <a href="wire.html">Wire</a>
+      <a href="press.html">Press</a>
+      <a href="vat.html">Vat</a>
+      <a href="lock.html">Lock</a>
+      <a href="spinet.html">Spinet</a>
+      <a href="gauge.html">Gauge</a>
+      <a href="ledger.html">Ledger</a>
+      <a href="regulator.html">Regulator</a>
+      <a href="sounding.html">Sounding</a>
+      <a href="fireworks.html">Fireworks</a>
+      <a href="aerostat.html">Aerostat</a>
+      <a href="mill.html">Mill</a>
+      <a href="trial.html">Trial</a>
+      <a href="plate.html">Plate</a>
+      <a href="forge.html">Forge</a>
+      <a href="bakehouse.html">Bakehouse</a>
+      <a href="ropewalk.html">Ropewalk</a>
+      <a href="hayfield.html">Hayfield</a>
+      <a href="dairy.html">Dairy</a>
+      <a href="saltpan.html">Saltpan</a>
+      <a href="chandlery.html">Chandlery</a>
+      <a href="maltings.html">Maltings</a>
+      <a href="ferry.html">Ferry</a>
+      <a href="tollgate.html">Tollgate</a>
+      <a href="lamplighter.html">Lamplighter</a>
+      <a href="firebreak.html" class="on">Firebreak</a>
+    </div>
+  </div>
+</nav>
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page sixty-eight</p>
+    <h1>The Firebreak</h1>
+    <p class="lede">
+      The Lamplighter carried a small flame round a town to make it safe for the night. This room is the night that goes
+      wrong. It is the small hours in an eighteenth-century market town, a roof is alight, and there is a wind. You have the
+      parish engine, a crew with long iron hooks for pulling houses down, and a second engine on the road from the next town.
+      Water the fire where you can and starve it where you cannot, and when the last roof is out the page shows you what the
+      same fire would have done if nobody had got out of bed.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="rWho">—</p>
+        <h3 id="rName">—</h3>
+        <p id="rBlurb">—</p>
+        <p class="book" id="rBook">—</p>
+      </div>
+
+      <div class="stage">
+        <canvas id="town" width="1280" height="800" aria-label="The town from above at night: dark roofs of thatch, timber and brick along the streets, the church in its yard, wells in the streets and the river along the bottom. Burning roofs glow orange and burning thatch is carried ahead of them on the wind."></canvas>
+        <div class="legend"><span><i style="background:#5f5233"></i>thatch</span><span><i style="background:#5b3a2e"></i>timber, tiled</span><span><i style="background:#6b3b31"></i>brick, tiled</span><span><i style="background:#4f4430"></i>barn</span><span><i style="background:#7a6a35"></i>hay rick</span><span><i style="background:#55585e"></i>church</span><span><i class="ring"></i>well</span></div>
+        <p class="cell" id="cellOut">—</p>
+        <div class="hud" aria-live="off">
+          <div><span>Clock</span><b id="hWhen">—</b></div>
+          <div id="hBurnBox"><span>Fire</span><b id="hBurn">—</b></div>
+          <div><span>Wind</span><b id="hWind">—</b></div>
+          <div><span>Loss so far</span><b id="hLoss">—</b></div>
+        </div>
+        <div class="tools" role="group" aria-label="What a click on the town does">
+          <button class="btn" type="button" data-tool="0">1 · Parish engine<small>aim it at a block</small></button>
+          <button class="btn" type="button" data-tool="1" id="tEng2">2 · Second engine<small id="tEng2Note">—</small></button>
+          <button class="btn" type="button" data-tool="2">3 · Hook crew<small id="tHookNote">—</small></button>
+        </div>
+        <div class="acts">
+          <button class="btn big" type="button" id="bGo">Ring the fire bell</button>
+        </div>
+        <div class="pace">
+          <span>Clock</span>
+          <input type="range" id="pace" min="0" max="2" step="1" value="1" aria-label="How fast the night runs">
+          <b id="paceOut">—</b>
+        </div>
+        <p class="keys">Pick an engine or the hook crew, then click the town. An engine goes where it is sent and plays on the three-by-three block round that spot, cooling the houses and putting out what is burning, but only as hard as its bucket chain can feed it: the farther from a well or the river, the weaker it plays. The hook crew pulls down the houses you click, in order, so nothing is left there to burn; click one again to take it off the list. Houses glow before they catch. Keys: <code>1</code> <code>2</code> <code>3</code> pick, <code>Space</code> rings the bell and then holds or releases the clock, <code>Esc</code> clears the hook list.</p>
+      </div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <div class="stage" id="reveal" style="display:none"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="bAgain" style="display:none">Fight the same fire again</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Day</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday’s</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today’s</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow’s →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">Every day is a different town, year, street plan, wind and place for the fire to start.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        Thatch, timber and brick catching at different heats, fire running downwind and throwing burning thatch over the
+        streets, parish engines fed by bucket chains, and fire hooks for pulling houses down are all real. The towns are real
+        places, but tonight's fire, its street plan and every number in the account are the day's number.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>Towns that burned</h3>
+          <p>A market town of thatch and timber with a bakehouse, a maltings and a forge in among the houses was always one
+             careless night from disaster. Warwick lost much of its centre in 1694 and Blandford Forum most of the town in
+             1731; both were rebuilt in brick and stone, which is why they look as they do now.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>The engine</h3>
+          <p>A parish engine was a wooden cistern on wheels with a hand pump worked by men on long handles, throwing a jet
+             through a leather hose or a swivelling pipe. Its cistern had to be kept full by a line of people passing leather
+             buckets from the nearest well, pump or river, so an engine far from water could do little.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Hooks and firebreaks</h3>
+          <p>Churches kept great iron hooks on long poles, and ropes, for tearing the thatch and timbers off houses in the
+             fire's path. A gap of a few houses could stop a fire that no engine could, at the price of the houses, and
+             arguments about who should pay for them went on for years afterwards.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>What the page simplifies</h3>
+          <p>The town is a grid, each square burns as one, the wind shifts once, and there are only two engines and one crew.
+             Heat, burning times and values are sensible guesses. Pulled-down houses cost their full value and quenched ones
+             count as partly lost, however little the fire touched them.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Sixty-eight rooms, and one number doing all the work. Today it lays out a town, puts a candle down in the wrong
+        stable and decides which way the wind blows the thatch. Whether the church is still there in the morning is up to you.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="firebreak.js"></script>
+</body>
+</html>
