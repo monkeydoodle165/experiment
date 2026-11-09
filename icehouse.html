@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Icehouse — Drift</title>
+<meta name="description" content="Fill a country house ice house from the pond before spring. The day's number picks the estate, the winter, the gang and the summer to come; thin ice and ice cut in a thaw will not keep.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23121826'/%3E%3Cpath d='M4 20 Q16 4 28 20 Z' fill='%231f2a1c'/%3E%3Cpath d='M16 9 C25 9 23 28 16 28 C9 28 7 9 16 9 Z' fill='%230b0f16' stroke='%238a4b35' stroke-width='2'/%3E%3Cpath d='M11 20 h10 v6 h-10 z' fill='%23cfe9ff'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px;
+    background:linear-gradient(160deg,rgba(159,216,255,.1),rgba(100,240,200,.04))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em;font-family:Georgia,"Times New Roman",serif}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  .plaque .book{border-left:2px solid rgba(159,216,255,.5);padding-left:14px;font-family:Georgia,"Times New Roman",serif;font-style:italic}
+  .stage{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-top:18px}
+  .stage h5{margin:16px 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .stage h5:first-child{margin-top:0}
+  .hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(14,19,27,.7);margin-top:12px}
+  .hud div{min-width:0}
+  .hud span{display:block;font:600 .6rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .hud b{display:block;font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hud div.alarm b{color:#ffb27a}
+  .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+  .acts .btn{padding:8px 14px;font-size:.82rem}
+  .acts .btn.big{flex:1 1 220px;padding:12px 18px;font-size:.95rem}
+  .acts .btn[disabled]{opacity:.35;cursor:not-allowed;transform:none}
+  .pace{display:flex;align-items:center;gap:12px;margin-top:12px;font-size:.86rem;color:var(--dim)}
+  .pace input{flex:1;accent-color:#d2b26a}
+  .pace span{min-width:6.5ch}
+  .pace b{font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);min-width:9ch;text-align:right}
+  .keys{margin:10px 0 0;font-size:.8rem;color:var(--dim)}
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .msg:empty{display:none}
+  .msg b{color:var(--ink)}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict p{margin:0 0 8px}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  #reveal p{color:var(--dim);font-size:.92rem;margin:10px 0 0}
+  #reveal canvas{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:10px;margin-top:8px}
+  #reveal .key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.78rem;margin-top:8px;color:var(--dim)}
+  #reveal .key i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+  .card{width:100%;border-collapse:collapse;margin-top:8px;font-size:.88rem}
+  .card td{padding:7px 8px;border-top:1px solid var(--line);color:var(--dim);vertical-align:top}
+  .card td.n{font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;text-align:right}
+  .card tr.tot td{color:var(--ink);font-weight:650}
+  .daybar{font-size:.9rem;color:var(--dim)}
+
+  #order{margin-top:12px;padding:12px 14px;border:1px solid rgba(159,216,255,.3);border-radius:12px;background:rgba(159,216,255,.05)}
+  #order .pace{margin-top:0}
+  .cellout{margin:8px 0 0;font:600 .78rem ui-monospace,Menlo,monospace;color:var(--dim)}
+  #pond{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#0b0f16;touch-action:manipulation}
+  .plan{margin:12px 0 0;padding:10px 14px;border:1px solid rgba(159,216,255,.3);border-radius:12px;background:rgba(159,216,255,.05);font-size:.86rem;color:var(--dim)}
+  .plan b{color:#9fd8ff;font-weight:600}
+  .plan i{color:var(--dim)}
+
+  @media (max-width:760px){
+    .hud{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:640px){
+    .nav{position:static}
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .stage{padding:14px 12px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
+      <a href="ballot.html">Ballot</a>
+      <a href="mere.html">Mere</a>
+      <a href="hold.html">Hold</a>
+      <a href="wire.html">Wire</a>
+      <a href="press.html">Press</a>
+      <a href="vat.html">Vat</a>
+      <a href="lock.html">Lock</a>
+      <a href="spinet.html">Spinet</a>
+      <a href="gauge.html">Gauge</a>
+      <a href="ledger.html">Ledger</a>
+      <a href="regulator.html">Regulator</a>
+      <a href="sounding.html">Sounding</a>
+      <a href="fireworks.html">Fireworks</a>
+      <a href="aerostat.html">Aerostat</a>
+      <a href="mill.html">Mill</a>
+      <a href="trial.html">Trial</a>
+      <a href="plate.html">Plate</a>
+      <a href="forge.html">Forge</a>
+      <a href="bakehouse.html">Bakehouse</a>
+      <a href="ropewalk.html">Ropewalk</a>
+      <a href="hayfield.html">Hayfield</a>
+      <a href="dairy.html">Dairy</a>
+      <a href="saltpan.html">Saltpan</a>
+      <a href="chandlery.html">Chandlery</a>
+      <a href="maltings.html">Maltings</a>
+      <a href="ferry.html">Ferry</a>
+      <a href="tollgate.html">Tollgate</a>
+      <a href="lamplighter.html">Lamplighter</a>
+      <a href="firebreak.html">Firebreak</a>
+      <a href="icehouse.html" class="on">Icehouse</a>
+    </div>
+  </div>
+</nav>
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page sixty-nine</p>
+    <h1>The Icehouse</h1>
+    <p class="lede">
+      The Firebreak was one night of too much heat. This room is a whole winter spent hoarding cold. Below a country house
+      there is a pond, and in the shrubbery a brick ice house sunk in the ground like an egg. Every day from the first of
+      December you can send the gang out onto the ice to cut and cart, or wait for a harder frost and thicker ice. Thin ice and
+      ice cut in a thaw pack loosely and melt all summer. Then the year runs on to Michaelmas, the kitchen draws on what you
+      saved, and the page shows what the same year would have cost if you had known the weather in advance.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="rWho">—</p>
+        <h3 id="rName">—</h3>
+        <p id="rBlurb">—</p>
+        <p class="book" id="rBook">—</p>
+      </div>
+
+      <div class="stage">
+        <canvas id="pond" width="640" height="460" aria-label="The pond seen from above as squares of ice, whiter where it is thicker; beside it the ice house in section, filling with ice; below, a chart of the winter so far: the thickest ice on the pond, the days the gang cut, and each day's frost or thaw."></canvas>
+        <p class="cellout" id="cellOut">—</p>
+        <div class="hud" aria-live="off">
+          <div><span>Date</span><b id="hWhen">—</b></div>
+          <div id="hSkyBox"><span>Weather</span><b id="hSky">—</b></div>
+          <div><span>Pond</span><b id="hIce">—</b></div>
+          <div><span>Ice house</span><b id="hStore">—</b></div>
+        </div>
+        <p class="plan" id="plan" aria-live="polite">—</p>
+        <div class="acts" id="winterActs">
+          <button class="btn big" type="button" id="bCut">Send the gang out to cut</button>
+          <button class="btn ghost" type="button" id="bWait">Wait a day</button>
+          <button class="btn ghost" type="button" id="bTurn">Wait for the weather to turn</button>
+          <button class="btn ghost" type="button" id="bShut">Shut the doors for the year</button>
+        </div>
+        <div id="order" style="display:none">
+          <div class="pace">
+            <span>Norway ice</span>
+            <input type="range" id="nTons" min="0" max="10" step="1" value="0" aria-label="Tons of Norway ice to order">
+            <b id="nOut">—</b>
+          </div>
+          <div class="acts">
+            <button class="btn big" type="button" id="bOrder">Seal the ice house and run the year to Michaelmas</button>
+          </div>
+        </div>
+        <p class="keys">The gang cuts the thickest squares first, as many as they can manage in a day, and stops when the house is full. Hover on the pond to read the ice. Keys: <code>C</code> cuts, <code>Space</code> waits a day, <code>T</code> waits for the weather to turn. A falling glass usually means a thaw is coming.</p>
+      </div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <div class="stage" id="reveal" style="display:none"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="bAgain" style="display:none">Try the same winter again</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Day</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday’s</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today’s</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow’s →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">Every day is a different estate, year and winter: some hard, some ordinary, and some so mild the pond barely skins over.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        Ice houses, ice cut from estate ponds, straw packing, the importance of cutting thick, dry ice, and Norway ice
+        shipped to British ports from the 1820s are all real. The estates, the winters, the gangs, the prices and the
+        household's wants are the day's number.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>A cellar for the cold</h3>
+          <p>From the late seventeenth century, and above all in the eighteenth and nineteenth, a country house of any size
+             had an ice house: a brick chamber, often shaped like an egg standing on its point, sunk into a bank in the shade
+             with a drain at the bottom and a passage with two or three doors to keep the warm air out. Filled well, it could
+             keep ice from one winter to the next.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Getting the ice in</h3>
+          <p>The ice came from the nearest pond, lake or flooded field. When the frost had held long enough, the garden staff
+             and estate labourers broke it into slabs, carted it up, and rammed it down in layers, sometimes with straw between,
+             as hard and tight as they could. Gardeners' manuals said to take thick ice in dry, hard weather: wet or broken
+             ice left air spaces, and the store melted from the inside.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Norway ice</h3>
+          <p>In mild winters English ponds might hardly freeze at all. From 1822 ships brought ice cut on Norwegian lakes into
+             London, and later into many other ports, and an estate could buy clean block ice from a merchant. By the end of the
+             century imported ice and then ice machines had made the old ice houses unnecessary.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>What the page simplifies</h3>
+          <p>The pond is a grid of squares that thicken with the frost by a standard rule (ice grows as the square root of the
+             frost added up day by day) and thin in a thaw. The house melts more slowly when it is fuller and when the ice is good,
+             and faster in hot weather. The wages, prices and the household's wants are sensible guesses, not the accounts of any
+             real house.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Sixty-nine rooms, and one number doing all the work. Today it chooses a winter, freezes a pond a night at a time and
+        decides who is coming to dinner in August; what you put away in January is what the kitchen has to work with.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="icehouse.js"></script>
+</body>
+</html>

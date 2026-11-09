@@ -814,3 +814,59 @@
       'roofs alight minute by minute, and the vestry\'s account.</p>' +
     '</li>'), log.firstChild);
 })();
+
+/* ---------- Change 69: the Icehouse ----------
+   Announced the same way as the rooms above, and runs after them, so it lands in front of them. */
+(function () {
+  'use strict';
+  function el(html) { var t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; }
+  if (document.querySelector('a.room[href="icehouse.html"]')) return;
+
+  var nav = document.querySelector('.nav-links');
+  if (nav) nav.appendChild(el('<a href="icehouse.html">Icehouse</a>'));
+
+  var cta = document.querySelector('.cta-row');
+  if (cta) {
+    var first = cta.querySelector('.btn:not(.ghost)');
+    if (first) first.classList.add('ghost');
+    cta.insertBefore(el('<a class="btn" href="icehouse.html">Fill this winter\'s ice house</a>'), cta.firstChild);
+  }
+
+  var rooms = document.querySelector('#rooms .rooms');
+  if (rooms) rooms.insertBefore(el(
+    '<a class="room" href="icehouse.html">' +
+      '<span class="room-tag">a winter\'s work</span>' +
+      '<h3>The Icehouse</h3>' +
+      '<p>From one night of too much heat to a whole winter spent hoarding cold. Watch the estate pond freeze night by ' +
+      'night and decide each day whether to send the gang out to cut, or wait for thicker ice and risk a thaw. Thin, wet ' +
+      'ice melts all summer. In September the page sets your year beside one planned knowing all the weather.</p>' +
+      '<span class="room-go">Read the glass →</span>' +
+    '</a>'), rooms.firstChild);
+
+  var after = document.querySelector('#seed .afterword');
+  if (after) {
+    after.innerHTML = after.innerHTML
+      .replace('sixty-eight jobs', 'sixty-nine jobs')
+      .replace(/One integer, sixty-eight rooms\./, 'At <a href="icehouse.html">the Icehouse</a> it chooses a winter, ' +
+        'freezes a pond a night at a time and decides who is coming to dinner in August. One integer, sixty-nine rooms.');
+  }
+
+  var log = document.querySelector('#log .log');
+  if (log) log.insertBefore(el(
+    '<li>' +
+      '<time>Change 69</time>' +
+      '<h3>Put by the cold</h3>' +
+      '<p>The Firebreak was one night of too much heat. Added <a href="icehouse.html">The Icehouse</a>, a winter on a ' +
+      'country estate near one of twelve towns from Tavistock and Blandford to Hexham and Perth, some time between 1780 and ' +
+      '1879. The day\'s number picks a hard, ordinary or mild winter with its cold spells, thaws and snow, the pond and the ' +
+      'springs that keep its ice thin, the gang and their wages, the size of the ice house, and the summer to come: hot ' +
+      'spells, whether the family goes up to town for the Season, and the ball or dinner that will make a hole in the store in a ' +
+      'day.</p>' +
+      '<p>Ice thickens on the pond as the square root of the frost added up night by night, and goes again in a thaw. From ' +
+      'the first of December you choose each day to cut and cart the thickest squares or to wait; the barometer gives a ' +
+      'hint of tomorrow, and nobody works on a Sunday. Thin ice and ice cut in a thaw take more room and melt faster. After ' +
+      'the tenth of March the merchant offers Norway ice, if it is 1822 or later, and then the year runs to Michaelmas. The ' +
+      'page charts the store against the cheapest of a family of plans made knowing the whole year\'s weather, and adds ' +
+      'up wages, Norway ice and what the kitchen had to fetch from town.</p>' +
+    '</li>'), log.firstChild);
+})();
