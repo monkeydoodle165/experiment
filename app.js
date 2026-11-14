@@ -870,3 +870,59 @@
       'up wages, Norway ice and what the kitchen had to fetch from town.</p>' +
     '</li>'), log.firstChild);
 })();
+
+/* ---------- Change 70: the Water Meadow ----------
+   Announced the same way as the rooms above, and runs after them, so it lands in front of them. */
+(function () {
+  'use strict';
+  function el(html) { var t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; }
+  if (document.querySelector('a.room[href="meadow.html"]')) return;
+
+  var nav = document.querySelector('.nav-links');
+  if (nav) nav.appendChild(el('<a href="meadow.html">Meadow</a>'));
+
+  var cta = document.querySelector('.cta-row');
+  if (cta) {
+    var first = cta.querySelector('.btn:not(.ghost)');
+    if (first) first.classList.add('ghost');
+    cta.insertBefore(el('<a class="btn" href="meadow.html">Drown this winter\'s meadow</a>'), cta.firstChild);
+  }
+
+  var rooms = document.querySelector('#rooms .rooms');
+  if (rooms) rooms.insertBefore(el(
+    '<a class="room" href="meadow.html">' +
+      '<span class="room-tag">a winter\'s work</span>' +
+      '<h3>The Water Meadow</h3>' +
+      '<p>From hoarding the cold to keeping it off. Flood a chalk-valley meadow bed by bed from December to March, so a thin ' +
+      'sheet of spring water keeps the grass growing through the frost. Leave a bed under too long and it goes sour; leave ' +
+      'it dry in a hard frost and the grass browns. In March the ewes come down, and the meadow has to feed them.</p>' +
+      '<span class="room-go">Draw the first hatch →</span>' +
+    '</a>'), rooms.firstChild);
+
+  var after = document.querySelector('#seed .afterword');
+  if (after) {
+    after.innerHTML = after.innerHTML
+      .replace('sixty-nine jobs', 'seventy jobs')
+      .replace(/One integer, sixty-nine rooms\./, 'At <a href="meadow.html">the Water Meadow</a> it chooses a river and a ' +
+        'winter, sends rain up on the downs and counts the ewes. One integer, seventy rooms.');
+  }
+
+  var log = document.querySelector('#log .log');
+  if (log) log.insertBefore(el(
+    '<li>' +
+      '<time>Change 70</time>' +
+      '<h3>Keep the water moving</h3>' +
+      '<p>The Icehouse spent a winter hoarding cold. Added <a href="meadow.html">The Water Meadow</a>, a winter spent keeping ' +
+      'it off: a floated meadow on one of twelve chalk streams from the Wylye at Wilton and the Test at Wherwell to the ' +
+      'Kennet at Hungerford and the Piddle at Puddletown, some time between 1780 and 1859. The day\'s number picks a hard, ' +
+      'ordinary or mild winter with its frosts, mild spells and rain up on the downs, the eight beds off the main carrier ' +
+      'and their acres, how much water the river will spare, the flock that comes down in March and the days it must be ' +
+      'fed, and the price of hay.</p>' +
+      '<p>Each day you draw or drop the hatch on each bed. The carrier fills the nearest beds first, so open too many and ' +
+      'the water never reaches the bottom of the last ones. Grass under a thin, moving sheet keeps growing, faster on the ' +
+      'thick water after rain; a bed left under too long goes sour, quickly in mild weather and slowly in frost, and a bed ' +
+      'left dry, or under too thin a sheet, is browned by a hard frost. On the sixteenth of March the ewes go in, and the ' +
+      'page sets your winter beside the drowner\'s rule worked on the same weather, every hatch open, and the meadow left ' +
+      'dry, with the shepherd\'s account of grass, keep and hay.</p>' +
+    '</li>'), log.firstChild);
+})();
