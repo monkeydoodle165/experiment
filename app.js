@@ -926,3 +926,57 @@
       'dry, with the shepherd\'s account of grass, keep and hay.</p>' +
     '</li>'), log.firstChild);
 })();
+
+/* ---------- Change 71: the Decoy ----------
+   Announced the same way as the rooms above, and runs after them, so it lands in front of them. */
+(function () {
+  'use strict';
+  function el(html) { var t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; }
+  if (document.querySelector('a.room[href="decoy.html"]')) return;
+
+  var nav = document.querySelector('.nav-links');
+  if (nav) nav.appendChild(el('<a href="decoy.html">Decoy</a>'));
+
+  var cta = document.querySelector('.cta-row');
+  if (cta) {
+    var first = cta.querySelector('.btn:not(.ghost)');
+    if (first) first.classList.add('ghost');
+    cta.insertBefore(el('<a class="btn" href="decoy.html">Work this season\'s decoy</a>'), cta.firstChild);
+  }
+
+  var rooms = document.querySelector('#rooms .rooms');
+  if (rooms) rooms.insertBefore(el(
+    '<a class="room" href="decoy.html">' +
+      '<span class="room-tag">a season\'s patience</span>' +
+      '<h3>The Decoy</h3>' +
+      '<p>From the sheep to the fowl. A pond hidden in a wood, netted pipes curving away from it, and a little dog the ' +
+      'wild duck will follow anywhere. Each morning read the wind and work the pipe that looks into it, or keep away and ' +
+      'let the pond fill. Go to the wrong pipe and the whole pond smells you.</p>' +
+      '<span class="room-go">Send the dog in →</span>' +
+    '</a>'), rooms.firstChild);
+
+  var after = document.querySelector('#seed .afterword');
+  if (after) {
+    after.innerHTML = after.innerHTML
+      .replace('seventy jobs', 'seventy-one jobs')
+      .replace(/One integer, seventy rooms\./, 'At <a href="decoy.html">the Decoy</a> it lays out the pipes, sets the ' +
+        'wind and sends the frost that brings the fowl over the sea. One integer, seventy-one rooms.');
+  }
+
+  var log = document.querySelector('#log .log');
+  if (log) log.insertBefore(el(
+    '<li>' +
+      '<time>Change 71</time>' +
+      '<h3>Work the pipe that looks into the wind</h3>' +
+      '<p>The Water Meadow spent a winter feeding sheep. Added <a href="decoy.html">The Decoy</a>, the same winter spent on ' +
+      'the wild fowl: a duck decoy at one of twelve real decoys from Borough Fen and Ashby to Nacton, Steeple and Orielton, ' +
+      'some time between 1800 and 1879. The day\'s number lays out four to six netted pipes round the pond, names the dog, ' +
+      'and runs the weather from November to the end of January: the wind and its strength, the frosts that bring fowl ' +
+      'over from the Continent, the mornings a punt-gun goes off beyond the wood, and the price at Leadenhall.</p>' +
+      '<p>Each morning you read the vane and choose a pipe, or keep away. Fowl swim up after the dog and rise into the ' +
+      'wind, so only a pipe the wind blows down will take them; work one with the wind at your back and the pond smells ' +
+      'you and half of it goes. Every drive makes the fowl that stay warier, and only quiet days settle them, so a worked ' +
+      'pond empties and a quiet one fills. At the end of January the page sets your season beside the decoyman\'s rule, ' +
+      'the best pipe worked every day, and one pipe worked whatever the wind.</p>' +
+    '</li>'), log.firstChild);
+})();
