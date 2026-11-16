@@ -1,1 +1,284 @@
-PLACEHOLDER
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Lambing Fold — Drift</title>
+<meta name="description" content="Six weeks of nights in a downland lambing fold. The day's number picks the farm, the breed, the flock, the pens, the weather of every night and which ewes lamb when; each evening choose how many times to go out with the lantern, and keep enough sleep to see what you are looking at.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23121826'/%3E%3Cellipse cx='14' cy='18' rx='9' ry='6' fill='%23e2dccd'/%3E%3Cellipse cx='24' cy='16' rx='3.4' ry='2.6' fill='%232a2a2a'/%3E%3Ccircle cx='8' cy='7' r='2.4' fill='%23f2d36b'/%3E%3Crect x='9' y='23' width='2' height='4' fill='%232a2a2a'/%3E%3Crect x='17' y='23' width='2' height='4' fill='%232a2a2a'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px;
+    background:linear-gradient(160deg,rgba(159,216,255,.1),rgba(100,240,200,.04))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em;font-family:Georgia,"Times New Roman",serif}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  .plaque .book{border-left:2px solid rgba(159,216,255,.5);padding-left:14px;font-family:Georgia,"Times New Roman",serif;font-style:italic}
+  .stage{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-top:18px}
+  .stage h5{margin:16px 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .stage h5:first-child{margin-top:0}
+  .hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(14,19,27,.7);margin-top:12px}
+  .hud div{min-width:0}
+  .hud span{display:block;font:600 .6rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .hud b{display:block;font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hud div.alarm b{color:#ffb27a}
+  .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+  .acts .btn{padding:8px 14px;font-size:.82rem}
+  .acts .btn.big{flex:1 1 220px;padding:12px 18px;font-size:.95rem}
+  .acts .btn[disabled]{opacity:.35;cursor:not-allowed;transform:none}
+  .keys{margin:10px 0 0;font-size:.8rem;color:var(--dim)}
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .msg:empty{display:none}
+  .msg b{color:var(--ink)}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict p{margin:0 0 8px}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  #reveal p{color:var(--dim);font-size:.92rem;margin:10px 0 0}
+  #reveal canvas{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:10px;margin-top:8px}
+  #reveal .key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.78rem;margin-top:8px;color:var(--dim)}
+  #reveal .key i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+  .card{width:100%;border-collapse:collapse;margin-top:8px;font-size:.88rem}
+  .card td{padding:7px 8px;border-top:1px solid var(--line);color:var(--dim);vertical-align:top}
+  .card td.n{font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;text-align:right}
+  .card tr.tot td{color:var(--ink);font-weight:650}
+  .daybar{font-size:.9rem;color:var(--dim)}
+
+  .cellout{margin:8px 0 0;font:600 .78rem ui-monospace,Menlo,monospace;color:var(--dim)}
+  #fold{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#0b0f16;touch-action:manipulation}
+  .plan{margin:12px 0 0;padding:10px 14px;border:1px solid rgba(159,216,255,.3);border-radius:12px;background:rgba(159,216,255,.05);font-size:.86rem;color:var(--dim)}
+  .plan b{color:#9fd8ff;font-weight:600}
+  .plan i{color:#f2d36b;font-style:normal}
+  .acts .btn.round{flex:1 1 120px}
+
+  @media (max-width:760px){
+    .hud{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:640px){
+    .nav{position:static}
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .stage{padding:14px 12px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
+      <a href="ballot.html">Ballot</a>
+      <a href="mere.html">Mere</a>
+      <a href="hold.html">Hold</a>
+      <a href="wire.html">Wire</a>
+      <a href="press.html">Press</a>
+      <a href="vat.html">Vat</a>
+      <a href="lock.html">Lock</a>
+      <a href="spinet.html">Spinet</a>
+      <a href="gauge.html">Gauge</a>
+      <a href="ledger.html">Ledger</a>
+      <a href="regulator.html">Regulator</a>
+      <a href="sounding.html">Sounding</a>
+      <a href="fireworks.html">Fireworks</a>
+      <a href="aerostat.html">Aerostat</a>
+      <a href="mill.html">Mill</a>
+      <a href="trial.html">Trial</a>
+      <a href="plate.html">Plate</a>
+      <a href="forge.html">Forge</a>
+      <a href="bakehouse.html">Bakehouse</a>
+      <a href="ropewalk.html">Ropewalk</a>
+      <a href="hayfield.html">Hayfield</a>
+      <a href="dairy.html">Dairy</a>
+      <a href="saltpan.html">Saltpan</a>
+      <a href="chandlery.html">Chandlery</a>
+      <a href="maltings.html">Maltings</a>
+      <a href="ferry.html">Ferry</a>
+      <a href="tollgate.html">Tollgate</a>
+      <a href="lamplighter.html">Lamplighter</a>
+      <a href="firebreak.html">Firebreak</a>
+      <a href="icehouse.html">Icehouse</a>
+      <a href="meadow.html">Meadow</a>
+      <a href="decoy.html">Decoy</a>
+      <a href="lambing.html" class="on">Lambing</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page seventy-two</p>
+    <h1>The Lambing Fold</h1>
+    <p class="lede">
+      The Decoy spent the winter waiting on the wild fowl. This room is the end of that winter, when the downland flocks
+      lambed: a fold of wattle hurdles on the open down, a row of little pens thatched with straw along its sheltered side,
+      and the shepherd's hut on its iron wheels beside it, where he lived for six weeks. Ewes lamb at any hour, and the
+      ones that matter are the ones that lamb at two in the morning in a frost. You are the shepherd. Each evening you look
+      at the sky and the ewes and choose how many times to get up in the night. Every round with the lantern may save a lamb;
+      every round also costs you sleep you will need next week.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="rWho">—</p>
+        <h3 id="rName">—</h3>
+        <p id="rBlurb">—</p>
+        <p class="book" id="rBook">—</p>
+      </div>
+
+      <div class="stage">
+        <canvas id="fold" width="640" height="520" aria-label="The lambing fold at night from the side: thatched pens along the top, filled as ewes lamb, the ewes still to lamb in the body of the fold, and the shepherd's hut, with lambs living, lambs lost and how tired the shepherd is. Below, last night hour by hour: each round of the lantern, each lambing and the round or the dawn that found it. At the bottom, the whole lambing night by night: lambs born, living and lost, cold nights, and rounds walked."></canvas>
+        <p class="cellout" id="cellOut">—</p>
+        <div class="hud" aria-live="off">
+          <div><span>Tonight</span><b id="hWhen">—</b></div>
+          <div id="hSkyBox"><span>Weather</span><b id="hSky">—</b></div>
+          <div><span>Ewes near their time</span><b id="hDue">—</b></div>
+          <div id="hManBox"><span>The shepherd</span><b id="hMan">—</b></div>
+        </div>
+        <p class="plan" id="plan" aria-live="polite">—</p>
+        <div class="acts" id="seasonActs">
+          <button class="btn ghost round" type="button" id="bR0">Sleep till dawn</button>
+          <button class="btn round" type="button" id="bR1">One round</button>
+          <button class="btn round" type="button" id="bR2">Two rounds</button>
+          <button class="btn round" type="button" id="bR3">Three rounds</button>
+          <button class="btn round" type="button" id="bR4">Four rounds</button>
+          <button class="btn ghost" type="button" id="bQuiet">Sleep through the quiet nights</button>
+        </div>
+        <p class="keys">Rounds are spread evenly between ten at night and six in the morning, and dawn finds everything the rounds missed. A lamb found soon is rubbed down and penned with its mother; one left in the cold may be dead by the next round, and a lamb laid wrong needs your hand within the hour. A full night's sleep sets you up again; more than one round a night wears you down, and a worn-out shepherd walks past what he is looking for. The quiet-nights button sleeps until a ewe looks close or the weather turns, a week at most. Keys: <code>0</code>–<code>4</code> choose the night's rounds, <code>Q</code> sleeps through the quiet nights. Point at the chart to see any night.</p>
+      </div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <div class="stage" id="reveal" style="display:none"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="bAgain" style="display:none">Try the same lambing again</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Day</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday’s</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today’s</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow’s →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">Every day is a different farm, flock and spring: some lambings that come all in a rush with too few pens, some long and easy, and some hard springs when the snow comes in the third week, just as the fold is busiest.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        Lambing folds, hurdles, thatched pens, shepherd's huts, and the breeds are all real, and so are the places: each is a
+        sheep country where flocks like these lambed in the nineteenth century. The flocks, the shepherds, the weather and
+        every lambing are the day's number.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>The fold on the down</h3>
+          <p>On the chalk downs of Sussex, Hampshire, Wiltshire and Dorset, and on the Cotswolds and the wolds, the flock was
+             brought into a lambing fold in the new year: a square of wattle hurdles pitched in a sheltered spot, often with
+             straw or furze packed into them against the wind, and a row of small pens along one side, roofed with hurdles and
+             thatch, where a ewe and her new lambs could be shut in for a few days to get to know each other.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>The hut and the lantern</h3>
+          <p>The shepherd lived beside the fold in a hut on iron wheels, with a stove, a bunk, his medicines and his dog,
+             for the whole of the lambing. He went round the ewes with a lantern through the night. A ewe in difficulty, with
+             a lamb laid wrong, needed help quickly; a lamb born into a frost or a wet night had to be found, rubbed dry and
+             got sucking, or it chilled and died before morning.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>Sleep</h3>
+          <p>Shepherds kept going through the lambing on snatched sleep, and every account of it talks about tiredness. A
+             good shepherd judged which ewes were near their time, by their udders, their restlessness and their going off
+             alone, and slept when he could. The measure of his season was the number of lambs reared for every hundred ewes
+             put to the ram.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>What the page simplifies</h3>
+          <p>Each night is one weather, and rounds are spread evenly through it. Daylight lambings are always attended. One
+             number stands for the shepherd's tiredness: rounds raise it and a full night's sleep brings it down, and the more
+             tired he is the more likely he is to miss a ewe on a round. Pens hold a family for three nights. The rates are
+             sensible guesses, not the records of any real flock.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Seventy-two rooms, and one number doing all the work. Today it chooses a farm and a spring, puts the ewes to lamb
+        at two in the morning in a frost, and asks how much sleep you can spare.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="lambing.js"></script>
+</body>
+</html>

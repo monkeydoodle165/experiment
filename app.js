@@ -980,3 +980,58 @@
       'the best pipe worked every day, and one pipe worked whatever the wind.</p>' +
     '</li>'), log.firstChild);
 })();
+
+/* ---------- Change 72: the Lambing Fold ----------
+   Announced the same way as the rooms above, and runs after them, so it lands in front of them. */
+(function () {
+  'use strict';
+  function el(html) { var t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; }
+  if (document.querySelector('a.room[href="lambing.html"]')) return;
+
+  var nav = document.querySelector('.nav-links');
+  if (nav) nav.appendChild(el('<a href="lambing.html">Lambing</a>'));
+
+  var cta = document.querySelector('.cta-row');
+  if (cta) {
+    var first = cta.querySelector('.btn:not(.ghost)');
+    if (first) first.classList.add('ghost');
+    cta.insertBefore(el('<a class="btn" href="lambing.html">Keep this spring\'s lambing fold</a>'), cta.firstChild);
+  }
+
+  var rooms = document.querySelector('#rooms .rooms');
+  if (rooms) rooms.insertBefore(el(
+    '<a class="room" href="lambing.html">' +
+      '<span class="room-tag">six weeks of nights</span>' +
+      '<h3>The Lambing Fold</h3>' +
+      '<p>From the fowl to the flock. A fold of hurdles on the down, a row of thatched pens and a hut on wheels. Each ' +
+      'evening look at the sky and the ewes and choose how many times to go out with the lantern. A lamb born into a frost ' +
+      'has to be found; a shepherd who never sleeps finds nothing.</p>' +
+      '<span class="room-go">Light the lantern →</span>' +
+    '</a>'), rooms.firstChild);
+
+  var after = document.querySelector('#seed .afterword');
+  if (after) {
+    after.innerHTML = after.innerHTML
+      .replace('seventy-one jobs', 'seventy-two jobs')
+      .replace(/One integer, seventy-one rooms\./, 'At <a href="lambing.html">the Lambing Fold</a> it decides which ewe ' +
+        'lambs at two in the morning, and whether it freezes. One integer, seventy-two rooms.');
+  }
+
+  var log = document.querySelector('#log .log');
+  if (log) log.insertBefore(el(
+    '<li>' +
+      '<time>Change 72</time>' +
+      '<h3>Go out with the lantern, and sleep when you can</h3>' +
+      '<p>The Decoy spent a winter waiting on the wild fowl. Added <a href="lambing.html">The Lambing Fold</a>, the end of ' +
+      'that winter: six weeks of nights in a downland lambing fold at one of twelve sheep countries from Ditchling and ' +
+      'Stockbridge to Cerne Abbas, Romney Marsh, the Cotswolds and the Long Mynd, some time between 1820 and 1879. The ' +
+      'day\'s number picks the breed, the size of the flock and how many thatched pens the fold has, the weather of every ' +
+      'night, and the night and hour each ewe lambs, single or twins, and whether the lamb comes the wrong way.</p>' +
+      '<p>Each evening you see the sky and count the ewes that look close, and choose from none to four rounds of the ' +
+      'fold. A lamb found soon is rubbed dry and penned; one left in a frost or a wet night may be dead by dawn, and a ' +
+      'lamb laid wrong needs a hand within the hour. A full night\'s sleep sets the shepherd up again and every extra ' +
+      'round wears him down, until he walks past the ewe he came to find. A strip shows last night hour by hour, and at ' +
+      'the end the page sets your lambs per hundred ewes beside the shepherd\'s rule, four rounds every night, one round ' +
+      'every night, and sleeping every night through.</p>' +
+    '</li>'), log.firstChild);
+})();
