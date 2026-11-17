@@ -1035,3 +1035,59 @@
       'every night, and sleeping every night through.</p>' +
     '</li>'), log.firstChild);
 })();
+
+/* ---------- Change 73: the Sheepwash ----------
+   Announced the same way as the rooms above, and runs after them, so it lands in front of them. */
+(function () {
+  'use strict';
+  function el(html) { var t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; }
+  if (document.querySelector('a.room[href="sheepwash.html"]')) return;
+
+  var nav = document.querySelector('.nav-links');
+  if (nav) nav.appendChild(el('<a href="sheepwash.html">Sheepwash</a>'));
+
+  var cta = document.querySelector('.cta-row');
+  if (cta) {
+    var first = cta.querySelector('.btn:not(.ghost)');
+    if (first) first.classList.add('ghost');
+    cta.insertBefore(el('<a class="btn" href="sheepwash.html">Wash and clip this June\'s flock</a>'), cta.firstChild);
+  }
+
+  var rooms = document.querySelector('#rooms .rooms');
+  if (rooms) rooms.insertBefore(el(
+    '<a class="room" href="sheepwash.html">' +
+      '<span class="room-tag">five weeks of June</span>' +
+      '<h3>The Sheepwash</h3>' +
+      '<p>From the lambing fold to the river. Wash the flock in the pool, let the yolk rise back into the wool, and have ' +
+      'the shearing gang clip it on the days they are booked to you. Clip too soon and the fleece is harsh and light; ' +
+      'wait too long and it is dirty again, or the fly has found it. And a night\'s thunder can put the river over the pool.</p>' +
+      '<span class="room-go">Into the pool →</span>' +
+    '</a>'), rooms.firstChild);
+
+  var after = document.querySelector('#seed .afterword');
+  if (after) {
+    after.innerHTML = after.innerHTML
+      .replace('seventy-two jobs', 'seventy-three jobs')
+      .replace(/One integer, seventy-two rooms\./, 'At <a href="sheepwash.html">the Sheepwash</a> it decides when the ' +
+        'thunder puts the river over the pool, and which week the gang comes. One integer, seventy-three rooms.');
+  }
+
+  var log = document.querySelector('#log .log');
+  if (log) log.insertBefore(el(
+    '<li>' +
+      '<time>Change 73</time>' +
+      '<h3>Wash ten days afore the shears</h3>' +
+      '<p>The Lambing Fold kept the flock through the spring nights. Added <a href="sheepwash.html">The Sheepwash</a>, the ' +
+      'end of that year\'s work on it: five weeks of June at a sheepwash on one of twelve rivers, from the Wye at ' +
+      'Ashford-in-the-Water and the Coln at Bibury to the Ure at Hawes, the Greta at Keswick and the Tweed at Kelso, some ' +
+      'time between 1830 and 1879. The day\'s number picks the breed, the flock, how many hands can wash in a day, the ' +
+      'shearing gang and the days it is booked to you, the price of wool that year, and every day\'s weather and the ' +
+      'river that answers to it.</p>' +
+      '<p>Each morning you see the sky and the river and choose to wash a batch, have the gang shear what is ready, do ' +
+      'both, or leave them. A fleece needs three days out of the pool to dry and is at its best from a week to a ' +
+      'fortnight; clip it sooner and it is harsh and light, later and it is dirty again. The gang will not shear a wet ' +
+      'sheep, the pool cannot be worked when the river is over it, and warm days bring the fly to anything still in its ' +
+      'wool. A strip shows the five weeks day by day, and at the end the page sets your clip beside the farmer\'s rule ' +
+      'and a farmer in a hurry, on the same flock and the same weather.</p>' +
+    '</li>'), log.firstChild);
+})();
