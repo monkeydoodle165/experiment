@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Sheepwash — Drift</title>
+<meta name="description" content="Five weeks of June at a sheepwash on a river. The day's number picks the river, the breed, the flock, the shearing gang and the days it is booked to you, the price of wool and the weather of every day; each morning choose whether to wash, clip, both or wait, and get the flock shorn before the fly finds it.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23121826'/%3E%3Crect y='22' width='32' height='10' fill='%233b6f8f'/%3E%3Cellipse cx='15' cy='17' rx='9' ry='5.5' fill='%23ece6d6'/%3E%3Cellipse cx='25' cy='15' rx='3.2' ry='2.4' fill='%232a2a2a'/%3E%3Ccircle cx='7' cy='7' r='2.6' fill='%23f2d36b'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px;
+    background:linear-gradient(160deg,rgba(159,216,255,.1),rgba(100,240,200,.04))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em;font-family:Georgia,"Times New Roman",serif}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  .plaque .book{border-left:2px solid rgba(159,216,255,.5);padding-left:14px;font-family:Georgia,"Times New Roman",serif;font-style:italic}
+  .stage{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-top:18px}
+  .stage h5{margin:16px 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .stage h5:first-child{margin-top:0}
+  .hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(14,19,27,.7);margin-top:12px}
+  .hud div{min-width:0}
+  .hud span{display:block;font:600 .6rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .hud b{display:block;font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hud div.alarm b{color:#ffb27a}
+  .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+  .acts .btn{padding:8px 14px;font-size:.82rem}
+  .acts .btn.big{flex:1 1 220px;padding:12px 18px;font-size:.95rem}
+  .acts .btn[disabled]{opacity:.35;cursor:not-allowed;transform:none}
+  .keys{margin:10px 0 0;font-size:.8rem;color:var(--dim)}
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .msg:empty{display:none}
+  .msg b{color:var(--ink)}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict p{margin:0 0 8px}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  #reveal p{color:var(--dim);font-size:.92rem;margin:10px 0 0}
+  #reveal canvas{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:10px;margin-top:8px}
+  #reveal .key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.78rem;margin-top:8px;color:var(--dim)}
+  #reveal .key i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+  .card{width:100%;border-collapse:collapse;margin-top:8px;font-size:.88rem}
+  .card td{padding:7px 8px;border-top:1px solid var(--line);color:var(--dim);vertical-align:top}
+  .card td.n{font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;text-align:right}
+  .card tr.tot td{color:var(--ink);font-weight:650}
+  .daybar{font-size:.9rem;color:var(--dim)}
+
+  .cellout{margin:8px 0 0;font:600 .78rem ui-monospace,Menlo,monospace;color:var(--dim)}
+  #wash{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#0b0f16;touch-action:manipulation}
+  .plan{margin:12px 0 0;padding:10px 14px;border:1px solid rgba(159,216,255,.3);border-radius:12px;background:rgba(159,216,255,.05);font-size:.86rem;color:var(--dim)}
+  .plan b{color:#9fd8ff;font-weight:600}
+  .plan i{color:#f2d36b;font-style:normal}
+  .acts .btn.act{flex:1 1 130px}
+
+  @media (max-width:760px){
+    .hud{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:640px){
+    .nav{position:static}
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .stage{padding:14px 12px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
+      <a href="ballot.html">Ballot</a>
+      <a href="mere.html">Mere</a>
+      <a href="hold.html">Hold</a>
+      <a href="wire.html">Wire</a>
+      <a href="press.html">Press</a>
+      <a href="vat.html">Vat</a>
+      <a href="lock.html">Lock</a>
+      <a href="spinet.html">Spinet</a>
+      <a href="gauge.html">Gauge</a>
+      <a href="ledger.html">Ledger</a>
+      <a href="regulator.html">Regulator</a>
+      <a href="sounding.html">Sounding</a>
+      <a href="fireworks.html">Fireworks</a>
+      <a href="aerostat.html">Aerostat</a>
+      <a href="mill.html">Mill</a>
+      <a href="trial.html">Trial</a>
+      <a href="plate.html">Plate</a>
+      <a href="forge.html">Forge</a>
+      <a href="bakehouse.html">Bakehouse</a>
+      <a href="ropewalk.html">Ropewalk</a>
+      <a href="hayfield.html">Hayfield</a>
+      <a href="dairy.html">Dairy</a>
+      <a href="saltpan.html">Saltpan</a>
+      <a href="chandlery.html">Chandlery</a>
+      <a href="maltings.html">Maltings</a>
+      <a href="ferry.html">Ferry</a>
+      <a href="tollgate.html">Tollgate</a>
+      <a href="lamplighter.html">Lamplighter</a>
+      <a href="firebreak.html">Firebreak</a>
+      <a href="icehouse.html">Icehouse</a>
+      <a href="meadow.html">Meadow</a>
+      <a href="decoy.html">Decoy</a>
+      <a href="lambing.html">Lambing</a>
+      <a href="sheepwash.html" class="on">Sheepwash</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page seventy-three</p>
+    <h1>The Sheepwash</h1>
+    <p class="lede">
+      The Lambing Fold kept the flock through the spring nights. This room is the end of that year's work on it, in June,
+      when the sheep were washed in the river and then shorn. A pool penned off with hurdles or walled in stone, men up to
+      their waists in it turning each sheep over and over until the water ran clear, and a week or two later the shearing
+      gang, who went round the farms of a district on a set round. Wash too late and the gang is idle; clip too soon and
+      the fleece is still wet and harsh and light; wait too long and the wool is dirty again, or the fly has found the
+      flock. The river does not care about any of it, and a night's thunder can put it over the pool for days.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="rWho">—</p>
+        <h3 id="rName">—</h3>
+        <p id="rBlurb">—</p>
+        <p class="book" id="rBook">—</p>
+      </div>
+
+      <div class="stage">
+        <canvas id="wash" width="640" height="450" aria-label="The farm by the river: the sky and the river as they are today, with the wash-pool between hurdles, and three pens of sheep, unwashed, washed and drying, and shorn, with fly-struck sheep in red and the shearing gang when it is here. Below, the five weeks day by day: the days the gang is booked, the rain and the height of the river against the flood mark, the sheep washed and clipped each day, and the days the fly struck."></canvas>
+        <p class="cellout" id="cellOut">—</p>
+        <div class="hud" aria-live="off">
+          <div><span>Today</span><b id="hWhen">—</b></div>
+          <div id="hSkyBox"><span>Weather</span><b id="hSky">—</b></div>
+          <div id="hRiverBox"><span>The river</span><b id="hRiver">—</b></div>
+          <div><span>The gang</span><b id="hGang">—</b></div>
+        </div>
+        <p class="plan" id="plan" aria-live="polite">—</p>
+        <div class="acts">
+          <button class="btn ghost act" type="button" id="bWait">Leave them today</button>
+          <button class="btn act" type="button" id="bWash">Wash a batch</button>
+          <button class="btn act" type="button" id="bShear">Shear</button>
+          <button class="btn act" type="button" id="bBoth">Wash and shear</button>
+        </div>
+        <p class="keys">The hands wash as many as they can in a day, and the gang always takes the longest-washed sheep first. A fleece needs three days out of the pool before it is dry enough to clip at all, and is at its best from about a week to a fortnight, when the yolk has risen back into the wool; after three weeks it is as dirty as if it had never been washed. The gang only works the days it is booked to you, never on a wet day or the day after a soaking, and you cannot wash when the river is over the pool. From the second week, warm days bring the fly to sheep still in their wool. Whatever is not clipped by the last day is clipped in July, late and cheap. Keys: <code>W</code> wash, <code>S</code> shear, <code>B</code> both, <code>0</code> leave them. Point at the strip to see any day.</p>
+      </div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <div class="stage" id="reveal" style="display:none"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="bAgain" style="display:none">Try the same June again</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Day</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday’s</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today’s</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow’s →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">Every day is a different river, flock and June: dry hot ones when the fly is the enemy, broken ones when the river is up and down all month, and wet cold ones when the gang stands about in the barn waiting for the sheep to dry.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        Washing sheep in the river before shearing, wash-pools and wash-folds, travelling shearing gangs and the fly are all
+        real, and so are the rivers and the breeds: each is a place where flocks like these were washed in the nineteenth
+        century. The farms, the gangs, the prices and the weather are the day's number.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>The wash</h3>
+          <p>Until well into the twentieth century most English and Welsh flocks were washed before they were shorn, because
+             washed wool fetched a better price than wool sold in the grease. Villages had a sheepwash on the river, a pool
+             dammed with boards or penned with hurdles, or a walled fold beside a beck, and the washing was a day's hard,
+             cold, wet work for the men in the water, paid for partly in beer.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>The rising</h3>
+          <p>A washed fleece was not shorn straight away. The sheep were left a week or two for the wool to dry and for the
+             natural grease, the yolk, to rise back into it, which made the fleece heavier, softer and easier to clip. Shear
+             too soon and the wool was harsh and light; leave it too long and the sheep had rolled and rubbed it dirty again.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>The gang and the fly</h3>
+          <p>Shearing was often done by gangs of men who went from farm to farm round a district, paid by the score, so a
+             farmer had their days and not others. Wet sheep could not be shorn, since damp wool heats and spoils in the bale.
+             And as June warmed, blowflies laid their eggs in dirty, damp fleeces, and a struck sheep that was not found
+             and treated could be eaten alive; getting the wool off was the best protection.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>What the page simplifies</h3>
+          <p>Each day has one weather, the river answers to the rain with one rule, and the hands always wash a full batch.
+             One number stands for a fleece's condition, set by the days since it was washed and by how thick the water was;
+             the fly takes a small share of what is still in its wool on each warm day; and every price, pay and rate is a
+             sensible guess, not the accounts of any real farm.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Seventy-three rooms, and one number doing all the work. Today it chooses a river and a June, books the gang for
+        the wrong week, and asks whether to wash in thick water or wait for a river that may not go down.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="sheepwash.js"></script>
+</body>
+</html>
