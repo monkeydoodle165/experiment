@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Hop Garden — Drift</title>
+<meta name="description" content="Four weeks of hop-picking in September. The day's number picks the parish, the gardens and their hops, the pickers, the oast and the weather of every day; each morning choose which garden the pickers strip, before the hops go brown, the mould gets in or a gale blows the bines down.">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23121826'/%3E%3Cpath d='M20 30V14l5-6 5 6v16z' fill='%23e8e2d2'/%3E%3Cpath d='M23 8l2-5 2 5z' fill='%23ffffff'/%3E%3Crect x='6' y='6' width='1.6' height='24' fill='%238a6a44'/%3E%3Cpath d='M7 9c4 3-3 6 1 9s-3 6 1 9' stroke='%2367b04a' stroke-width='2.2' fill='none'/%3E%3Ccircle cx='10' cy='14' r='2' fill='%23c9d86b'/%3E%3Ccircle cx='9' cy='22' r='2' fill='%23c9d86b'/%3E%3C/svg%3E">
+<style>  /* the nav has outgrown one line */
+  .nav-inner{height:auto;min-height:56px;padding:9px 0}
+  .nav-links{flex-wrap:wrap;justify-content:flex-end}
+
+  .plaque{border:1px solid var(--line);border-radius:16px;padding:26px 28px;margin-bottom:22px;
+    background:linear-gradient(160deg,rgba(159,216,255,.1),rgba(100,240,200,.04))}
+  .plaque h3{margin:0 0 6px;font-size:1.4rem;letter-spacing:-.01em;font-family:Georgia,"Times New Roman",serif}
+  .plaque .who{margin:0 0 8px;font:600 11px/1.3 ui-monospace,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--accent2)}
+  .plaque p{margin:14px 0 0;color:var(--dim);font-size:.95rem}
+  .plaque b{color:var(--ink);font-weight:650}
+  .plaque .book{border-left:2px solid rgba(159,216,255,.5);padding-left:14px;font-family:Georgia,"Times New Roman",serif;font-style:italic}
+  .stage{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:rgba(11,15,22,.5);margin-top:18px}
+  .stage h5{margin:16px 0 8px;font:600 .68rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .stage h5:first-child{margin-top:0}
+  .hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(14,19,27,.7);margin-top:12px}
+  .hud div{min-width:0}
+  .hud span{display:block;font:600 .6rem ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  .hud b{display:block;font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hud div.alarm b{color:#ffb27a}
+  .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+  .acts .btn{padding:8px 14px;font-size:.82rem}
+  .acts .btn.big{flex:1 1 220px;padding:12px 18px;font-size:.95rem}
+  .acts .btn[disabled]{opacity:.35;cursor:not-allowed;transform:none}
+  .keys{margin:10px 0 0;font-size:.8rem;color:var(--dim)}
+  .msg{margin:12px 0 0;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(11,15,22,.6);font-size:.92rem;color:var(--dim)}
+  .msg:empty{display:none}
+  .msg b{color:var(--ink)}
+  .verdict{margin:18px 0 0;padding:14px 18px;border-radius:14px;border:1px solid var(--line);font-size:.94rem;color:var(--dim)}
+  .verdict:empty{display:none}
+  .verdict p{margin:0 0 8px}
+  .verdict b{color:var(--ink)}
+  .verdict.good{border-color:rgba(100,240,200,.45);background:rgba(100,240,200,.06)}
+  .verdict.warn{border-color:rgba(255,206,106,.45);background:rgba(255,206,106,.06)}
+  #reveal p{color:var(--dim);font-size:.92rem;margin:10px 0 0}
+  #reveal canvas{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:10px;margin-top:8px}
+  #reveal .key{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.78rem;margin-top:8px;color:var(--dim)}
+  #reveal .key i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+  .card{width:100%;border-collapse:collapse;margin-top:8px;font-size:.88rem}
+  .card td{padding:7px 8px;border-top:1px solid var(--line);color:var(--dim);vertical-align:top}
+  .card td.n{font:600 .86rem ui-monospace,Menlo,monospace;color:var(--ink);white-space:nowrap;text-align:right}
+  .card tr.tot td{color:var(--ink);font-weight:650}
+  .daybar{font-size:.9rem;color:var(--dim)}
+
+  .cellout{margin:8px 0 0;font:600 .78rem ui-monospace,Menlo,monospace;color:var(--dim)}
+  #hops{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:12px;background:#0b0f16;touch-action:manipulation}
+  .plan{margin:12px 0 0;padding:10px 14px;border:1px solid rgba(159,216,255,.3);border-radius:12px;background:rgba(159,216,255,.05);font-size:.86rem;color:var(--dim)}
+  .plan b{color:#9fd8ff;font-weight:600}
+  .plan i{color:#f2d36b;font-style:normal}
+  .acts .btn.act{flex:1 1 130px}
+  .acts .btn.plot{flex:1 1 180px;text-align:left;line-height:1.25}
+  .acts .btn.plot small{display:block;font-weight:500;opacity:.8;font-size:.74rem;margin-top:2px}
+
+  @media (max-width:760px){
+    .hud{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:640px){
+    .nav{position:static}
+    .wrap{padding:0 16px}
+    .plaque{padding:20px 18px}
+    .stage{padding:14px 12px}
+  }
+</style>
+</head>
+<body class="plain">
+
+<nav class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="./"><span class="dot"></span>Drift</a>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="garden.html">Garden</a>
+      <a href="chimes.html">Chimes</a>
+      <a href="lattice.html">Lattice</a>
+      <a href="almanac.html">Almanac</a>
+      <a href="observatory.html">Observatory</a>
+      <a href="atlas.html">Atlas</a>
+      <a href="menagerie.html">Menagerie</a>
+      <a href="orrery.html">Orrery</a>
+      <a href="codex.html">Codex</a>
+      <a href="chronicle.html">Chronicle</a>
+      <a href="folly.html">Folly</a>
+      <a href="engine.html">Engine</a>
+      <a href="loom.html">Loom</a>
+      <a href="exchange.html">Exchange</a>
+      <a href="gambit.html">Gambit</a>
+      <a href="warren.html">Warren</a>
+      <a href="inquest.html">Inquest</a>
+      <a href="span.html">Span</a>
+      <a href="junction.html">Junction</a>
+      <a href="bureau.html">Bureau</a>
+      <a href="foundry.html">Foundry</a>
+      <a href="kiln.html">Kiln</a>
+      <a href="lens.html">Lens</a>
+      <a href="tide.html">Tide</a>
+      <a href="belfry.html">Belfry</a>
+      <a href="apiary.html">Apiary</a>
+      <a href="lights.html">Lights</a>
+      <a href="trench.html">Trench</a>
+      <a href="gnomon.html">Gnomon</a>
+      <a href="heartwood.html">Heartwood</a>
+      <a href="benchmark.html">Benchmark</a>
+      <a href="herbarium.html">Herbarium</a>
+      <a href="seismograph.html">Seismograph</a>
+      <a href="glass.html">Glass</a>
+      <a href="cloister.html">Cloister</a>
+      <a href="assay.html">Assay</a>
+      <a href="pump.html">Pump</a>
+      <a href="pyx.html">Pyx</a>
+      <a href="ballot.html">Ballot</a>
+      <a href="mere.html">Mere</a>
+      <a href="hold.html">Hold</a>
+      <a href="wire.html">Wire</a>
+      <a href="press.html">Press</a>
+      <a href="vat.html">Vat</a>
+      <a href="lock.html">Lock</a>
+      <a href="spinet.html">Spinet</a>
+      <a href="gauge.html">Gauge</a>
+      <a href="ledger.html">Ledger</a>
+      <a href="regulator.html">Regulator</a>
+      <a href="sounding.html">Sounding</a>
+      <a href="fireworks.html">Fireworks</a>
+      <a href="aerostat.html">Aerostat</a>
+      <a href="mill.html">Mill</a>
+      <a href="trial.html">Trial</a>
+      <a href="plate.html">Plate</a>
+      <a href="forge.html">Forge</a>
+      <a href="bakehouse.html">Bakehouse</a>
+      <a href="ropewalk.html">Ropewalk</a>
+      <a href="hayfield.html">Hayfield</a>
+      <a href="dairy.html">Dairy</a>
+      <a href="saltpan.html">Saltpan</a>
+      <a href="chandlery.html">Chandlery</a>
+      <a href="maltings.html">Maltings</a>
+      <a href="ferry.html">Ferry</a>
+      <a href="tollgate.html">Tollgate</a>
+      <a href="lamplighter.html">Lamplighter</a>
+      <a href="firebreak.html">Firebreak</a>
+      <a href="icehouse.html">Icehouse</a>
+      <a href="meadow.html">Meadow</a>
+      <a href="decoy.html">Decoy</a>
+      <a href="lambing.html">Lambing</a>
+      <a href="sheepwash.html">Sheepwash</a>
+      <a href="hopgarden.html" class="on">Hop Garden</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <p class="kicker">page seventy-four</p>
+    <h1>The Hop Garden</h1>
+    <p class="lede">
+      The Sheepwash took the wool off in June. This room is September, the other harvest of the southern counties, when
+      whole streets of London and the Black Country went down by train to the hop gardens of Kent, Sussex, Surrey and
+      Hereford, and families stripped the bines into bins at so many bushels to the shilling. The hops in a farm's
+      gardens do not ripen together. Pick a garden green and the sample is light and pale; leave it a week past its best
+      and it goes brown and blowsy and shatters in the bin. A wet warm spell lets the mould in, a gale can lay a whole
+      garden on the ground in a night, and the oast can only dry so much a day.
+    </p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div class="wrap">
+      <div class="plaque">
+        <p class="who" id="rWho">—</p>
+        <h3 id="rName">—</h3>
+        <p id="rBlurb">—</p>
+        <p class="book" id="rBook">—</p>
+      </div>
+
+      <div class="stage">
+        <canvas id="hops" width="640" height="460" aria-label="The farm: the sky as it is today, the hop gardens side by side, each coloured by how ripe its hops are, thinning as it is picked, with the pickers at their bins in the garden being picked, and the oast house smoking when it is drying. Below, the season day by day: the rain and the gale nights, and one row for each garden showing when it is green, at its best and going over, and the days it was picked."></canvas>
+        <p class="cellout" id="cellOut">—</p>
+        <div class="hud" aria-live="off">
+          <div><span>Today</span><b id="hWhen">—</b></div>
+          <div id="hSkyBox"><span>Weather</span><b id="hSky">—</b></div>
+          <div id="hGlassBox"><span>The glass</span><b id="hGlass">—</b></div>
+          <div><span>Pickers</span><b id="hPick">—</b></div>
+        </div>
+        <p class="plan" id="plan" aria-live="polite">—</p>
+        <div class="acts" id="plots"></div>
+        <div class="acts">
+          <button class="btn ghost act" type="button" id="bRest">Stand the pickers down today</button>
+        </div>
+        <p class="keys">The pickers strip one garden a day, as much as they can pick and the oast can dry, and are paid by the bushel. A garden is at its best from a day before it is ripe to about four days after; picked a week early it dries light and pale, and a week late it is brown and shatters. In rain they pick slower and the wet hops dry worse; in heavy rain they will not pick at all. Warm wet days let the mould into any garden near ripe, and the glass falling hard means wind in the night, which knocks down ripe bines. Stand them down on a fine day and some families go off to the next farm. Whatever is still on the bines when the pickers go home at the end is lost. Keys: <code>1</code>–<code>7</code> pick that garden, <code>0</code> stand them down. Point at the strip to see any day.</p>
+      </div>
+      <div class="msg" id="msg" aria-live="polite"></div>
+
+      <div class="verdict" id="verdict" aria-live="polite"></div>
+      <div class="stage" id="reveal" style="display:none"></div>
+
+      <div class="controls" style="margin-top:18px">
+        <button class="btn small ghost" type="button" id="bAgain" style="display:none">Try the same September again</button>
+      </div>
+
+      <div class="rack">
+        <div class="rack-row">
+          <span class="rack-label">Day</span>
+          <div class="controls">
+            <button class="btn small ghost" id="btnDayPrev" type="button">← Yesterday’s</button>
+            <button class="btn small ghost" id="btnDayToday" type="button">Today’s</button>
+            <button class="btn small ghost" id="btnDayNext" type="button">Tomorrow’s →</button>
+          </div>
+          <span class="daybar" id="dayOut">—</span>
+        </div>
+      </div>
+      <p class="hint canvas-hint">Every day is a different parish and September: fine settled ones when the only enemy is the hops ripening faster than the pickers can strip them, close muggy ones when the mould races through the gardens, and broken windy ones when the glass is worth watching.</p>
+    </div>
+  </section>
+
+  <section class="panel alt">
+    <div class="wrap">
+      <h2>What is real here and what is not</h2>
+      <p class="sub">
+        Hop gardens, bins and tallymen, oast houses, the hopping trains from London and the hop varieties are all real,
+        and so are the parishes: each is a place where hops were grown and picked like this in the second half of the
+        nineteenth century. The farms, the gardens, the pickers, the prices and the weather are the day's number.
+      </p>
+      <ol class="steps">
+        <li>
+          <span class="step-n">01</span>
+          <h3>The picking</h3>
+          <p>Hops grow up strings or poles on bines that are cut down at picking time and stripped by hand into canvas
+             bins. The pickers were paid by the bushel, measured out of the bin by the tallyman, at a rate the farmer set
+             each year as so many bushels to the shilling. In Kent most of them came down from London for the season,
+             whole families living in huts or tents, and in Herefordshire they came from the Black Country and Wales.</p>
+        </li>
+        <li>
+          <span class="step-n">02</span>
+          <h3>Ripe, and over</h3>
+          <p>A hop is ripe when the cone is firm, papery and rustles, and the yellow lupulin dusts the fingers. Picked green
+             it dries light and lacks the resin the brewer pays for; left too long it browns, the cones open and shatter,
+             and the sample is marked down. A farmer with several varieties and several gardens had to choose each
+             morning which to strip, knowing he could not have them all at their best.</p>
+        </li>
+        <li>
+          <span class="step-n">03</span>
+          <h3>The oast</h3>
+          <p>Green hops will heat and spoil in a day, so everything picked had to go up to the oast that night and be dried
+             on the hair-cloth over a charcoal or anthracite fire, then cooled and pressed into pockets. The number of
+             kilns set a hard limit on how much could be picked, whatever the pickers could manage.</p>
+        </li>
+        <li>
+          <span class="step-n">04</span>
+          <h3>What the page simplifies</h3>
+          <p>Each day has one weather, the pickers strip one garden at a time, and every garden ripens on one day. One number
+             stands for the sample, set by how far from ripe it was picked, the wet, the mould and nothing else; the gale
+             takes a share of what is near ripe; the price of hops, which swung wildly from year to year, is fixed for
+             the season; and every rate and price is a sensible guess, not the books of any real farm.</p>
+        </li>
+      </ol>
+
+      <p class="sub afterword">
+        Seventy-four rooms, and one number doing all the work. Today it plants the gardens, ripens three of them in the
+        same week, and drops the glass on the night you left the best of them standing.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Static HTML, CSS and JavaScript. No trackers, no cookies, nothing stored.</p>
+    <p class="dim"><a href="./">Back to the front page</a></p>
+  </div>
+</footer>
+
+<script src="hopgarden.js"></script>
+</body>
+</html>
