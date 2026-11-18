@@ -1091,3 +1091,57 @@
       'and a farmer in a hurry, on the same flock and the same weather.</p>' +
     '</li>'), log.firstChild);
 })();
+
+/* ---------- Change 74: the Hop Garden ----------
+   Announced the same way as the rooms above, and runs after them, so it lands in front of them. */
+(function () {
+  'use strict';
+  function el(html) { var t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; }
+  if (document.querySelector('a.room[href="hopgarden.html"]')) return;
+
+  var nav = document.querySelector('.nav-links');
+  if (nav) nav.appendChild(el('<a href="hopgarden.html">Hop Garden</a>'));
+
+  var cta = document.querySelector('.cta-row');
+  if (cta) {
+    var first = cta.querySelector('.btn:not(.ghost)');
+    if (first) first.classList.add('ghost');
+    cta.insertBefore(el('<a class="btn" href="hopgarden.html">Get this September\'s hops in</a>'), cta.firstChild);
+  }
+
+  var rooms = document.querySelector('#rooms .rooms');
+  if (rooms) rooms.insertBefore(el(
+    '<a class="room" href="hopgarden.html">' +
+      '<span class="room-tag">four weeks of September</span>' +
+      '<h3>The Hop Garden</h3>' +
+      '<p>From the June wash to the September picking. A farm\'s gardens of Golding, Fuggle, Grape and Colegate come ripe ' +
+      'in their own weeks, and every morning you choose which one the pickers strip. Too early and it dries light; a week ' +
+      'late and it browns and shatters. Watch the glass: a warm wet spell lets the mould in, and a gale can lay a garden flat in a night.</p>' +
+      '<span class="room-go">Into the gardens →</span>' +
+    '</a>'), rooms.firstChild);
+
+  var after = document.querySelector('#seed .afterword');
+  if (after) {
+    after.innerHTML = after.innerHTML
+      .replace('seventy-three jobs', 'seventy-four jobs')
+      .replace(/One integer, seventy-three rooms\./, 'In <a href="hopgarden.html">the Hop Garden</a> it decides which ' +
+        'gardens come ripe in the same week, and the night the glass goes down. One integer, seventy-four rooms.');
+  }
+
+  var log = document.querySelector('#log .log');
+  if (log) log.insertBefore(el(
+    '<li>' +
+      '<time>Change 74</time>' +
+      '<h3>When they rustle and leave the yellow on your fingers</h3>' +
+      '<p>The Sheepwash took the wool off in June. Added <a href="hopgarden.html">The Hop Garden</a>, the other harvest of ' +
+      'the southern counties: four weeks of September picking on a farm in one of twelve hop parishes, from Goudhurst, ' +
+      'Yalding and Faversham to Bodiam, Farnham, Bromyard and Tenbury, some time between 1850 and 1899. The day\'s number ' +
+      'lays out four to seven gardens with their varieties, acres and the day each comes ripe, brings the pickers down on ' +
+      'the hopping trains at so many bushels to the shilling, builds the oast with its kilns, sets the price of hops, and ' +
+      'runs the weather: the rain, the close muggy days that let the mould in, and the gales.</p>' +
+      '<p>Each morning you read the sky and the glass and send the pickers to one garden, or stand them down and lose a ' +
+      'few families to the next farm. A strip shows every garden\'s ripeness day by day with its best window outlined, so ' +
+      'you can see three of them coming on together and only one set of bins. At the end the page sets your season ' +
+      'beside the bailiff\'s rule, ripest first, and picking the gardens in turn, on the same farm and the same weather.</p>' +
+    '</li>'), log.firstChild);
+})();
