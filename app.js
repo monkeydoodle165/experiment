@@ -1145,3 +1145,58 @@
       'beside the bailiff\'s rule, ripest first, and picking the gardens in turn, on the same farm and the same weather.</p>' +
     '</li>'), log.firstChild);
 })();
+
+/* ---------- Change 75: the Cider Mill ----------
+   Announced the same way as the rooms above, and runs after them, so it lands in front of them. */
+(function () {
+  'use strict';
+  function el(html) { var t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; }
+  if (document.querySelector('a.room[href="cidermill.html"]')) return;
+
+  var nav = document.querySelector('.nav-links');
+  if (nav) nav.appendChild(el('<a href="cidermill.html">Cider Mill</a>'));
+
+  var cta = document.querySelector('.cta-row');
+  if (cta) {
+    var first = cta.querySelector('.btn:not(.ghost)');
+    if (first) first.classList.add('ghost');
+    cta.insertBefore(el('<a class="btn" href="cidermill.html">Make this autumn\'s cider</a>'), cta.firstChild);
+  }
+
+  var rooms = document.querySelector('#rooms .rooms');
+  if (rooms) rooms.insertBefore(el(
+    '<a class="room" href="cidermill.html">' +
+      '<span class="room-tag">five weeks to Martinmas</span>' +
+      '<h3>The Cider Mill</h3>' +
+      '<p>From the hop picking to the apple harvest. The orchards drop Redstreak, Kingston Black and Foxwhelp into the ' +
+      'grass, and every day you choose to gather or to grind. Tump the fruit to sweat a fortnight before the horse goes ' +
+      'round the mill; leave it lying and the grass rots it, and a clear night brings the frost.</p>' +
+      '<span class="room-go">Into the orchard →</span>' +
+    '</a>'), rooms.firstChild);
+
+  var after = document.querySelector('#seed .afterword');
+  if (after) {
+    after.innerHTML = after.innerHTML
+      .replace('seventy-four jobs', 'seventy-five jobs')
+      .replace(/One integer, seventy-four rooms\./, 'At <a href="cidermill.html">the Cider Mill</a> it decides which ' +
+        'orchards come down together, and the clear night the frost gets into the grass. One integer, seventy-five rooms.');
+  }
+
+  var log = document.querySelector('#log .log');
+  if (log) log.insertBefore(el(
+    '<li>' +
+      '<time>Change 75</time>' +
+      '<h3>Till you can push your thumb in</h3>' +
+      '<p>The Hop Garden got the hops in in September. Added <a href="cidermill.html">The Cider Mill</a>, the harvest after ' +
+      'it: five weeks of October and November on a cider farm in one of twelve cider parishes, from Much Marcle, Dymock ' +
+      'and Ombersley to Kingsbury Episcopi, Wedmore, Whimple and Stoke Gabriel, some time between 1840 and 1899. The ' +
+      'day\'s number plants three to five orchards with the apples of that country and the week each comes down, finds ' +
+      'the women to gather, sizes the horse mill and press in the yard, sets the price of cider, and runs the weather of ' +
+      'every day and night: the rain, the gales that shake the trees, and the clear nights that bring the frost.</p>' +
+      '<p>One crew, one job a day: gather in an orchard, or grind and press the oldest tumps. Fruit in the grass rots and ' +
+      'frosts; fruit in the yard needs a week or more to sweat before it makes good cider, and goes bad after three. The ' +
+      'canvas shows the trees emptying, the tumps turning from green to russet, and the horse going round the stone on ' +
+      'pressing days, and at Martinmas the page sets your cellar beside the old cider maker\'s rule and gathering and ' +
+      'pressing by turns, on the same orchards and the same weather.</p>' +
+    '</li>'), log.firstChild);
+})();
