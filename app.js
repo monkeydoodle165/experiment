@@ -1200,3 +1200,59 @@
       'pressing by turns, on the same orchards and the same weather.</p>' +
     '</li>'), log.firstChild);
 })();
+
+/* ---------- Change 76: the Threshing Barn ----------
+   Announced the same way as the rooms above, and runs after them, so it lands in front of them. */
+(function () {
+  'use strict';
+  function el(html) { var t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstChild; }
+  if (document.querySelector('a.room[href="threshing.html"]')) return;
+
+  var nav = document.querySelector('.nav-links');
+  if (nav) nav.appendChild(el('<a href="threshing.html">Threshing</a>'));
+
+  var cta = document.querySelector('.cta-row');
+  if (cta) {
+    var first = cta.querySelector('.btn:not(.ghost)');
+    if (first) first.classList.add('ghost');
+    cta.insertBefore(el('<a class="btn" href="threshing.html">Thresh this winter\'s corn</a>'), cta.firstChild);
+  }
+
+  var rooms = document.querySelector('#rooms .rooms');
+  if (rooms) rooms.insertBefore(el(
+    '<a class="room" href="threshing.html">' +
+      '<span class="room-tag">Martinmas to Lady Day</span>' +
+      '<h3>The Threshing Barn</h3>' +
+      '<p>After the cider, the corn. Ricks of wheat, barley, oats and beans stand in the yard, the rats eat them all ' +
+      'winter, and the men beat them out on the barn floor with flails a few quarters a week. Choose the rick, choose ' +
+      'the week to sell, find the rent by Christmas, and decide whether to let the threshing machine in.</p>' +
+      '<span class="room-go">Onto the barn floor →</span>' +
+    '</a>'), rooms.firstChild);
+
+  var after = document.querySelector('#seed .afterword');
+  if (after) {
+    after.innerHTML = after.innerHTML
+      .replace('seventy-five jobs', 'seventy-six jobs')
+      .replace(/One integer, seventy-five rooms\./, 'At <a href="threshing.html">the Threshing Barn</a> it decides ' +
+        'whether corn rises or falls towards spring, and the week the snow shuts the roads to market. One integer, seventy-six rooms.');
+  }
+
+  var log = document.querySelector('#log .log');
+  if (log) log.insertBefore(el(
+    '<li>' +
+      '<time>Change 76</time>' +
+      '<h3>Wheat first, for the rent</h3>' +
+      '<p>The Cider Mill ended at Martinmas, when the men were wanted for the threshing. Added <a href="threshing.html">The ' +
+      'Threshing Barn</a>, that threshing: nineteen weeks from Martinmas to Lady Day on a corn farm in one of twelve arable ' +
+      'parishes, from Great Coxwell and Cressing to Holkham, Sledmere and Bishop\'s Cleeve, some time between 1820 and ' +
+      '1869. The day\'s number stacks three to five ricks of wheat, barley, oats and beans in the yard, some on staddle ' +
+      'stones, finds the men to thresh them, books the travelling threshing machine to the parish, sets the rent, and ' +
+      'runs the winter and the corn market week by week: frosts that drive the rats into the ricks, snow and floods that ' +
+      'shut the roads, and a trade that climbs, sinks or wanders.</p>' +
+      '<p>One floor, so one rick a week; sell whatever is threshed at that week\'s price whenever the roads are open. The ' +
+      'canvas shows the flails swinging, the ricks going down, the sacks piling in the granary and the machine and its ' +
+      'horses when you hire it, with the winter\'s prices drawn underneath; and at Lady Day the page sets your winter ' +
+      'beside the old farmer\'s way and selling as you go, on the same ricks and the same market. In 1830, the winter of ' +
+      'the Swing riots, no machine comes at all.</p>' +
+    '</li>'), log.firstChild);
+})();
